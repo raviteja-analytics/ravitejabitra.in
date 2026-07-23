@@ -53,6 +53,7 @@ export default async function handler(req, res) {
 
     let runs = [];
     let workouts = [];
+    let allWorkouts = [];
     
     if (activitiesResponse.ok) {
       const allActivities = await activitiesResponse.json();
@@ -71,8 +72,10 @@ export default async function handler(req, res) {
           total_elevation_gain: act.total_elevation_gain
         }));
 
-      workouts = allActivities
-        .filter(act => workoutTypes.includes(act.type) || workoutTypes.includes(act.sport_type))
+      allWorkouts = allActivities
+        .filter(act => workoutTypes.includes(act.type) || workoutTypes.includes(act.sport_type));
+
+      workouts = allWorkouts
         .slice(0, 5)
         .map(act => ({
           name: act.name,
@@ -84,10 +87,6 @@ export default async function handler(req, res) {
       console.error('Strava activities request failed:', await activitiesResponse.text());
     }
 
-    // Calculate total workout sessions count and total moving time from activities
-    const workoutTypes = ['WeightTraining', 'Workout', 'Crossfit', 'Elliptical'];
-    const allWorkouts = activitiesResponse.ok ? (await activitiesResponse.clone().json()).filter(act => workoutTypes.includes(act.type) || workoutTypes.includes(act.sport_type)) : [];
-    
     const totalWorkoutTime = allWorkouts.reduce((acc, curr) => acc + (curr.moving_time || 0), 0);
 
     return res.status(200).json({
