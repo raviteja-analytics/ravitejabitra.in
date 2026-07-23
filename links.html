@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Ravi Teja Bitra — Active Registrations, Events & Bio Links.">
-  <title>Links & Registrations | Ravi Teja Bitra</title>
+  <meta name="description" content="Ravi Teja Bitra — Active Registration Links & Official Event Websites.">
+  <title>Links & Event Registrations | Ravi Teja Bitra</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,7 +22,7 @@
 
     .links-container {
       width: 100%;
-      max-width: 540px;
+      max-width: 580px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -68,19 +68,131 @@
       color: var(--text-secondary);
       line-height: 1.5;
       margin-bottom: 36px;
-      max-width: 440px;
+      max-width: 460px;
     }
 
-    /* Registration & Link Cards */
     .links-group {
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 18px;
       margin-bottom: 40px;
     }
 
-    .link-btn {
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      text-align: left;
+      margin-bottom: -6px;
+      padding-left: 4px;
+    }
+
+    /* Rich Event Card */
+    .event-card {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+      width: 100%;
+      padding: 22px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      color: var(--text-primary);
+      text-decoration: none;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      text-align: left;
+    }
+
+    .event-card:hover {
+      border-color: var(--card-accent, var(--theme-color));
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px -10px var(--card-glow, var(--theme-glow));
+      background: var(--bg-secondary);
+    }
+
+    .event-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .event-title-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .event-icon {
+      font-size: 1.6rem;
+    }
+
+    .event-name {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
+
+    .event-card:hover .event-name {
+      color: var(--card-accent, var(--theme-color));
+    }
+
+    .event-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .event-detail-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .event-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 4px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .event-deadline {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent-color);
+      letter-spacing: 0.04em;
+    }
+
+    .event-action-btn {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.3s ease;
+    }
+
+    .event-card:hover .event-action-btn {
+      color: var(--card-accent, var(--theme-color));
+      transform: translateX(4px);
+    }
+
+    /* Simple Navigation Link Card */
+    .nav-card {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -94,57 +206,13 @@
       font-size: 1rem;
       text-decoration: none;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      position: relative;
-      overflow: hidden;
     }
 
-    .link-btn:hover {
+    .nav-card:hover {
       border-color: var(--theme-color);
       transform: translateY(-3px);
       box-shadow: 0 10px 30px var(--theme-glow);
       background: var(--bg-secondary);
-    }
-
-    .link-btn.featured {
-      border-color: var(--theme-color);
-      background: rgba(217, 249, 93, 0.05);
-    }
-
-    .link-btn.featured:hover {
-      background: rgba(217, 249, 93, 0.12);
-    }
-
-    .badge-active {
-      font-size: 0.65rem;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      background: var(--theme-color);
-      color: #000;
-      padding: 4px 10px;
-      border-radius: 100px;
-      margin-left: 8px;
-    }
-
-    .link-btn-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .link-icon {
-      font-size: 1.3rem;
-    }
-
-    .link-arrow {
-      color: var(--text-muted);
-      font-size: 1rem;
-      transition: transform 0.3s ease, color 0.3s ease;
-    }
-
-    .link-btn:hover .link-arrow {
-      color: var(--theme-color);
-      transform: translateX(4px);
     }
 
     .website-home-link {
@@ -158,6 +226,16 @@
 
     .website-home-link:hover {
       color: var(--theme-color);
+    }
+
+    .loading-events {
+      padding: 30px;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
   </style>
 </head>
@@ -176,90 +254,45 @@
       Welcome! Here are the official event registration and website links mentioned in my Instagram reels.
     </p>
 
-    <!-- Links Group: Direct Event Links -->
+    <!-- Links Group: Direct Event Links from Google Sheet -->
     <div class="links-group">
 
-      <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); text-align: left; margin-bottom: -4px; padding-left: 4px;">
-        🎟️ Official Event Registration Links
+      <div class="section-label">🎟️ Official Event Registrations</div>
+
+      <!-- Events Container (Populated dynamically from Google Sheet) -->
+      <div id="events-feed">
+        <div class="loading-events">
+          <span class="loading-pulse"></span> Syncing official event links from Google Sheet...
+        </div>
       </div>
 
-      <!-- Running Event Direct Link -->
-      <a href="#" target="_blank" class="link-btn featured" data-theme="running">
-        <div class="link-btn-left">
-          <span class="link-icon">🏃‍♂️</span>
-          <div>
-            <div style="font-size: 1rem; font-weight: 800;">[Running Event Name]</div>
-            <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500;">Official Registration Website</div>
-          </div>
-        </div>
-        <span class="link-arrow">→</span>
-      </a>
-
-      <!-- Cycling Event Direct Link -->
-      <a href="#" target="_blank" class="link-btn featured" data-theme="cycling">
-        <div class="link-btn-left">
-          <span class="link-icon">🚴‍♂️</span>
-          <div>
-            <div style="font-size: 1rem; font-weight: 800;">[Cycling Event Name]</div>
-            <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500;">Official Registration Website</div>
-          </div>
-        </div>
-        <span class="link-arrow">→</span>
-      </a>
-
-      <!-- Hyrox & Triathlon Event Direct Link -->
-      <a href="#" target="_blank" class="link-btn featured" data-theme="strength">
-        <div class="link-btn-left">
-          <span class="link-icon">⚡</span>
-          <div>
-            <div style="font-size: 1rem; font-weight: 800;">[Hyrox / Triathlon Event Name]</div>
-            <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500;">Official Registration Website</div>
-          </div>
-        </div>
-        <span class="link-arrow">→</span>
-      </a>
-
-      <!-- Swimming Event Direct Link -->
-      <a href="#" target="_blank" class="link-btn featured" data-theme="swimming">
-        <div class="link-btn-left">
-          <span class="link-icon">🏊‍♂️</span>
-          <div>
-            <div style="font-size: 1rem; font-weight: 800;">[Swimming Event Name]</div>
-            <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500;">Official Registration Website</div>
-          </div>
-        </div>
-        <span class="link-arrow">→</span>
-      </a>
-
-      <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); text-align: left; margin-top: 16px; margin-bottom: -4px; padding-left: 4px;">
-        📊 Live Logs & Contact
-      </div>
+      <div class="section-label" style="margin-top: 16px;">📊 Live Logs & Contact</div>
 
       <!-- Running Page Link -->
-      <a href="running.html" class="link-btn" data-theme="running">
-        <div class="link-btn-left">
-          <span class="link-icon">📊</span>
+      <a href="running.html" class="nav-card" data-theme="running">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 1.3rem;">📊</span>
           <span>Live Running Stats (Strava)</span>
         </div>
-        <span class="link-arrow">→</span>
+        <span style="color: var(--text-muted);">→</span>
       </a>
 
       <!-- Strength Page Link -->
-      <a href="strength.html" class="link-btn" data-theme="strength">
-        <div class="link-btn-left">
-          <span class="link-icon">🏋️</span>
+      <a href="strength.html" class="nav-card" data-theme="strength">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 1.3rem;">🏋️</span>
           <span>Strength Training Log</span>
         </div>
-        <span class="link-arrow">→</span>
+        <span style="color: var(--text-muted);">→</span>
       </a>
 
       <!-- Connect / Collaborate Form -->
-      <a href="index.html#connect" class="link-btn">
-        <div class="link-btn-left">
-          <span class="link-icon">💬</span>
+      <a href="index.html#connect" class="nav-card">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 1.3rem;">💬</span>
           <span>Get in Touch / Collaborations</span>
         </div>
-        <span class="link-arrow">→</span>
+        <span style="color: var(--text-muted);">→</span>
       </a>
 
     </div>
@@ -269,6 +302,140 @@
 
   </div>
 
+  <script>
+    // CSV Parser that handles quotes
+    function parseCSV(text) {
+      const lines = [];
+      let row = [];
+      let inQuotes = false;
+      let currentVal = '';
+
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const nextChar = text[i + 1];
+
+        if (char === '"') {
+          if (inQuotes && nextChar === '"') {
+            currentVal += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === ',' && !inQuotes) {
+          row.push(currentVal.trim());
+          currentVal = '';
+        } else if ((char === '\r' || char === '\n') && !inQuotes) {
+          if (char === '\r' && nextChar === '\n') i++;
+          row.push(currentVal.trim());
+          if (row.some(field => field.length > 0)) {
+            lines.push(row);
+          }
+          row = [];
+          currentVal = '';
+        } else {
+          currentVal += char;
+        }
+      }
+      if (currentVal || row.length > 0) {
+        row.push(currentVal.trim());
+        lines.push(row);
+      }
+      return lines;
+    }
+
+    // Sport to Theme & Icon Mapping
+    function getSportTheme(sport) {
+      const s = (sport || '').toLowerCase();
+      if (s.includes('run')) return { theme: 'running', icon: '🏃‍♂️' };
+      if (s.includes('cycl') || s.includes('bike')) return { theme: 'cycling', icon: '🚴‍♂️' };
+      if (s.includes('hyrox') || s.includes('triathlon')) return { theme: 'strength', icon: '⚡' };
+      if (s.includes('swim')) return { theme: 'swimming', icon: '🏊‍♂️' };
+      if (s.includes('badminton')) return { theme: 'badminton', icon: '🏸' };
+      if (s.includes('travel')) return { theme: 'travel', icon: '✈️' };
+      return { theme: 'running', icon: '🎟️' };
+    }
+
+    // Fetch and render Google Sheet CSV
+    async function loadGoogleSheetEvents() {
+      const container = document.getElementById('events-feed');
+      const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1HmwPdXpSD-NHgFYLQCebiyL15OGoPA2jGnGWtt__CrA/export?format=csv";
+
+      try {
+        const res = await fetch(sheetCsvUrl);
+        if (!res.ok) throw new Error("Could not access Google Sheet. Make sure it is shared to Anyone with link.");
+
+        const text = await res.text();
+        const rows = parseCSV(text);
+
+        if (rows.length <= 1) {
+          container.innerHTML = `<div style="color: var(--text-muted); padding: 20px;">No active events found in Google Sheet.</div>`;
+          return;
+        }
+
+        // Header: Sport, Event Name, Registration URL, Event Location, Event Date, Last Date of Registration
+        const events = [];
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          if (row.length >= 3 && row[1]) {
+            events.push({
+              sport: row[0],
+              name: row[1],
+              url: row[2],
+              location: row[3] || '',
+              date: row[4] || '',
+              lastDate: row[5] || ''
+            });
+          }
+        }
+
+        if (events.length === 0) {
+          container.innerHTML = `<div style="color: var(--text-muted); padding: 20px;">No events logged yet.</div>`;
+          return;
+        }
+
+        container.innerHTML = '';
+        events.forEach(item => {
+          const meta = getSportTheme(item.sport);
+          const card = document.createElement('a');
+          card.href = item.url;
+          card.target = '_blank';
+          card.rel = 'noopener noreferrer';
+          card.className = 'event-card activity-card';
+          card.setAttribute('data-theme', meta.theme);
+
+          card.innerHTML = `
+            <div class="event-card-header">
+              <div class="event-title-box">
+                <span class="event-icon">${meta.icon}</span>
+                <span class="event-name">${item.name}</span>
+              </div>
+            </div>
+
+            <div class="event-details">
+              ${item.location ? `<div class="event-detail-item"><span>📍</span> ${item.location}</div>` : ''}
+              ${item.date ? `<div class="event-detail-item"><span>📅</span> ${item.date}</div>` : ''}
+            </div>
+
+            <div class="event-card-footer">
+              <span class="event-deadline">${item.lastDate ? '⏳ ' + item.lastDate : 'Registration Open'}</span>
+              <span class="event-action-btn">Register Official Site →</span>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = `
+          <div style="color: var(--text-muted); font-size: 0.85rem; padding: 20px;">
+            Unable to load live Google Sheet events. Please check sheet permissions.
+          </div>
+        `;
+      }
+    }
+
+    loadGoogleSheetEvents();
+  </script>
   <script src="app.js"></script>
 </body>
 </html>
