@@ -172,17 +172,11 @@
     </div>
 
     <!-- Stats Grid -->
-    <div class="stats-dashboard">
+    <div class="stats-dashboard" style="grid-template-columns: 1fr;">
       <div class="stat-hero-card full-width">
         <span class="stat-lbl">Mindset & Approach</span>
         <div class="stat-val" style="font-size: clamp(2rem, 4vw, 3rem);">Trying to be consistent</div>
         <span class="stat-lbl" style="color: var(--text-muted);">4 Years of Iron & Progressive Overload</span>
-      </div>
-      
-      <div class="stat-hero-card full-width">
-        <span class="stat-lbl">Total Time Lifted</span>
-        <div id="stat-gym-time" class="stat-val">—</div>
-        <span class="stat-lbl" style="color: var(--text-muted);">total hours calculated across all logged workouts from starting</span>
       </div>
     </div>
 
@@ -244,7 +238,6 @@
         statusContainer.style.display = 'none';
 
         const strengthStats = data.strength_stats || { total_sessions: 0, total_time_seconds: 0 };
-        document.getElementById('stat-gym-time').innerText = formatHours(strengthStats.total_time_seconds);
 
         const feed = document.getElementById('workout-feed');
         if (data.recent_workouts && data.recent_workouts.length > 0) {
