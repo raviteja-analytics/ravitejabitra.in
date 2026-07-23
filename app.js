@@ -1,90 +1,70 @@
 /**
- * ravitejabitra.in - Minimalist Script
- * Includes themed page transition engine for all activity cards
+ * ravitejabitra.in - Interactive Ambient & Card Spotlight Engine
  */
 
-// =========================================================================
-// PAGE TRANSITION ENGINE
-// =========================================================================
-const TRANSITION_KEY = 'page-transition';
-
-// Map of page filenames to their enter animation class
-const transitionMap = {
-  'strength.html': 'enter-strength',
-  'running.html':  'enter-running',
-  'cycling.html':  'enter-cycling',
-  'swimming.html': 'enter-swimming',
-  'badminton.html':'enter-badminton',
-  'travel.html':   'enter-travel',
-  'mindset.html':  'enter-mindset',
-  'nutrition.html':'enter-nutrition',
-  'motivation.html':'enter-motivation',
-  'index.html':    'page-enter',
-  '':              'page-enter', // root
-};
-
-function getPageKey(href) {
-  try {
-    const url = new URL(href, window.location.href);
-    const filename = url.pathname.split('/').pop() || '';
-    return filename;
-  } catch { return ''; }
-}
-
-function navigateWithTransition(href) {
-  const pageKey = getPageKey(href);
-  const enterClass = transitionMap[pageKey] || 'page-enter';
-
-  // Store the animation class for the next page
-  sessionStorage.setItem(TRANSITION_KEY, enterClass);
-
-  // Play exit animation, then navigate
-  document.body.classList.add('page-exit');
-  setTimeout(() => {
-    window.location.href = href;
-  }, 380);
-}
-
-// Intercept all activity card clicks
-function initTransitionLinks() {
-  document.querySelectorAll('.activity-card, .back-btn').forEach(link => {
-    const href = link.getAttribute('href');
-    if (!href || href === '#') return;
-
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      navigateWithTransition(href);
-    });
-  });
-}
-
-// Apply entrance animation on page load
-function applyEntranceAnimation() {
-  const enterClass = sessionStorage.getItem(TRANSITION_KEY);
-  if (enterClass) {
-    sessionStorage.removeItem(TRANSITION_KEY);
-    document.body.classList.add(enterClass);
-    // Clean up after animation completes
-    document.body.addEventListener('animationend', () => {
-      document.body.classList.remove(enterClass);
-    }, { once: true });
-  }
-}
-
-// =========================================================================
-// DOM READY
-// =========================================================================
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Apply page entrance animation immediately
-  applyEntranceAnimation();
+  const aura = document.getElementById('ambient-aura');
+  const cards = document.querySelectorAll('.activity-card');
 
-  // Init transition links
-  initTransitionLinks();
+  // Discipline aura color mapping
+  const auraColors = {
+    strength:   'rgba(245, 158, 11, 0.22)',  /* Iron Amber Gold */
+    running:    'rgba(217, 249, 93, 0.22)',  /* Electric Lime */
+    cycling:    'rgba(6, 182, 212, 0.22)',   /* Velocity Cyan */
+    swimming:   'rgba(56, 189, 248, 0.22)',  /* Hydro Ocean Blue */
+    badminton:  'rgba(244, 63, 94, 0.22)',   /* Smash Rose Crimson */
+    travel:     'rgba(168, 85, 247, 0.22)',  /* Aurora Violet */
+    nutrition:  'rgba(16, 185, 129, 0.22)',  /* Vitality Emerald */
+    mindset:    'rgba(139, 92, 246, 0.22)',  /* Cosmic Indigo */
+    motivation: 'rgba(234, 179, 8, 0.22)'    /* Solar Gold Spotlight */
+  };
 
-  // =========================================================================
-  // 1. Header Scroll Effect
-  // =========================================================================
+  // 1. Interactive Mouse Tracking & Ambient Aura Shift
+  if (cards.length > 0) {
+    cards.forEach(card => {
+
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        // Set card internal spotlight coordinates
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+
+        // Move and color ambient aura
+        if (aura) {
+          const theme = card.getAttribute('data-theme');
+          const color = auraColors[theme] || 'rgba(217, 249, 93, 0.15)';
+          
+          aura.style.setProperty('--aura-color', color);
+          aura.style.transform = `translate(${e.clientX - 450}px, ${e.clientY - 450}px)`;
+          document.body.classList.add('aura-active');
+        }
+      });
+
+      card.addEventListener('mouseleave', () => {
+        if (aura) {
+          document.body.classList.remove('aura-active');
+        }
+      });
+
+      // 2. Smooth Page Navigation on Click
+      const href = card.getAttribute('href');
+      if (href && href !== '#') {
+        card.addEventListener('click', (e) => {
+          e.preventDefault();
+          document.body.classList.add('page-exit');
+          setTimeout(() => {
+            window.location.href = href;
+          }, 280);
+        });
+      }
+    });
+  }
+
+  // 3. Header Scroll Effect
   const header = document.getElementById('header');
   if (header) {
     window.addEventListener('scroll', () => {
@@ -96,9 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // =========================================================================
-  // 2. Mobile Navigation Toggle
-  // =========================================================================
+  // 4. Mobile Navigation Toggle
   const menuToggle = document.getElementById('menu-toggle');
   const navLinks = document.getElementById('nav-links');
 
@@ -117,9 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // =========================================================================
-  // 3. Contact Form Handling
-  // =========================================================================
+  // 5. Contact Form Handling
   const contactForm = document.getElementById('contact-form');
   if (contactForm) {
     contactForm.addEventListener('submit', (e) => {

@@ -1,153 +1,26 @@
 /* 
-  ravitejabitra.in - Fitness, Travel & Lifestyle Theme
+  ravitejabitra.in - Dynamic Ambient Vibe & High-End Athletic System
 */
-
-/* ── Page Transition Overlay ──────────────────────────────────── */
-#page-transition-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  pointer-events: none;
-  opacity: 0;
-}
-
-/* ── Page EXIT: fade out body ─────────────────────────────────── */
-body.page-exit {
-  animation: pageExit 0.4s ease-in forwards;
-}
-
-@keyframes pageExit {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(-12px); }
-}
-
-/* ── Page ENTER: default ─────────────────────────────────────── */
-body.page-enter {
-  animation: pageEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes pageEnter {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ── STRENGTH: Power Slam — burst from center ─────────────────── */
-body.enter-strength {
-  animation: enterStrength 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes enterStrength {
-  0%   { opacity: 0; transform: scale(0.94) translateY(30px); filter: brightness(2.5); }
-  40%  { opacity: 1; transform: scale(1.02) translateY(-4px); filter: brightness(1.3); }
-  100% { opacity: 1; transform: scale(1)   translateY(0);    filter: brightness(1); }
-}
-
-/* ── RUNNING: Sprint Blur — streak from right ────────────────── */
-body.enter-running {
-  animation: enterRunning 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes enterRunning {
-  0%   { opacity: 0; transform: translateX(80px); filter: blur(6px); }
-  60%  { opacity: 1; transform: translateX(-6px); filter: blur(0px); }
-  100% { opacity: 1; transform: translateX(0);    filter: blur(0); }
-}
-
-/* ── CYCLING: Wheel Roll — smooth from left ──────────────────── */
-body.enter-cycling {
-  animation: enterCycling 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes enterCycling {
-  0%   { opacity: 0; transform: translateX(-80px) rotate(-2deg); }
-  60%  { opacity: 1; transform: translateX(6px)   rotate(0.5deg); }
-  100% { opacity: 1; transform: translateX(0)     rotate(0); }
-}
-
-/* ── SWIMMING: Wave Rise — emerge from below ─────────────────── */
-body.enter-swimming {
-  animation: enterSwimming 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes enterSwimming {
-  0%   { opacity: 0; transform: translateY(60px); filter: blur(4px) saturate(2); }
-  60%  { opacity: 1; transform: translateY(-8px); filter: blur(0) saturate(1); }
-  100% { opacity: 1; transform: translateY(0);    filter: none; }
-}
-
-/* ── BADMINTON: Smash Slice — diagonal sharp cut ─────────────── */
-body.enter-badminton {
-  animation: enterBadminton 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes enterBadminton {
-  0%   { opacity: 0; transform: translateX(60px) translateY(-40px) skewX(-8deg); }
-  60%  { opacity: 1; transform: translateX(-4px) translateY(2px)   skewX(1deg); }
-  100% { opacity: 1; transform: translateX(0)    translateY(0)     skewX(0); }
-}
-
-/* ── TRAVEL: Lift-off — zoom out and float up ────────────────── */
-body.enter-travel {
-  animation: enterTravel 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes enterTravel {
-  0%   { opacity: 0; transform: scale(1.08) translateY(-30px); }
-  60%  { opacity: 1; transform: scale(0.99) translateY(4px); }
-  100% { opacity: 1; transform: scale(1)    translateY(0); }
-}
-
-/* ── MINDSET: Deep Breathe — slow meditative fade ────────────── */
-body.enter-mindset {
-  animation: enterMindset 0.9s ease forwards;
-}
-
-@keyframes enterMindset {
-  0%   { opacity: 0; filter: blur(8px); transform: scale(1.02); }
-  100% { opacity: 1; filter: blur(0);   transform: scale(1); }
-}
-
-/* ── NUTRITION: Bloom Grow — organic expand from center ─────── */
-body.enter-nutrition {
-  animation: enterNutrition 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes enterNutrition {
-  0%   { opacity: 0; transform: scale(0.88); filter: saturate(3) brightness(1.5); }
-  60%  { opacity: 1; transform: scale(1.02); filter: saturate(1) brightness(1); }
-  100% { opacity: 1; transform: scale(1);    filter: none; }
-}
-
-/* ── MOTIVATION: Spotlight — burst from center ───────────────── */
-body.enter-motivation {
-  animation: enterMotivation 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes enterMotivation {
-  0%   { opacity: 0; transform: scale(1.1); filter: brightness(3); }
-  50%  { opacity: 1; transform: scale(0.98); filter: brightness(1.2); }
-  100% { opacity: 1; transform: scale(1);   filter: brightness(1); }
-}
 
 :root {
   --bg-primary: #0a0a0a;
   --bg-secondary: #111111;
-  --bg-card: #161616;
+  --bg-card: #141414;
   --text-primary: #ffffff;
   --text-secondary: #a3a3a3;
   --text-muted: #525252;
   
-  --accent-color: #d9f95d;
-  --accent-hover: #bde038;
-  --accent-glow: rgba(217, 249, 93, 0.15);
+  /* Default theme color */
+  --theme-color: #d9f95d;
+  --theme-glow: rgba(217, 249, 93, 0.15);
   
-  --border-color: rgba(255, 255, 255, 0.07);
-  --border-hover: rgba(217, 249, 93, 0.4);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.25);
   
   --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --max-width: 960px;
   --nav-height: 72px;
-  --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ── Reset ────────────────────────────────────────────────────── */
@@ -163,13 +36,56 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
 }
 
-::selection { background: var(--accent-color); color: #000; }
+::selection { background: var(--theme-color); color: #000; }
 
 a { color: inherit; text-decoration: none; transition: var(--transition); }
 
 img { display: block; max-width: 100%; }
+
+/* ── Smooth Page Entrance & Exit ──────────────────────────────── */
+body {
+  opacity: 0;
+  transform: translateY(6px);
+  animation: smoothPageEnter 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes smoothPageEnter {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+body.page-exit {
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* ── Dynamic Ambient Background Aura ────────────────────────── */
+#ambient-aura {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 900px;
+  height: 900px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--aura-color, rgba(217, 249, 93, 0.05)) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.6s ease, background 0.6s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  filter: blur(60px);
+}
+
+body.aura-active #ambient-aura {
+  opacity: 1;
+}
 
 /* ── Typography ───────────────────────────────────────────────── */
 h1, h2, h3, h4 {
@@ -183,6 +99,8 @@ h1, h2, h3, h4 {
   max-width: var(--max-width);
   margin: 0 auto;
   padding: 0 28px;
+  position: relative;
+  z-index: 1;
 }
 
 /* ── Navigation ───────────────────────────────────────────────── */
@@ -214,7 +132,7 @@ header {
   text-transform: uppercase;
 }
 
-.logo span { color: var(--accent-color); }
+.logo span { color: var(--theme-color); }
 
 .nav-links {
   display: flex;
@@ -230,7 +148,7 @@ header {
   color: var(--text-secondary);
 }
 
-.nav-links a:hover { color: var(--accent-color); }
+.nav-links a:hover { color: var(--theme-color); }
 
 .menu-toggle {
   display: none;
@@ -272,7 +190,7 @@ main {
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--accent-color);
+  color: var(--theme-color);
   background: rgba(217, 249, 93, 0.08);
   border: 1px solid rgba(217, 249, 93, 0.2);
   padding: 6px 14px;
@@ -284,7 +202,7 @@ main {
   content: '';
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: var(--accent-color);
+  background: var(--theme-color);
   animation: pulse 2s infinite;
 }
 
@@ -301,7 +219,7 @@ main {
   line-height: 1.05;
 }
 
-.hero-title .accent { color: var(--accent-color); }
+.hero-title .accent { color: var(--theme-color); }
 
 .hero-bio {
   font-size: clamp(1rem, 2vw, 1.2rem);
@@ -344,21 +262,13 @@ main {
   margin-bottom: 72px;
 }
 
-.card-section-title {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  margin-bottom: 20px;
-  letter-spacing: -0.02em;
-}
-
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 16px;
 }
 
-/* ── Clickable Card ───────────────────────────────────────────── */
+/* ── Interactive Spotlight Activity Card ───────────────────────── */
 .activity-card {
   display: flex;
   flex-direction: column;
@@ -366,31 +276,50 @@ main {
   padding: 28px 24px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
-  transition: var(--transition);
   text-decoration: none;
   position: relative;
   overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* Internal Mouse Spotlight */
+.activity-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    300px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    var(--card-spotlight, rgba(255, 255, 255, 0.06)),
+    transparent 80%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+/* Arrow indicator */
 .activity-card::after {
   content: '→';
   position: absolute;
   bottom: 24px;
   right: 24px;
   font-size: 1rem;
-  color: var(--accent-color);
+  color: var(--card-accent, var(--theme-color));
   opacity: 0;
   transform: translateX(-6px);
-  transition: var(--transition);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .activity-card:hover {
-  border-color: var(--border-hover);
-  background: var(--bg-secondary);
-  transform: translateY(-3px);
-  box-shadow: 0 12px 40px var(--accent-glow);
+  transform: translateY(-5px) scale(1.015);
+  border-color: var(--card-accent, var(--theme-color));
+  box-shadow: 0 16px 40px -10px var(--card-glow, var(--theme-glow));
+}
+
+.activity-card:hover::before {
+  opacity: 1;
 }
 
 .activity-card:hover::after {
@@ -399,15 +328,25 @@ main {
 }
 
 .card-icon {
-  font-size: 2rem;
+  font-size: 2.2rem;
   line-height: 1;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.activity-card:hover .card-icon {
+  transform: scale(1.12) rotate(-3deg);
 }
 
 .card-name {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.01em;
+  transition: color 0.3s ease;
+}
+
+.activity-card:hover .card-name {
+  color: var(--card-accent, var(--theme-color));
 }
 
 .card-tag {
@@ -416,6 +355,61 @@ main {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
+}
+
+/* ── Activity Themes Definitions ──────────────────────────────── */
+.activity-card[data-theme="strength"] {
+  --card-accent: #f59e0b; /* Iron Amber Gold */
+  --card-glow: rgba(245, 158, 11, 0.3);
+  --card-spotlight: rgba(245, 158, 11, 0.12);
+}
+
+.activity-card[data-theme="running"] {
+  --card-accent: #d9f95d; /* Electric Lime */
+  --card-glow: rgba(217, 249, 93, 0.3);
+  --card-spotlight: rgba(217, 249, 93, 0.12);
+}
+
+.activity-card[data-theme="cycling"] {
+  --card-accent: #06b6d4; /* Velocity Cyan */
+  --card-glow: rgba(6, 182, 212, 0.3);
+  --card-spotlight: rgba(6, 182, 212, 0.12);
+}
+
+.activity-card[data-theme="swimming"] {
+  --card-accent: #38bdf8; /* Hydro Ocean Blue */
+  --card-glow: rgba(56, 189, 248, 0.3);
+  --card-spotlight: rgba(56, 189, 248, 0.12);
+}
+
+.activity-card[data-theme="badminton"] {
+  --card-accent: #f43f5e; /* Smash Rose Crimson */
+  --card-glow: rgba(244, 63, 94, 0.3);
+  --card-spotlight: rgba(244, 63, 94, 0.12);
+}
+
+.activity-card[data-theme="travel"] {
+  --card-accent: #a855f7; /* Aurora Violet */
+  --card-glow: rgba(168, 85, 247, 0.3);
+  --card-spotlight: rgba(168, 85, 247, 0.12);
+}
+
+.activity-card[data-theme="nutrition"] {
+  --card-accent: #10b981; /* Vitality Emerald */
+  --card-glow: rgba(16, 185, 129, 0.3);
+  --card-spotlight: rgba(16, 185, 129, 0.12);
+}
+
+.activity-card[data-theme="mindset"] {
+  --card-accent: #8b5cf6; /* Cosmic Indigo */
+  --card-glow: rgba(139, 92, 246, 0.3);
+  --card-spotlight: rgba(139, 92, 246, 0.12);
+}
+
+.activity-card[data-theme="motivation"] {
+  --card-accent: #eab308; /* Solar Gold Spotlight */
+  --card-glow: rgba(234, 179, 8, 0.3);
+  --card-spotlight: rgba(234, 179, 8, 0.12);
 }
 
 /* ── Divider ──────────────────────────────────────────────────── */
@@ -462,7 +456,7 @@ main {
 
 .form-input:focus {
   outline: none;
-  border-color: var(--accent-color);
+  border-color: var(--theme-color);
   background: var(--bg-card);
 }
 
@@ -479,7 +473,7 @@ textarea.form-input {
   justify-content: center;
   gap: 8px;
   padding: 14px 32px;
-  background: var(--accent-color);
+  background: var(--theme-color);
   color: #000;
   font-weight: 800;
   font-size: 0.9rem;
@@ -492,9 +486,9 @@ textarea.form-input {
 }
 
 .btn:hover {
-  background: var(--accent-hover);
+  background: #bde038;
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px var(--accent-glow);
+  box-shadow: 0 8px 24px var(--theme-glow);
 }
 
 /* ── Footer ───────────────────────────────────────────────────── */
@@ -525,7 +519,7 @@ footer {
   transition: var(--transition);
 }
 
-.social-link:hover { color: var(--accent-color); }
+.social-link:hover { color: var(--theme-color); }
 
 .copyright {
   font-size: 0.8rem;
