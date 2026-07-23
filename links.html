@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Ravi Teja Bitra — Active Registrations, Events & Bio Links.">
+  <title>Links & Registrations | Ravi Teja Bitra</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 40px 20px 80px 20px;
+    }
+
+    .links-container {
+      width: 100%;
+      max-width: 540px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .profile-avatar {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: 2px solid var(--theme-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--theme-color);
+      margin-bottom: 20px;
+      box-shadow: 0 0 30px var(--theme-glow);
+    }
+
+    .profile-name {
+      font-size: 1.8rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin-bottom: 6px;
+    }
+
+    .profile-tag {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent-color);
+      margin-bottom: 16px;
+    }
+
+    .profile-bio {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 36px;
+      max-width: 440px;
+    }
+
+    /* Registration & Link Cards */
+    .links-group {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .link-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 18px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      color: var(--text-primary);
+      font-weight: 700;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .link-btn:hover {
+      border-color: var(--theme-color);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px var(--theme-glow);
+      background: var(--bg-secondary);
+    }
+
+    .link-btn.featured {
+      border-color: var(--theme-color);
+      background: rgba(217, 249, 93, 0.05);
+    }
+
+    .link-btn.featured:hover {
+      background: rgba(217, 249, 93, 0.12);
+    }
+
+    .badge-active {
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: var(--theme-color);
+      color: #000;
+      padding: 4px 10px;
+      border-radius: 100px;
+      margin-left: 8px;
+    }
+
+    .link-btn-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .link-icon {
+      font-size: 1.3rem;
+    }
+
+    .link-arrow {
+      color: var(--text-muted);
+      font-size: 1rem;
+      transition: transform 0.3s ease, color 0.3s ease;
+    }
+
+    .link-btn:hover .link-arrow {
+      color: var(--theme-color);
+      transform: translateX(4px);
+    }
+
+    .website-home-link {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      transition: color 0.3s ease;
+    }
+
+    .website-home-link:hover {
+      color: var(--theme-color);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Lighting Aura -->
+  <div id="ambient-aura"></div>
+
+  <div class="links-container">
+    
+    <!-- Profile Header -->
+    <div class="profile-avatar">RT</div>
+    <h1 class="profile-name">Ravi Teja Bitra</h1>
+    <div class="profile-tag">IT Pro · Athlete in Progress · Explorer</div>
+    <p class="profile-bio">
+      Welcome! Below are my active registration links mentioned in my Instagram reels, along with my live fitness logs.
+    </p>
+
+    <!-- Links Group -->
+    <div class="links-group">
+
+      <!-- Featured Active Registration Link -->
+      <a href="#" target="_blank" class="link-btn featured" id="active-registration-link">
+        <div class="link-btn-left">
+          <span class="link-icon">🎟️</span>
+          <span>Event Registration</span>
+          <span class="badge-active">ACTIVE NOW</span>
+        </div>
+        <span class="link-arrow">→</span>
+      </a>
+
+      <!-- Running Page Link -->
+      <a href="running.html" class="link-btn" data-theme="running">
+        <div class="link-btn-left">
+          <span class="link-icon">🏃‍♂️</span>
+          <span>Live Running Log (Strava Sync)</span>
+        </div>
+        <span class="link-arrow">→</span>
+      </a>
+
+      <!-- Strength Page Link -->
+      <a href="strength.html" class="link-btn" data-theme="strength">
+        <div class="link-btn-left">
+          <span class="link-icon">🏋️</span>
+          <span>Strength Training Journey</span>
+        </div>
+        <span class="link-arrow">→</span>
+      </a>
+
+      <!-- Connect / Collaborate Form -->
+      <a href="index.html#connect" class="link-btn">
+        <div class="link-btn-left">
+          <span class="link-icon">💬</span>
+          <span>Get in Touch / Collaborations</span>
+        </div>
+        <span class="link-arrow">→</span>
+      </a>
+
+    </div>
+
+    <!-- Home Link -->
+    <a href="index.html" class="website-home-link">← Visit Full Website (ravitejabitra.in)</a>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
