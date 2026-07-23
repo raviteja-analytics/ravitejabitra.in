@@ -86,7 +86,7 @@
     </div>
   </header>
 
-  <!-- Blog Header with Live Video Background -->
+  <!-- Blog Header with Live Video Background & Mist -->
   <section class="blog-header">
     <div class="video-bg-container">
       <video autoplay loop muted playsinline>
@@ -94,6 +94,13 @@
         Your browser does not support the video tag.
       </video>
       <div class="video-bg-overlay"></div>
+    </div>
+
+    <!-- Drifting mist layers -->
+    <div class="mist-container">
+      <div class="mist-cloud mist-cloud-1"></div>
+      <div class="mist-cloud mist-cloud-2"></div>
+      <div class="mist-cloud mist-cloud-3"></div>
     </div>
 
     <h1 class="section-title" style="font-size: 3.5rem;">Field Notes & Guides</h1>
@@ -110,9 +117,9 @@
     <!-- Filter Buttons -->
     <div class="blog-filters">
       <button class="filter-btn active" data-filter="all">All Logs</button>
-      <button class="filter-btn" data-filter="fitness">Fitness & Nutrition</button>
-      <button class="filter-btn" data-filter="travel">Travel & Cycling</button>
-      <button class="filter-btn" data-filter="mindset">Mindset & Motivation</button>
+      <button class="filter-btn" data-filter="fitness">Land (Run/Gym)</button>
+      <button class="filter-btn" data-filter="travel">Wheels (Cycle/Travel)</button>
+      <button class="filter-btn" data-filter="mindset">Water & Mind (Swim/Lifestyle)</button>
     </div>
   </section>
 
@@ -123,7 +130,7 @@
       <!-- Post 1 -->
       <article class="blog-card fitness" data-category="fitness">
         <div class="blog-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=600&q=80');">
-          <span class="blog-tag">Fitness</span>
+          <span class="blog-tag">Land</span>
         </div>
         <div class="blog-content">
           <div class="blog-meta">
@@ -140,7 +147,7 @@
       <!-- Post 2 -->
       <article class="blog-card travel" data-category="travel">
         <div class="blog-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1541614101331-1a5a3a194e92?auto=format&fit=crop&w=600&q=80');">
-          <span class="blog-tag">Travel</span>
+          <span class="blog-tag">Wheels</span>
         </div>
         <div class="blog-content">
           <div class="blog-meta">
@@ -157,7 +164,7 @@
       <!-- Post 3 -->
       <article class="blog-card mindset" data-category="mindset">
         <div class="blog-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=600&q=80');">
-          <span class="blog-tag">Mindset</span>
+          <span class="blog-tag">Water & Mind</span>
         </div>
         <div class="blog-content">
           <div class="blog-meta">
@@ -172,9 +179,9 @@
       </article>
 
       <!-- Post 4 -->
-      <article class="blog-card fitness" data-category="fitness">
+      <article class="blog-card mindset" data-category="mindset">
         <div class="blog-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=600&q=80');">
-          <span class="blog-tag">Fitness</span>
+          <span class="blog-tag">Water & Mind</span>
         </div>
         <div class="blog-content">
           <div class="blog-meta">
@@ -182,16 +189,16 @@
             <span>•</span>
             <span>7 min read</span>
           </div>
-          <h3 class="blog-title">Intermittent Fasting & Endurance Athletics: Does It Work?</h3>
-          <p class="blog-excerpt">An evidence-based deep dive into running while fasting. Learn how it affects fat adaptation, muscle recovery, and energy levels.</p>
+          <h3 class="blog-title">Open Water Swimming: Mastering Sighting and Navigation</h3>
+          <p class="blog-excerpt">An essential checklist of sighting protocols, stroke adjustments, and navigation targets for swimmers training in ocean currents or lakes.</p>
           <a href="#" class="blog-readmore">Read full guide &rarr;</a>
         </div>
       </article>
 
       <!-- Post 5 -->
-      <article class="blog-card travel" data-category="travel">
-        <div class="blog-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=600&q=80');">
-          <span class="blog-tag">Travel</span>
+      <article class="blog-card fitness" data-category="fitness">
+        <div class="blog-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=600&q=80');">
+          <span class="blog-tag">Land</span>
         </div>
         <div class="blog-content">
           <div class="blog-meta">
@@ -199,16 +206,16 @@
             <span>•</span>
             <span>10 min read</span>
           </div>
-          <h3 class="blog-title">Bikepacking Gear Checklist: The Ultra-Lightweight Edition</h3>
-          <p class="blog-excerpt">Everything you need to package onto your frame bags for a multi-day camping and cycling trip without carrying excess weight.</p>
+          <h3 class="blog-title">Functional Strength and Core Stability for Endurance Athletes</h3>
+          <p class="blog-excerpt">The exact weight training exercises, sets, and rep patterns that prevent injuries and build power for long rides and climbs.</p>
           <a href="#" class="blog-readmore">Read full guide &rarr;</a>
         </div>
       </article>
 
       <!-- Post 6 -->
-      <article class="blog-card mindset" data-category="mindset">
-        <div class="blog-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80');">
-          <span class="blog-tag">Mindset</span>
+      <article class="blog-card travel" data-category="travel">
+        <div class="blog-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=600&q=80');">
+          <span class="blog-tag">Wheels</span>
         </div>
         <div class="blog-content">
           <div class="blog-meta">
@@ -216,8 +223,8 @@
             <span>•</span>
             <span>5 min read</span>
           </div>
-          <h3 class="blog-title">The Daily Morning Code: 4 Habits for Mental Toughness</h3>
-          <p class="blog-excerpt">Uncover the simple morning routines that build structural resilience, helping you tackle complex work and tough physical workouts.</p>
+          <h3 class="blog-title">Bikepacking Gear Checklist: The Ultra-Lightweight Edition</h3>
+          <p class="blog-excerpt">Everything you need to package onto your frame bags for a multi-day camping and cycling trip without carrying excess weight.</p>
           <a href="#" class="blog-readmore">Read full guide &rarr;</a>
         </div>
       </article>

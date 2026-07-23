@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   const typingElement = document.getElementById('typing-element');
   if (typingElement) {
-    const roles = ['Runner.', 'Cyclist.', 'Traveler.', 'Motivator.'];
+    const roles = ['on land.', 'on wheels.', 'in water.', 'in the gym.', 'on trails.', 'in decisions.'];
     let roleIndex = 0;
     let charIndex = 0;
     let isDeleting = false;

@@ -41,12 +41,12 @@
     }
     .gear-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 40px;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 32px;
       margin-top: 32px;
     }
     .gear-category h3 {
-      font-size: 1.4rem;
+      font-size: 1.25rem;
       margin-bottom: 20px;
       display: flex;
       align-items: center;
@@ -62,7 +62,7 @@
       display: flex;
       justify-content: space-between;
       color: var(--text-secondary);
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
     .gear-list li strong {
       color: var(--text-primary);
@@ -95,10 +95,6 @@
       .about-story {
         grid-template-columns: 1fr;
         gap: 40px;
-      }
-      .gear-grid {
-        grid-template-columns: 1fr;
-        gap: 32px;
       }
     }
   </style>
@@ -136,8 +132,15 @@
       <div class="video-bg-overlay"></div>
     </div>
 
+    <!-- Drifting mist layers -->
+    <div class="mist-container">
+      <div class="mist-cloud mist-cloud-1"></div>
+      <div class="mist-cloud mist-cloud-2"></div>
+      <div class="mist-cloud mist-cloud-3"></div>
+    </div>
+
     <h1 class="section-title" style="font-size: 3.5rem;">The Trail Log</h1>
-    <p class="section-subtitle" style="font-size: 1.2rem;">Seeking calm, clarity, and physical thresholds in mountains and remote valleys.</p>
+    <p class="section-subtitle" style="font-size: 1.2rem;">Seeking calm, clarity, and physical thresholds in mountains, roads, and water.</p>
   </section>
 
   <!-- Story Section -->
@@ -145,13 +148,13 @@
     <div class="about-story">
       <div class="about-text">
         <p>
-          I believe that nature is not just a place to visit—it is a mirror. When you run up steep hills, pack your bike for a multi-day journey into a mountain range, or travel solo along quiet river basins, you are stripped of distractions. You learn exactly who you are.
+          I believe that nature is not just a place to visit—it is a mirror. When you run up steep hills, pack your bike for a multi-day journey into a mountain range, or swim in open water along quiet river basins, you are stripped of distractions. You learn exactly who you are.
         </p>
         <p>
           My pursuit of <strong>fitness and nutrition</strong> is grounded in natural performance. Instead of chasing gym statistics, I train to build the functional stamina needed to conquer altitude and distance, fueling my body with organic, whole foods that support rapid recovery.
         </p>
         <div class="about-highlight">
-          "The mountains teach humility. You realize that physical strength is secondary to mental patience—the ability to keep taking one step forward, no matter how steep the ridge."
+          "The mountains and water teach humility. You realize that physical strength is secondary to mental patience—the ability to keep taking one step forward, no matter how steep the ridge."
         </div>
         <p>
           This website is my digital trail journal. It is a compilation of structured training programs, travel logistics, and motivational philosophies designed for anyone seeking to transition from concrete streets to rugged trails.
@@ -160,8 +163,8 @@
       
       <div class="about-text">
         <p>
-          <strong>Why Trail & Cycling Expeditions?</strong><br>
-          Traditional travel often skims the surface. Bikepacking and trail running force you to experience every climb, feel every change in weather, and rely entirely on what you carry on your frame. It teaches self-reliance and gives you an unmatched connection to the environment.
+          <strong>Why Hybrid Multi-Sport?</strong><br>
+          For me, travel isn't just sightseeing—it is active exploration. Completing self-supported cycling tours, open water swims, and trail running expeditions teaches self-reliance. When all your gear is mounted on your bike frame or packed in a vest, you learn to adapt, make decisions on the fly, and appreciate the absolute beauty of simplicity.
         </p>
         <p>
           <strong>My Philosophy on Mindset & Advice:</strong><br>
@@ -172,37 +175,49 @@
 
     <!-- Gear Section -->
     <section class="gear-section">
-      <h2 class="text-center" style="font-size: 2rem;">The Trail Gear Checklist</h2>
-      <p class="text-center" style="color: var(--text-secondary); max-width: 500px; margin: 8px auto 0;">The organic and technical equipment I trust during long treks and mountain routes.</p>
+      <h2 class="text-center" style="font-size: 2rem;">The Trail & Training Gear Checklist</h2>
+      <p class="text-center" style="color: var(--text-secondary); max-width: 500px; margin: 8px auto 0;">The items I trust to perform during long races, gym sessions, and outdoor trips.</p>
       
       <div class="gear-grid">
         <!-- Category 1 -->
         <div class="gear-category">
           <h3>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"></path><path d="m16.2 7.8-2.1 6.3-6.3 2.1 2.1-6.3 6.3-2.1Z"></path></svg>
-            Trail Running Gear
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"></path><path d="m16.2 7.8-2.1 6.3-6.3 2.1 2.1-6.3 6.3-2.1Z"></path></svg>
+            Trail Running
           </h3>
           <ul class="gear-list">
-            <li><strong>Trail Shoes:</strong> Salomon Speedcross 6 (Gore-Tex)</li>
-            <li><strong>Socks:</strong> Injinji Trail Midweight Toe Socks</li>
-            <li><strong>GPS watch:</strong> Garmin Forerunner 255 (Alt-Barometer)</li>
-            <li><strong>Hydration Vest:</strong> Salomon Adv Skin 12 (Soft flasks)</li>
-            <li><strong>Headlamp:</strong> Petzl Swift RL (900 Lumens)</li>
+            <li><strong>Trail Shoes:</strong> Salomon Speedcross 6</li>
+            <li><strong>Socks:</strong> Injinji Midweight Toe Socks</li>
+            <li><strong>GPS watch:</strong> Garmin Forerunner 255</li>
+            <li><strong>Hydration Vest:</strong> Salomon Adv Skin 12</li>
           </ul>
         </div>
         
         <!-- Category 2 -->
         <div class="gear-category">
           <h3>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18.5" cy="17.5" r="3.5"></circle><circle cx="5.5" cy="17.5" r="3.5"></circle><path d="M15 17.5 14.5 12.5 10 10H5.5"></path><path d="m12 5 2 2-2 2"></path><path d="M14 7H8"></path></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18.5" cy="17.5" r="3.5"></circle><circle cx="5.5" cy="17.5" r="3.5"></circle><path d="M15 17.5 14.5 12.5 10 10H5.5"></path><path d="m12 5 2 2-2 2"></path></svg>
             Bikepacking Rig
           </h3>
           <ul class="gear-list">
-            <li><strong>Bike:</strong> Surly Disc Trucker (Custom Steel Build)</li>
-            <li><strong>Frame Luggage:</strong> Ortlieb Waterproof Pannier Packs</li>
+            <li><strong>Bike:</strong> Surly Disc Trucker (Steel Build)</li>
+            <li><strong>Bags:</strong> Ortlieb Waterproof Pannier Packs</li>
             <li><strong>Navigation:</strong> Wahoo Elemnt Bolt GPS</li>
             <li><strong>Tires:</strong> Schwalbe Marathon Plus 700x38c</li>
-            <li><strong>Camera Setup:</strong> Sony Alpha A6400 (Weather-sealed body)</li>
+          </ul>
+        </div>
+
+        <!-- Category 3 -->
+        <div class="gear-category">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6c.6.5 1.2 1 2.5 1C6 7 7 5 8.5 5c1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 1.5 0 2.5-2 4-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1"></path><path d="M2 12c.6.5 1.2 1 2.5 1C6 13 7 11 8.5 11c1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 1.5 0 2.5-2 4-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1"></path></svg>
+            Swim & Gym Setup
+          </h3>
+          <ul class="gear-list">
+            <li><strong>Swim Goggles:</strong> Speedo Vanquisher 2.0 Mirrored</li>
+            <li><strong>Wetsuit:</strong> Zone3 Aspire (Open Water)</li>
+            <li><strong>Gym Shoes:</strong> Nike Metcon 9 (Weight training)</li>
+            <li><strong>Lifting Belt:</strong> Rogue Nylon Lifting Belt</li>
           </ul>
         </div>
       </div>

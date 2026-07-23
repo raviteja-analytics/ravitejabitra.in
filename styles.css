@@ -234,7 +234,7 @@ header.scrolled {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.28; /* Calming subtle visual value */
+  opacity: 0.28;
   filter: saturate(0.7) contrast(1.05) brightness(0.9);
 }
 
@@ -244,11 +244,55 @@ header.scrolled {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(180deg, rgba(5, 10, 6, 0.4) 0%, rgba(5, 10, 6, 0.8) 50%, var(--bg-primary) 100%);
+  background: linear-gradient(180deg, rgba(5, 10, 6, 0.3) 0%, rgba(5, 10, 6, 0.75) 50%, var(--bg-primary) 100%);
   z-index: 2;
 }
 
-/* Hero Section with Live Background */
+/* =========================================================================
+   Drifting Mist Animation System (Monsoon / Mountain Vibe)
+   ========================================================================= */
+.mist-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.16; /* Extremely soft, calming visual overlay */
+}
+
+.mist-cloud {
+  position: absolute;
+  width: 900px;
+  height: 280px;
+  background: radial-gradient(circle, rgba(220, 245, 230, 0.35) 0%, rgba(220, 245, 230, 0) 70%);
+  filter: blur(60px);
+  border-radius: 50%;
+}
+
+.mist-cloud-1 {
+  top: 15%;
+  left: -900px;
+  animation: driftRight 45s infinite linear;
+}
+
+.mist-cloud-2 {
+  top: 45%;
+  left: -900px;
+  animation: driftRight 60s infinite linear;
+  animation-delay: 15s;
+}
+
+.mist-cloud-3 {
+  top: 70%;
+  left: -900px;
+  animation: driftRight 50s infinite linear;
+  animation-delay: 5s;
+}
+
+/* Hero Section with Live Background & Mist */
 .hero {
   min-height: 100vh;
   display: flex;
@@ -290,7 +334,7 @@ header.scrolled {
 }
 
 .hero-title {
-  font-size: 3.8rem;
+  font-size: 3.5rem;
   line-height: 1.1;
   margin-bottom: 24px;
 }
@@ -360,8 +404,8 @@ header.scrolled {
 }
 
 .hero-image-container {
-  width: 380px;
-  height: 380px;
+  width: 360px;
+  height: 360px;
   border-radius: 40% 60% 50% 50% / 50% 40% 60% 50%; /* Softer organic blob shape */
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
   border: 1px solid var(--border-color);
@@ -386,8 +430,8 @@ header.scrolled {
 }
 
 .hero-avatar {
-  width: 320px;
-  height: 320px;
+  width: 300px;
+  height: 300px;
   border-radius: 50%;
   background: var(--bg-tertiary);
   z-index: 2;
@@ -399,21 +443,14 @@ header.scrolled {
   overflow: hidden;
 }
 
-.hero-avatar svg {
-  width: 120px;
-  height: 120px;
-  opacity: 0.25;
-  stroke: var(--text-secondary);
-}
-
-/* Stats Floating Badge */
+/* Three Floating Badges Layout */
 .floating-badge {
   position: absolute;
-  background: rgba(11, 20, 14, 0.7);
+  background: rgba(11, 20, 14, 0.75);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-color);
-  padding: 12px 20px;
+  padding: 10px 18px;
   border-radius: var(--border-radius-md);
   box-shadow: var(--shadow-card);
   display: flex;
@@ -424,25 +461,31 @@ header.scrolled {
 }
 
 .floating-badge.badge-1 {
-  bottom: 20px;
-  left: -20px;
+  top: 20px;
+  left: -30px;
   animation-delay: 0s;
 }
 
 .floating-badge.badge-2 {
-  top: 40px;
-  right: -20px;
+  top: 50%;
+  right: -40px;
   animation-delay: 2s;
 }
 
+.floating-badge.badge-3 {
+  bottom: 10px;
+  left: -20px;
+  animation-delay: 1s;
+}
+
 .badge-icon {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 }
 
 .badge-1 .badge-icon {
@@ -455,13 +498,18 @@ header.scrolled {
   color: #0ea5e9;
 }
 
+.badge-3 .badge-icon {
+  background: rgba(6, 182, 212, 0.12);
+  color: #06b6d4;
+}
+
 .badge-info h4 {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 700;
 }
 
 .badge-info p {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--text-secondary);
 }
 
@@ -524,7 +572,7 @@ header.scrolled {
 
 .pillar-card.fitness .pillar-icon { background: rgba(16, 185, 129, 0.08); color: #10b981; }
 .pillar-card.travel .pillar-icon { background: rgba(14, 165, 233, 0.08); color: #0ea5e9; }
-.pillar-card.mindset .pillar-icon { background: rgba(132, 204, 22, 0.08); color: #84cc16; }
+.pillar-card.mindset .pillar-icon { background: rgba(6, 182, 212, 0.08); color: #06b6d4; }
 
 .pillar-card h3 {
   font-size: 1.4rem;
@@ -548,7 +596,7 @@ header.scrolled {
 
 .pillar-card.fitness .pillar-link { color: #10b981; }
 .pillar-card.travel .pillar-link { color: #0ea5e9; }
-.pillar-card.mindset .pillar-link { color: #84cc16; }
+.pillar-card.mindset .pillar-link { color: #06b6d4; }
 
 .pillar-link svg {
   transition: var(--transition-smooth);
@@ -582,6 +630,8 @@ header.scrolled {
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
+  background-size: cover;
+  background-position: center;
 }
 
 .timeline {
@@ -618,7 +668,7 @@ header.scrolled {
 }
 
 .timeline-item:nth-child(2)::before { border-color: #0ea5e9; }
-.timeline-item:nth-child(3)::before { border-color: #84cc16; }
+.timeline-item:nth-child(3)::before { border-color: #06b6d4; }
 
 .timeline-year {
   font-size: 0.85rem;
@@ -715,7 +765,7 @@ header.scrolled {
 
 .blog-card.fitness .blog-tag { background: #10b981; }
 .blog-card.travel .blog-tag { background: #0ea5e9; }
-.blog-card.mindset .blog-tag { background: #84cc16; }
+.blog-card.mindset .blog-tag { background: #06b6d4; }
 
 .blog-content {
   padding: 24px;
@@ -903,6 +953,15 @@ footer {
   }
   100% {
     border-radius: 60% 40% 55% 45% / 45% 55% 45% 55%;
+  }
+}
+
+@keyframes driftRight {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(100vw + 950px));
   }
 }
 
