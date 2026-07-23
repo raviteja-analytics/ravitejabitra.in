@@ -39,8 +39,8 @@ export default async function handler(req, res) {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
 
-    // 3. Fetch recent activities (pull 30 to categorize runs, strength, etc.)
-    const activitiesResponse = await fetch(`https://www.strava.com/api/v3/athlete/activities?per_page=30`, {
+    // 3. Fetch recent activities (pull 200 to accurately calculate total strength hours)
+    const activitiesResponse = await fetch(`https://www.strava.com/api/v3/athlete/activities?per_page=200`, {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
 

@@ -188,7 +188,7 @@
       <div class="stat-hero-card">
         <span class="stat-lbl">Total Time Lifted</span>
         <div id="stat-gym-time" class="stat-val">—</div>
-        <span class="stat-lbl" style="color: var(--text-muted);">in recent training blocks</span>
+        <span class="stat-lbl" style="color: var(--text-muted);">across all logged workouts</span>
       </div>
     </div>
 
@@ -227,6 +227,12 @@
       return `${m} mins`;
     }
 
+    function formatHours(seconds) {
+      if (!seconds) return '0 Hours';
+      const hours = (seconds / 3600).toFixed(1);
+      return `${hours} Hours`;
+    }
+
     function formatDate(dateStr) {
       const d = new Date(dateStr);
       return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -245,7 +251,7 @@
 
         const strengthStats = data.strength_stats || { total_sessions: 0, total_time_seconds: 0 };
         document.getElementById('stat-gym-count').innerText = `${strengthStats.total_sessions} sessions`;
-        document.getElementById('stat-gym-time').innerText = formatDuration(strengthStats.total_time_seconds);
+        document.getElementById('stat-gym-time').innerText = formatHours(strengthStats.total_time_seconds);
 
         const feed = document.getElementById('workout-feed');
         if (data.recent_workouts && data.recent_workouts.length > 0) {
