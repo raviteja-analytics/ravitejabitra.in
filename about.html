@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Get to know Ravi Teja Bitra. Read my personal story, running milestones, cycling adventures, training philosophy, and favorite gear.">
+  <title>About Me | Ravi Teja Bitra</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .about-hero {
+      padding: 160px 24px 80px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(8, 12, 20, 0.4) 0%, var(--bg-primary) 100%),
+                  radial-gradient(circle at 50% 30%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+    }
+    .about-story {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: flex-start;
+      margin-bottom: 80px;
+    }
+    .about-text p {
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      margin-bottom: 20px;
+    }
+    .about-highlight {
+      font-size: 1.25rem;
+      color: var(--accent-cyan);
+      font-weight: 500;
+      border-left: 3px solid var(--accent-cyan);
+      padding-left: 20px;
+      margin: 30px 0;
+    }
+    .gear-section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius-lg);
+      padding: 48px;
+      margin-bottom: 80px;
+    }
+    .gear-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      margin-top: 32px;
+    }
+    .gear-category h3 {
+      font-size: 1.4rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-primary);
+    }
+    .gear-list {
+      list-style: none;
+    }
+    .gear-list li {
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+    .gear-list li strong {
+      color: var(--text-primary);
+    }
+    .philosophy-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 32px;
+      margin-bottom: 80px;
+    }
+    .philosophy-card {
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius-lg);
+      padding: 32px;
+    }
+    .philosophy-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 16px;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .philosophy-card p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+    
+    @media (max-width: 968px) {
+      .about-story {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+      .gear-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header id="header">
+    <div class="nav-container">
+      <a href="index.html" class="logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        Ravi Teja Bitra
+      </a>
+      <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html" class="active">About</a></li>
+        <li><a href="blog.html">Blog</a></li>
+        <li><a href="index.html#newsletter" class="btn-contact">Connect</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- About Hero -->
+  <section class="about-hero">
+    <h1 class="section-title" style="font-size: 3.5rem;">My Story</h1>
+    <p class="section-subtitle" style="font-size: 1.2rem;">I run, ride, and reflect to find out what our minds and bodies are truly capable of.</p>
+  </section>
+
+  <!-- Story Section -->
+  <main class="section" style="padding-top: 0;">
+    <div class="about-story">
+      <div class="about-text">
+        <p>
+          I have always believed that life is an experiment, and the best way to understand it is through movement. Whether it is grinding through the 35th kilometer of a marathon, climbing mountain curves on a bicycle, or traveling solo in unknown territories, I find extreme clarity in physical challenges.
+        </p>
+        <p>
+          My interest in <strong>fitness and nutrition</strong> didn't start with professional coaching. It was built out of trial and error. I wanted to understand how nutrition fuels performance, how training builds cardiovascular capacity, and how recovery dictates mental resilience.
+        </p>
+        <div class="about-highlight">
+          "The limit is never physical. The wall you hit at the end of a long race is built by your mind, and breaking it down is where real growth happens."
+        </div>
+        <p>
+          Beyond training, my passion lies in sharing these insights. From tactical gear breakdowns to raw thoughts on lifestyle habits and decision frameworks, this blog exists to build a roadmap for anyone looking to push their parameters.
+        </p>
+      </div>
+      
+      <div class="about-text">
+        <p>
+          <strong>Why Traveling & Cycling?</strong><br>
+          For me, travel isn't just sightseeing—it is active exploration. Completing self-supported cycling tours teaches self-reliance. When all your gear is mounted on your bike frame and the next town is 80 kilometers away, you learn to adapt, make decisions on the fly, and appreciate the absolute beauty of simplicity.
+        </p>
+        <p>
+          <strong>My Coaching and Talks Philosophy:</strong><br>
+          In my motivational talks and suggestions, I avoid generic fluff. I focus on actionable rules, structured lifestyle advice, and the real psychology behind building consistency. Whether you are prepping for your first 10K run or trying to build high-performance daily habits, I hope my experiences offer direct, practical support.
+        </p>
+      </div>
+    </div>
+
+    <!-- Gear Section -->
+    <section class="gear-section">
+      <h2 class="text-center" style="font-size: 2rem;">The Gear Checklist</h2>
+      <p class="text-center" style="color: var(--text-secondary); max-width: 500px; margin: 8px auto 0;">The items I trust to perform under pressure during long races and trips.</p>
+      
+      <div class="gear-grid">
+        <!-- Category 1 -->
+        <div class="gear-category">
+          <h3><span>🏃‍♂️</span> Running Essentials</h3>
+          <ul class="gear-list">
+            <li><strong>Road Shoes:</strong> Nike Pegasus / Hoka Clifton</li>
+            <li><strong>Trail Shoes:</strong> Salomon Speedcross 6</li>
+            <li><strong>GPS Tracking Watch:</strong> Garmin Forerunner 255</li>
+            <li><strong>Hydration Vest:</strong> Salomon Adv Skin 12</li>
+            <li><strong>Socks:</strong> Drymax Quarter-Crew</li>
+          </ul>
+        </div>
+        
+        <!-- Category 2 -->
+        <div class="gear-category">
+          <h3><span>🚴‍♂️</span> Touring Setup</h3>
+          <ul class="gear-list">
+            <li><strong>Touring Bike:</strong> Surly Disc Trucker (Steel Frame)</li>
+            <li><strong>Frame Bags:</strong> Ortlieb Waterproof Panniers</li>
+            <li><strong>Bike Computer:</strong> Wahoo Elemnt Bolt</li>
+            <li><strong>Tires:</strong> Schwalbe Marathon Plus 700c</li>
+            <li><strong>Camera Gear:</strong> Sony Alpha A6400 (18-135mm lens)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Philosophy -->
+    <h2 class="text-center section-title" style="font-size: 2rem; margin-bottom: 8px;">Core Beliefs</h2>
+    <p class="text-center section-subtitle" style="margin-bottom: 48px;">The mental code I try to live by every day.</p>
+    
+    <div class="philosophy-grid">
+      <div class="philosophy-card">
+        <h3>1. Extreme Consistency</h3>
+        <p>It is better to run 3 kilometers every single day than to run 20 kilometers once a month. Excellence is built through repetitive, unremarkable daily efforts.</p>
+      </div>
+      <div class="philosophy-card">
+        <h3>2. Uncompromising Nutrition</h3>
+        <p>Food is data for your cells. How you eat determines how you recover, think, and react. We build high-performance engines, not garbage cans.</p>
+      </div>
+      <div class="philosophy-card">
+        <h3>3. Active Discomfort</h3>
+        <p>Growth stops the moment you feel entirely settled. Seek mountains, long trails, and complex decisions that force you to stretch your capacity.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-container">
+      <a href="index.html" class="logo">Ravi Teja Bitra</a>
+      <ul class="footer-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="blog.html">Blog</a></li>
+      </ul>
+      <div class="footer-socials">
+        <a href="#" class="social-icon" aria-label="Instagram">📸</a>
+        <a href="#" class="social-icon" aria-label="LinkedIn">💼</a>
+        <a href="#" class="social-icon" aria-label="YouTube">🎥</a>
+      </div>
+    </div>
+    <div class="copyright">
+      &copy; 2026 Ravi Teja Bitra. All rights reserved. Created for ravitejabitra.in.
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

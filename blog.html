@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Read articles by Ravi Teja Bitra on fitness routines, nutrition protocols, cycling stories, travel tips, and mindset frameworks.">
+  <title>Blog | Ravi Teja Bitra</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .blog-header {
+      padding: 160px 24px 60px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(8, 12, 20, 0.4) 0%, var(--bg-primary) 100%),
+                  radial-gradient(circle at 10% 20%, rgba(6, 182, 212, 0.08) 0%, transparent 40%);
+    }
+    
+    .search-wrapper {
+      max-width: 500px;
+      margin: 0 auto 40px;
+      position: relative;
+    }
+    
+    .search-input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 50px;
+      padding: 14px 28px 14px 50px;
+      color: var(--text-primary);
+      font-size: 1rem;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+    
+    .search-input:focus {
+      border-color: var(--accent-cyan);
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.15);
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .no-results {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 80px 24px;
+      color: var(--text-secondary);
+      display: none;
+    }
+
+    .no-results svg {
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header id="header">
+    <div class="nav-container">
+      <a href="index.html" class="logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        Ravi Teja Bitra
+      </a>
+      <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="blog.html" class="active">Blog</a></li>
+        <li><a href="index.html#newsletter" class="btn-contact">Connect</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Blog Header -->
+  <section class="blog-header">
+    <h1 class="section-title" style="font-size: 3.5rem;">Articles & Guides</h1>
+    <p class="section-subtitle" style="margin-bottom: 30px;">Actionable thoughts and strategies covering physical capabilities and mental models.</p>
+    
+    <!-- Search Bar -->
+    <div class="search-wrapper">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="blog-search" class="search-input" placeholder="Search articles by title or keyword...">
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="blog-filters">
+      <button class="filter-btn active" data-filter="all">All Articles</button>
+      <button class="filter-btn" data-filter="fitness">Fitness & Nutrition</button>
+      <button class="filter-btn" data-filter="travel">Travel & Cycling</button>
+      <button class="filter-btn" data-filter="mindset">Mindset & Motivation</button>
+    </div>
+  </section>
+
+  <!-- Blog Content Grid -->
+  <main class="section" style="padding-top: 0;">
+    <div class="blog-grid" id="blog-grid">
+      
+      <!-- Post 1 -->
+      <article class="blog-card fitness" data-category="fitness">
+        <div class="blog-img-placeholder">
+          🏃‍♂️
+          <span class="blog-tag">Fitness</span>
+        </div>
+        <div class="blog-content">
+          <div class="blog-meta">
+            <span>July 15, 2026</span>
+            <span>•</span>
+            <span>8 min read</span>
+          </div>
+          <h3 class="blog-title">The Core Science of Marathon Nutrition: Pre, During, and Post Race</h3>
+          <p class="blog-excerpt">Unpack the optimal glycogen loading patterns, intra-race gel timings, and hydration strategies that prevent the dreaded marathon crash.</p>
+          <a href="#" class="blog-readmore">Read full guide &rarr;</a>
+        </div>
+      </article>
+
+      <!-- Post 2 -->
+      <article class="blog-card travel" data-category="travel">
+        <div class="blog-img-placeholder">
+          🚴‍♂️
+          <span class="blog-tag">Travel</span>
+        </div>
+        <div class="blog-content">
+          <div class="blog-meta">
+            <span>June 28, 2026</span>
+            <span>•</span>
+            <span>12 min read</span>
+          </div>
+          <h3 class="blog-title">Solo and Self-Supported: Cycling 500km Across Hill Country</h3>
+          <p class="blog-excerpt">A complete breakdown of what I packed, how I handled flat tires on remote roads, and key route insights for aspiring long-distance cyclists.</p>
+          <a href="#" class="blog-readmore">Read full guide &rarr;</a>
+        </div>
+      </article>
+
+      <!-- Post 3 -->
+      <article class="blog-card mindset" data-category="mindset">
+        <div class="blog-img-placeholder">
+          💡
+          <span class="blog-tag">Mindset</span>
+        </div>
+        <div class="blog-content">
+          <div class="blog-meta">
+            <span>May 10, 2026</span>
+            <span>•</span>
+            <span>6 min read</span>
+          </div>
+          <h3 class="blog-title">Designing Decisions: How to Break Out of Choice Paralysis</h3>
+          <p class="blog-excerpt">Using a simple framework of constraints and priorities to make hard, long-term life decisions with total clarity and no regrets.</p>
+          <a href="#" class="blog-readmore">Read full guide &rarr;</a>
+        </div>
+      </article>
+
+      <!-- Post 4 -->
+      <article class="blog-card fitness" data-category="fitness">
+        <div class="blog-img-placeholder">
+          🥦
+          <span class="blog-tag">Fitness</span>
+        </div>
+        <div class="blog-content">
+          <div class="blog-meta">
+            <span>April 18, 2026</span>
+            <span>•</span>
+            <span>7 min read</span>
+          </div>
+          <h3 class="blog-title">Intermittent Fasting & Endurance Athletics: Does It Work?</h3>
+          <p class="blog-excerpt">An evidence-based deep dive into running while fasting. Learn how it affects fat adaptation, muscle recovery, and energy levels.</p>
+          <a href="#" class="blog-readmore">Read full guide &rarr;</a>
+        </div>
+      </article>
+
+      <!-- Post 5 -->
+      <article class="blog-card travel" data-category="travel">
+        <div class="blog-img-placeholder">
+          🎒
+          <span class="blog-tag">Travel</span>
+        </div>
+        <div class="blog-content">
+          <div class="blog-meta">
+            <span>March 05, 2026</span>
+            <span>•</span>
+            <span>10 min read</span>
+          </div>
+          <h3 class="blog-title">Bikepacking Gear Checklist: The Ultra-Lightweight Edition</h3>
+          <p class="blog-excerpt">Everything you need to package onto your frame bags for a multi-day camping and cycling trip without carrying excess weight.</p>
+          <a href="#" class="blog-readmore">Read full guide &rarr;</a>
+        </div>
+      </article>
+
+      <!-- Post 6 -->
+      <article class="blog-card mindset" data-category="mindset">
+        <div class="blog-img-placeholder">
+          🔥
+          <span class="blog-tag">Mindset</span>
+        </div>
+        <div class="blog-content">
+          <div class="blog-meta">
+            <span>February 12, 2026</span>
+            <span>•</span>
+            <span>5 min read</span>
+          </div>
+          <h3 class="blog-title">The Daily Morning Code: 4 Habits for Mental Toughness</h3>
+          <p class="blog-excerpt">Uncover the simple morning routines that build structural resilience, helping you tackle complex work and tough physical workouts.</p>
+          <a href="#" class="blog-readmore">Read full guide &rarr;</a>
+        </div>
+      </article>
+
+      <!-- No Results Message -->
+      <div class="no-results" id="no-results">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          <line x1="8" y1="11" x2="14" y2="11"></line>
+        </svg>
+        <p>No articles match your search criteria. Try another keyword!</p>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-container">
+      <a href="index.html" class="logo">Ravi Teja Bitra</a>
+      <ul class="footer-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="blog.html">Blog</a></li>
+      </ul>
+      <div class="footer-socials">
+        <a href="#" class="social-icon" aria-label="Instagram">📸</a>
+        <a href="#" class="social-icon" aria-label="LinkedIn">💼</a>
+        <a href="#" class="social-icon" aria-label="YouTube">🎥</a>
+      </div>
+    </div>
+    <div class="copyright">
+      &copy; 2026 Ravi Teja Bitra. All rights reserved. Created for ravitejabitra.in.
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
