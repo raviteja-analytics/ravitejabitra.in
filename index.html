@@ -3,281 +3,127 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Official website of Ravi Teja Bitra. Explorer and hybrid athlete sharing journals on running, cycling, swimming, gym training, travel, and lifestyle.">
-  <title>Ravi Teja Bitra | Hybrid Athlete & Explorer</title>
+  <meta name="description" content="Personal site of Ravi Teja Bitra. Exploring fitness, nutrition, endurance running, cycling, travel, mindset, and life decisions.">
+  <title>Ravi Teja Bitra | Personal Site</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
   <!-- Navigation -->
   <header id="header">
-    <div class="nav-container">
-      <a href="index.html" class="logo">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #34d399;"><path d="M17 18a5 5 0 0 0-10 0"></path><path d="M12 2a10 10 0 1 0 10 10"></path><path d="m12 2 4 10H8Z"></path></svg>
-        Ravi Teja Bitra
-      </a>
+    <div class="container nav-content">
+      <a href="#" class="logo">Ravi Teja Bitra</a>
+      
       <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Menu">
         <span></span>
         <span></span>
         <span></span>
       </button>
-      <ul class="nav-links" id="nav-links">
-        <li><a href="index.html" class="active">Home</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="blog.html">Blog</a></li>
-        <li><a href="#newsletter" class="btn-contact">Connect</a></li>
-      </ul>
+      
+      <nav class="nav-links" id="nav-links">
+        <a href="#about" class="active">About</a>
+        <a href="#focus">Focus Areas</a>
+        <a href="#connect">Connect</a>
+      </nav>
     </div>
   </header>
 
-  <!-- Hero Section with Calming Live Video Background & Mist -->
-  <section class="hero">
-    <div class="video-bg-container">
-      <video autoplay loop muted playsinline>
-        <source src="https://assets.mixkit.co/videos/preview/mixkit-river-flowing-in-front-of-a-mountain-41589-large.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-      <div class="video-bg-overlay"></div>
-    </div>
-
-    <!-- Drifting mist layers -->
-    <div class="mist-container">
-      <div class="mist-cloud mist-cloud-1"></div>
-      <div class="mist-cloud mist-cloud-2"></div>
-      <div class="mist-cloud mist-cloud-3"></div>
-    </div>
-
-    <div class="hero-grid">
-      <div class="hero-content">
-        <span class="hero-tag">Land. Wheels. Water.</span>
-        <h1 class="hero-title">
-          Hey, I'm Ravi.<br>
-          Run the trails. Ride the mountains. <span class="typing-text" id="typing-element">Flow with the water.</span><span class="cursor">|</span>
-        </h1>
-        <p class="hero-desc">
-          A hybrid athlete documenting my path through physical thresholds and mindful growth. Here, I share field notes on trail running, functional gym strength, long-distance cycling routes, open water swimming, travel adventures, and organic lifestyle habits.
-        </p>
-        <div class="hero-actions">
-          <a href="blog.html" class="btn btn-primary">Read My Journals</a>
-          <a href="about.html" class="btn btn-secondary">Explore My Story</a>
-        </div>
-      </div>
-      
-      <div class="hero-image-wrapper">
-        <div class="hero-image-container">
-          <div class="hero-avatar">
-            <img src="https://images.unsplash.com/photo-1501555088652-021faa106b9b?auto=format&fit=crop&w=400&h=400&q=80" alt="Ravi Teja Bitra Outdoors" style="width: 100%; height: 100%; object-fit: cover;">
-          </div>
-        </div>
-        
-        <!-- Floating badge 1: Running (Land) -->
-        <div class="floating-badge badge-1">
-          <div class="badge-icon">🏃‍♂️</div>
-          <div class="badge-info">
-            <h4>42.2 K</h4>
-            <p>Trail Marathon Finish</p>
-          </div>
-        </div>
-        
-        <!-- Floating badge 2: Cycling (Wheels) -->
-        <div class="floating-badge badge-2">
-          <div class="badge-icon">🚴‍♂️</div>
-          <div class="badge-info">
-            <h4>500+ KM</h4>
-            <p>Bikepacking Routes</p>
-          </div>
-        </div>
-
-        <!-- Floating badge 3: Swimming (Water) -->
-        <div class="floating-badge badge-3">
-          <div class="badge-icon">🏊‍♂️</div>
-          <div class="badge-info">
-            <h4>Active</h4>
-            <p>Swim & Gym Habits</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Pillars Section -->
-  <section class="section" id="pillars">
-    <div class="text-center">
-      <h2 class="section-title">The Three Pillars</h2>
-      <p class="section-subtitle">Tactical strategies and chronicles from land, roads, and water to optimize your daily potential.</p>
-    </div>
+  <!-- Main Content Area -->
+  <main class="container">
     
-    <div class="pillars-grid">
-      <!-- Pillar 1: Land (Run & Gym) -->
-      <div class="pillar-card fitness" onclick="window.location.href='blog.html?filter=fitness'">
-        <div class="pillar-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-        </div>
-        <h3>Land: Run & Gym</h3>
-        <p>Trail running endurance programs, functional strength workouts, explosive leg power protocols, and tissue recovery frameworks to keep you moving forward.</p>
-        <a href="blog.html?filter=fitness" class="pillar-link">
-          Explore land metrics 
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-        </a>
-      </div>
-
-      <!-- Pillar 2: Wheels (Cycle & Travel) -->
-      <div class="pillar-card travel" onclick="window.location.href='blog.html?filter=travel'">
-        <div class="pillar-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3Z"></path></svg>
-        </div>
-        <h3>Wheels: Cycle & Travel</h3>
-        <p>Logistics from self-supported bikepacking tours, route selection parameters, cameras/gear checklists, and travel journals from wilderness explorations.</p>
-        <a href="blog.html?filter=travel" class="pillar-link">
-          Explore routes
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-        </a>
-      </div>
-
-      <!-- Pillar 3: Water & Mind (Swim & Lifestyle) -->
-      <div class="pillar-card mindset" onclick="window.location.href='blog.html?filter=mindset'">
-        <div class="pillar-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6c.6.5 1.2 1 2.5 1C6 7 7 5 8.5 5c1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 1.5 0 2.5-2 4-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1"></path><path d="M2 12c.6.5 1.2 1 2.5 1C6 13 7 11 8.5 11c1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 1.5 0 2.5-2 4-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1"></path><path d="M2 18c.6.5 1.2 1 2.5 1C6 19 7 17 8.5 17c1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 1.5 0 2.5-2 4-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1"></path></svg>
-        </div>
-        <h3>Water & Mind: Swim & Lifestyle</h3>
-        <p>Open water swimming endurance, nutrient-dense nutrition to reduce inflammation, calming breathing rituals, and logical structures for major life decisions.</p>
-        <a href="blog.html?filter=mindset" class="pillar-link">
-          Explore lifestyle
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- About Teaser & Timeline -->
-  <section class="section" id="about-teaser" style="border-top: 1px solid var(--border-color);">
-    <div class="about-teaser-grid">
-      <div class="about-teaser-img">
-        <div class="about-teaser-img-placeholder" style="background: none; padding: 0; overflow: hidden;">
-          <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=600&q=80" alt="Calming Misty Forests" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--border-radius-md);">
-        </div>
-      </div>
+    <!-- Hero / Intro Section -->
+    <section id="about" class="intro-section">
+      <span class="intro-tag">Personal Site & Journey</span>
+      <h1 class="intro-title">Hi, I'm Ravi Teja Bitra.</h1>
       
-      <div>
-        <h2 class="section-title" style="text-align: left;">The Active Journey</h2>
-        <p style="color: var(--text-secondary); margin-bottom: 24px;">
-          I didn't start as a multi-sport athlete. It began with a simple need to escape urban noise and discover quiet. Training on land, riding roads, and swimming in water taught me that physical threshold management is the ultimate mental reset.
+      <div class="content-block">
+        <p class="intro-desc">
+          I am an endurance runner, cycling enthusiast, and traveler. Here, I document my journey through fitness, nutrition, personal growth, and the frameworks I use for making life decisions.
         </p>
-        
-        <div class="timeline">
-          <div class="timeline-item">
-            <div class="timeline-year">2023</div>
-            <h4 class="timeline-title">First Mountain Trail Marathon Completed (Land)</h4>
-            <p class="timeline-desc">Pushed through 1,500m of technical elevation, establishing a deep base of physical patience and endurance.</p>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-year">2024</div>
-            <h4 class="timeline-title">Mountain Passes Solo Bike Tour (Wheels)</h4>
-            <p class="timeline-desc">Logged over 500 kilometers of self-supported cycling through remote routes and mountain peaks.</p>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-year">2025</div>
-            <h4 class="timeline-title">Swim-Run Trials & Mindset Mentoring (Water)</h4>
-            <p class="timeline-desc">Connected water training and structured life habits into daily programs to share with active communities.</p>
-          </div>
-        </div>
-        
-        <a href="about.html" class="btn btn-secondary" style="margin-top: 24px;">Read Full Bio</a>
       </div>
-    </div>
-  </section>
 
-  <!-- Recent Articles -->
-  <section class="section" style="border-top: 1px solid var(--border-color);">
-    <div class="text-center">
-      <h2 class="section-title">Field Notes & Logs</h2>
-      <p class="section-subtitle">Tactical strategies directly from training logs and travels.</p>
-    </div>
-    
-    <div class="blog-grid">
-      <!-- Card 1 -->
-      <article class="blog-card fitness">
-        <div class="blog-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=600&q=80');">
-          <span class="blog-tag">Fitness</span>
-        </div>
-        <div class="blog-content">
-          <div class="blog-meta">
-            <span>July 15, 2026</span>
-            <span>•</span>
-            <span>8 min read</span>
+      <div class="content-block">
+        <p>
+          This space is dedicated to stripping away the noise. My approach to training, whether it's preparing for a marathon, mapping out a multi-day bikepacking route, or practicing open water swimming, relies on consistency and natural performance. I believe in fueling the body with whole foods and building mental resilience through sustained, quiet effort.
+        </p>
+        <p>
+          Beyond physical endurance, I share thoughts on mindset, motivation, and strategies for navigating complex choices with clarity. It’s about building a robust foundation—both physically and mentally—to handle whatever the trail, the road, or life demands.
+        </p>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- Core Focus Areas Section -->
+    <section id="focus" class="intro-section">
+      <h2 class="section-title">Core Focus Areas</h2>
+      
+      <ul class="focus-list">
+        <li>
+          <span class="focus-icon">🏃‍♂️</span>
+          <div>
+            <div class="focus-text">Fitness & Nutrition</div>
+            <div class="focus-desc">Functional strength conditioning and organic, plant-centric fueling strategies.</div>
           </div>
-          <h3 class="blog-title">The Core Science of Marathon Nutrition: Pre, During, and Post Race</h3>
-          <p class="blog-excerpt">Unpack the optimal glycogen loading patterns, intra-race gel timings, and hydration strategies that prevent the dreaded marathon crash.</p>
-          <a href="blog.html" class="blog-readmore">Read full guide &rarr;</a>
-        </div>
-      </article>
-
-      <!-- Card 2 -->
-      <article class="blog-card travel">
-        <div class="blog-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1541614101331-1a5a3a194e92?auto=format&fit=crop&w=600&q=80');">
-          <span class="blog-tag">Travel</span>
-        </div>
-        <div class="blog-content">
-          <div class="blog-meta">
-            <span>June 28, 2026</span>
-            <span>•</span>
-            <span>12 min read</span>
+        </li>
+        <li>
+          <span class="focus-icon">🚵‍♂️</span>
+          <div>
+            <div class="focus-text">Running & Cycling</div>
+            <div class="focus-desc">Trail marathons, road cycling, and long-distance endurance challenges.</div>
           </div>
-          <h3 class="blog-title">Solo and Self-Supported: Cycling 500km Across Hill Country</h3>
-          <p class="blog-excerpt">A complete breakdown of what I packed, how I handled flat tires on remote roads, and key route insights for aspiring long-distance cyclists.</p>
-          <a href="blog.html" class="blog-readmore">Read full guide &rarr;</a>
-        </div>
-      </article>
-
-      <!-- Card 3 -->
-      <article class="blog-card mindset">
-        <div class="blog-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=600&q=80');">
-          <span class="blog-tag">Mindset</span>
-        </div>
-        <div class="blog-content">
-          <div class="blog-meta">
-            <span>May 10, 2026</span>
-            <span>•</span>
-            <span>6 min read</span>
+        </li>
+        <li>
+          <span class="focus-icon">⛺</span>
+          <div>
+            <div class="focus-text">Travel & Outdoor Exploration</div>
+            <div class="focus-desc">Self-supported bikepacking tours and wilderness expeditions.</div>
           </div>
-          <h3 class="blog-title">Designing Decisions: How to Break Out of Choice Paralysis</h3>
-          <p class="blog-excerpt">Using a simple framework of constraints and priorities to make hard, long-term life decisions with total clarity and no regrets.</p>
-          <a href="blog.html" class="blog-readmore">Read full guide &rarr;</a>
-        </div>
-      </article>
-    </div>
-  </section>
+        </li>
+        <li>
+          <span class="focus-icon">🧠</span>
+          <div>
+            <div class="focus-text">Mindset & Life Decisions</div>
+            <div class="focus-desc">Motivational talks and mental frameworks for high-stakes decision making.</div>
+          </div>
+        </li>
+      </ul>
+    </section>
 
-  <!-- Newsletter Signup -->
-  <section class="section" id="newsletter">
-    <div class="newsletter-card">
-      <h2 class="newsletter-title">Subscribe to the Field Notes</h2>
-      <p class="newsletter-desc">Get weekly guides on outdoor running, organic nutrition checklists, cycling itineraries, and calm mental tips sent straight to your inbox.</p>
-      <form class="newsletter-form" id="newsletter-form">
-        <input type="email" class="newsletter-input" placeholder="Enter your email address" required id="newsletter-email">
-        <button type="submit" class="btn btn-primary">Subscribe</button>
+    <div class="divider"></div>
+
+    <!-- Connect Section -->
+    <section id="connect" class="contact-section">
+      <h2 class="section-title">Get in Touch</h2>
+      <div class="content-block">
+        <p>If you're interested in discussing endurance training, inviting me for a motivational talk, or collaborating on a project, feel free to reach out.</p>
+      </div>
+
+      <form id="contact-form" action="#" method="POST">
+        <div class="form-group">
+          <input type="text" class="form-input" placeholder="Your Name" required>
+        </div>
+        <div class="form-group">
+          <input type="email" class="form-input" placeholder="Your Email" required>
+        </div>
+        <div class="form-group">
+          <textarea class="form-input" placeholder="Your Message" required></textarea>
+        </div>
+        <button type="submit" class="btn">Send Message</button>
       </form>
-      <div id="newsletter-message" style="margin-top: 16px; font-weight: 500; display: none;"></div>
-    </div>
-  </section>
+    </section>
+
+  </main>
 
   <!-- Footer -->
   <footer>
-    <div class="footer-container">
-      <a href="index.html" class="logo">Ravi Teja Bitra</a>
-      <ul class="footer-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="blog.html">Blog</a></li>
-      </ul>
+    <div class="container">
       <div class="footer-socials">
-        <a href="#" class="social-icon" aria-label="Instagram">📸</a>
-        <a href="#" class="social-icon" aria-label="LinkedIn">💼</a>
-        <a href="#" class="social-icon" aria-label="YouTube">🎥</a>
+        <a href="#" class="social-link">LinkedIn</a>
+        <a href="#" class="social-link">Strava</a>
+        <a href="#" class="social-link">Instagram</a>
       </div>
-    </div>
-    <div class="copyright">
-      &copy; 2026 Ravi Teja Bitra. All rights reserved. Created for ravitejabitra.in.
+      <p class="copyright">&copy; 2026 Ravi Teja Bitra. All rights reserved.</p>
     </div>
   </footer>
 
