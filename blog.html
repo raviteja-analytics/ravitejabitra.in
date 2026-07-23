@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Read articles by Ravi Teja Bitra on fitness routines, nutrition protocols, cycling stories, travel tips, and mindset frameworks.">
+  <meta name="description" content="Read journals by Ravi Teja Bitra on fitness routines, organic nutrition protocols, cycling stories, trail running, and calm mindset frameworks.">
   <title>Blog | Ravi Teja Bitra</title>
   <link rel="stylesheet" href="styles.css">
   <style>
     .blog-header {
       padding: 160px 24px 60px;
       text-align: center;
-      background: linear-gradient(180deg, rgba(8, 12, 20, 0.4) 0%, var(--bg-primary) 100%),
-                  radial-gradient(circle at 10% 20%, rgba(6, 182, 212, 0.08) 0%, transparent 40%);
+      background: linear-gradient(180deg, rgba(5, 10, 6, 0.4) 0%, var(--bg-primary) 100%),
+                  radial-gradient(circle at 10% 20%, rgba(52, 211, 153, 0.05) 0%, transparent 40%);
     }
     
     .search-wrapper {
@@ -22,7 +22,7 @@
     
     .search-input {
       width: 100%;
-      background: rgba(255, 255, 255, 0.03);
+      background: rgba(255, 255, 255, 0.02);
       border: 1px solid var(--border-color);
       border-radius: 50px;
       padding: 14px 28px 14px 50px;
@@ -33,9 +33,9 @@
     }
     
     .search-input:focus {
-      border-color: var(--accent-cyan);
+      border-color: #34d399;
       background: rgba(255, 255, 255, 0.05);
-      box-shadow: 0 0 12px rgba(0, 242, 254, 0.15);
+      box-shadow: 0 0 12px rgba(52, 211, 153, 0.15);
     }
     
     .search-icon {
@@ -45,6 +45,8 @@
       transform: translateY(-50%);
       color: var(--text-muted);
       pointer-events: none;
+      display: flex;
+      align-items: center;
     }
 
     .no-results {
@@ -58,6 +60,7 @@
     .no-results svg {
       margin-bottom: 16px;
       opacity: 0.3;
+      stroke: var(--text-muted);
     }
   </style>
 </head>
@@ -67,7 +70,7 @@
   <header id="header">
     <div class="nav-container">
       <a href="index.html" class="logo">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #34d399;"><path d="M17 18a5 5 0 0 0-10 0"></path><path d="M12 2a10 10 0 1 0 10 10"></path><path d="m12 2 4 10H8Z"></path></svg>
         Ravi Teja Bitra
       </a>
       <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Menu">
@@ -86,18 +89,20 @@
 
   <!-- Blog Header -->
   <section class="blog-header">
-    <h1 class="section-title" style="font-size: 3.5rem;">Articles & Guides</h1>
-    <p class="section-subtitle" style="margin-bottom: 30px;">Actionable thoughts and strategies covering physical capabilities and mental models.</p>
+    <h1 class="section-title" style="font-size: 3.5rem;">Field Notes & Guides</h1>
+    <p class="section-subtitle" style="margin-bottom: 30px;">Reflections, guides, and strategic advice written on the trail.</p>
     
     <!-- Search Bar -->
     <div class="search-wrapper">
-      <span class="search-icon">🔍</span>
+      <span class="search-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </span>
       <input type="text" id="blog-search" class="search-input" placeholder="Search articles by title or keyword...">
     </div>
 
     <!-- Filter Buttons -->
     <div class="blog-filters">
-      <button class="filter-btn active" data-filter="all">All Articles</button>
+      <button class="filter-btn active" data-filter="all">All Logs</button>
       <button class="filter-btn" data-filter="fitness">Fitness & Nutrition</button>
       <button class="filter-btn" data-filter="travel">Travel & Cycling</button>
       <button class="filter-btn" data-filter="mindset">Mindset & Motivation</button>
@@ -111,7 +116,7 @@
       <!-- Post 1 -->
       <article class="blog-card fitness" data-category="fitness">
         <div class="blog-img-placeholder">
-          🏃‍♂️
+          🌲
           <span class="blog-tag">Fitness</span>
         </div>
         <div class="blog-content">
@@ -129,7 +134,7 @@
       <!-- Post 2 -->
       <article class="blog-card travel" data-category="travel">
         <div class="blog-img-placeholder">
-          🚴‍♂️
+          🏔️
           <span class="blog-tag">Travel</span>
         </div>
         <div class="blog-content">
@@ -147,7 +152,7 @@
       <!-- Post 3 -->
       <article class="blog-card mindset" data-category="mindset">
         <div class="blog-img-placeholder">
-          💡
+          🌊
           <span class="blog-tag">Mindset</span>
         </div>
         <div class="blog-content">
@@ -165,7 +170,7 @@
       <!-- Post 4 -->
       <article class="blog-card fitness" data-category="fitness">
         <div class="blog-img-placeholder">
-          🥦
+          🌿
           <span class="blog-tag">Fitness</span>
         </div>
         <div class="blog-content">
@@ -201,7 +206,7 @@
       <!-- Post 6 -->
       <article class="blog-card mindset" data-category="mindset">
         <div class="blog-img-placeholder">
-          🔥
+          🗻
           <span class="blog-tag">Mindset</span>
         </div>
         <div class="blog-content">

@@ -1,28 +1,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* Color Palette */
-  --bg-primary: #080c14;
-  --bg-secondary: #0f172a;
-  --bg-tertiary: #1e293b;
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(255, 255, 255, 0.15);
+  /* Calming Organic Color Palette (Midnight Forest & Glacier Stream) */
+  --bg-primary: #050a06; /* Deep moss green-black */
+  --bg-secondary: #0b140e; /* Dark pine-slate */
+  --bg-tertiary: #13251a; /* Forest green-gray */
+  --border-color: rgba(156, 179, 166, 0.08); /* Soft sage-mist border */
+  --border-hover: rgba(156, 179, 166, 0.18);
   
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #f0faf4; /* Warm morning-mist off-white */
+  --text-secondary: #9cb3a6; /* Desaturated sage gray */
+  --text-muted: #677f72; /* Darker moss gray */
   
-  /* Accent Gradients */
-  --accent-blue: #3b82f6;
-  --accent-cyan: #06b6d4;
-  --accent-violet: #8b5cf6;
-  --accent-rose: #f43f5e;
+  /* Natural Accents */
+  --accent-blue: #3b82f6; /* Glacier river blue */
+  --accent-cyan: #06b6d4; /* Glacier stream cyan */
+  --accent-violet: #10b981; /* Forest canopy emerald */
+  --accent-rose: #d97706; /* Earthy stone amber */
   
-  --gradient-primary: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-  --gradient-fitness: linear-gradient(135deg, #ff5e62 0%, #ff9966 100%);
-  --gradient-travel: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  --gradient-mindset: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
-  --gradient-dark: linear-gradient(180deg, rgba(15, 23, 42, 0.8) 0%, rgba(8, 12, 20, 0.95) 100%);
+  --gradient-primary: linear-gradient(135deg, #34d399 0%, #1d4ed8 100%); /* Emerald to glacier blue */
+  --gradient-fitness: linear-gradient(135deg, #10b981 0%, #064e3b 100%); /* Forest leaf gradient */
+  --gradient-travel: linear-gradient(135deg, #0ea5e9 0%, #1e3a8a 100%); /* Running stream gradient */
+  --gradient-mindset: linear-gradient(135deg, #84cc16 0%, #3f6212 100%); /* Earthy green-moss gradient */
+  --gradient-dark: linear-gradient(180deg, rgba(11, 20, 14, 0.8) 0%, rgba(5, 10, 6, 0.95) 100%);
   
   /* Fonts */
   --font-heading: 'Outfit', sans-serif;
@@ -30,8 +30,8 @@
   
   /* Transitions & Shadows */
   --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --shadow-glow: 0 0 20px rgba(0, 242, 254, 0.15);
-  --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 20px rgba(52, 211, 153, 0.12); /* Soft green-blue glow */
+  --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
   
   --border-radius-sm: 8px;
   --border-radius-md: 16px;
@@ -91,7 +91,7 @@ header {
   left: 0;
   width: 100%;
   z-index: 1000;
-  background: rgba(8, 12, 20, 0.7);
+  background: rgba(5, 10, 6, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-color);
@@ -99,7 +99,7 @@ header {
 }
 
 header.scrolled {
-  background: rgba(8, 12, 20, 0.9);
+  background: rgba(5, 10, 6, 0.9);
   padding: 10px 0;
 }
 
@@ -162,7 +162,7 @@ header.scrolled {
 
 .btn-contact {
   background: var(--gradient-primary);
-  color: #080c14 !important;
+  color: #050a06 !important;
   font-weight: 600;
   padding: 8px 20px;
   border-radius: 50px;
@@ -171,7 +171,7 @@ header.scrolled {
 
 .btn-contact:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0 25px rgba(0, 242, 254, 0.35);
+  box-shadow: 0 0 25px rgba(52, 211, 153, 0.3);
 }
 
 .menu-toggle {
@@ -215,7 +215,7 @@ header.scrolled {
   margin: 0 auto 60px;
 }
 
-/* Hero Section */
+/* Hero Section with Calmer Soft Radials */
 .hero {
   min-height: 100vh;
   display: flex;
@@ -223,8 +223,8 @@ header.scrolled {
   padding: 140px 24px 80px;
   position: relative;
   overflow: hidden;
-  background: radial-gradient(circle at 80% 20%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
-              radial-gradient(circle at 10% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 40%);
+  background: radial-gradient(circle at 80% 20%, rgba(52, 211, 153, 0.06) 0%, transparent 40%),
+              radial-gradient(circle at 10% 80%, rgba(14, 165, 233, 0.06) 0%, transparent 40%);
 }
 
 .hero-grid {
@@ -244,9 +244,9 @@ header.scrolled {
 .hero-tag {
   display: inline-block;
   padding: 6px 16px;
-  background: rgba(0, 242, 254, 0.1);
-  border: 1px solid rgba(0, 242, 254, 0.2);
-  color: var(--accent-cyan);
+  background: rgba(52, 211, 153, 0.08);
+  border: 1px solid rgba(52, 211, 153, 0.15);
+  color: #34d399;
   border-radius: 50px;
   font-size: 0.85rem;
   font-weight: 600;
@@ -293,23 +293,23 @@ header.scrolled {
 
 .btn-primary {
   background: var(--gradient-primary);
-  color: #080c14;
+  color: #050a06;
   box-shadow: var(--shadow-glow);
 }
 
 .btn-primary:hover {
   transform: translateY(-3px);
-  box-shadow: 0 0 30px rgba(0, 242, 254, 0.4);
+  box-shadow: 0 0 30px rgba(52, 211, 153, 0.35);
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
   border-color: var(--border-hover);
   transform: translateY(-3px);
 }
@@ -325,8 +325,8 @@ header.scrolled {
 .hero-image-container {
   width: 380px;
   height: 380px;
-  border-radius: 50% var(--border-radius-lg) 50% 50%;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border-radius: 40% 60% 50% 50% / 50% 40% 60% 50%; /* Softer organic blob shape */
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-card);
   position: relative;
@@ -334,6 +334,7 @@ header.scrolled {
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: organicShape 12s infinite alternate ease-in-out;
 }
 
 .hero-image-container::before {
@@ -342,9 +343,9 @@ header.scrolled {
   width: 150%;
   height: 150%;
   background: var(--gradient-primary);
-  opacity: 0.15;
+  opacity: 0.12;
   filter: blur(40px);
-  animation: rotateGlow 10s infinite linear;
+  animation: rotateGlow 15s infinite linear;
 }
 
 .hero-avatar {
@@ -363,14 +364,16 @@ header.scrolled {
 .hero-avatar svg {
   width: 120px;
   height: 120px;
-  opacity: 0.3;
+  opacity: 0.25;
+  stroke: var(--text-secondary);
 }
 
 /* Stats Floating Badge */
 .floating-badge {
   position: absolute;
-  background: rgba(15, 23, 42, 0.75);
+  background: rgba(11, 20, 14, 0.85);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--border-color);
   padding: 12px 20px;
   border-radius: var(--border-radius-md);
@@ -405,13 +408,13 @@ header.scrolled {
 }
 
 .badge-1 .badge-icon {
-  background: rgba(255, 94, 98, 0.15);
-  color: #ff5e62;
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
 }
 
 .badge-2 .badge-icon {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
+  background: rgba(14, 165, 233, 0.12);
+  color: #0ea5e9;
 }
 
 .badge-info h4 {
@@ -432,7 +435,7 @@ header.scrolled {
 }
 
 .pillar-card {
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(11, 20, 14, 0.4);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-lg);
   padding: 40px 32px;
@@ -457,7 +460,7 @@ header.scrolled {
 .pillar-card:hover {
   transform: translateY(-8px);
   border-color: var(--border-hover);
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(11, 20, 14, 0.6);
   box-shadow: var(--shadow-card);
 }
 
@@ -478,11 +481,12 @@ header.scrolled {
   justify-content: center;
   font-size: 1.8rem;
   margin-bottom: 24px;
+  transition: var(--transition-smooth);
 }
 
-.pillar-card.fitness .pillar-icon { background: rgba(255, 94, 98, 0.1); color: #ff5e62; }
-.pillar-card.travel .pillar-icon { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-.pillar-card.mindset .pillar-icon { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+.pillar-card.fitness .pillar-icon { background: rgba(16, 185, 129, 0.08); color: #10b981; }
+.pillar-card.travel .pillar-icon { background: rgba(14, 165, 233, 0.08); color: #0ea5e9; }
+.pillar-card.mindset .pillar-icon { background: rgba(132, 204, 22, 0.08); color: #84cc16; }
 
 .pillar-card h3 {
   font-size: 1.4rem;
@@ -504,9 +508,9 @@ header.scrolled {
   color: var(--text-primary);
 }
 
-.pillar-card.fitness .pillar-link { color: #ff5e62; }
-.pillar-card.travel .pillar-link { color: #10b981; }
-.pillar-card.mindset .pillar-link { color: #8b5cf6; }
+.pillar-card.fitness .pillar-link { color: #10b981; }
+.pillar-card.travel .pillar-link { color: #0ea5e9; }
+.pillar-card.mindset .pillar-link { color: #84cc16; }
 
 .pillar-link svg {
   transition: var(--transition-smooth);
@@ -572,11 +576,11 @@ header.scrolled {
   height: 18px;
   border-radius: 50%;
   background: var(--bg-primary);
-  border: 2px solid var(--accent-cyan);
+  border: 2px solid #10b981;
 }
 
-.timeline-item:nth-child(2)::before { border-color: #ff5e62; }
-.timeline-item:nth-child(3)::before { border-color: #10b981; }
+.timeline-item:nth-child(2)::before { border-color: #0ea5e9; }
+.timeline-item:nth-child(3)::before { border-color: #84cc16; }
 
 .timeline-year {
   font-size: 0.85rem;
@@ -605,7 +609,7 @@ header.scrolled {
 }
 
 .filter-btn {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
   padding: 8px 20px;
@@ -618,7 +622,7 @@ header.scrolled {
 .filter-btn:hover,
 .filter-btn.active {
   background: var(--gradient-primary);
-  color: #080c14;
+  color: #050a06;
   border-color: transparent;
   box-shadow: var(--shadow-glow);
 }
@@ -666,11 +670,12 @@ header.scrolled {
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
+  color: #050a06;
 }
 
-.blog-card.fitness .blog-tag { background: #ff5e62; color: #fff; }
-.blog-card.travel .blog-tag { background: #10b981; color: #fff; }
-.blog-card.mindset .blog-tag { background: #8b5cf6; color: #fff; }
+.blog-card.fitness .blog-tag { background: #10b981; }
+.blog-card.travel .blog-tag { background: #0ea5e9; }
+.blog-card.mindset .blog-tag { background: #84cc16; }
 
 .blog-content {
   padding: 24px;
@@ -706,12 +711,12 @@ header.scrolled {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--accent-cyan);
+  color: #34d399;
 }
 
 /* Contact / Newsletter Form */
 .newsletter-card {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.7) 0%, rgba(8, 12, 20, 0.9) 100%);
+  background: linear-gradient(135deg, rgba(11, 20, 14, 0.7) 0%, rgba(5, 10, 6, 0.95) 100%);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-lg);
   padding: 60px 40px;
@@ -733,7 +738,7 @@ header.scrolled {
   right: -100px;
   border-radius: 50%;
   filter: blur(60px);
-  opacity: 0.15;
+  opacity: 0.1;
 }
 
 .newsletter-title {
@@ -757,7 +762,7 @@ header.scrolled {
 
 .newsletter-input {
   flex-grow: 1;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md);
   padding: 16px 24px;
@@ -769,14 +774,14 @@ header.scrolled {
 }
 
 .newsletter-input:focus {
-  border-color: var(--accent-cyan);
+  border-color: #34d399;
   background: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 0 10px rgba(0, 242, 254, 0.1);
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.1);
 }
 
 /* Footer styling */
 footer {
-  background: #04060a;
+  background: #020403;
   border-top: 1px solid var(--border-color);
   padding: 60px 24px 30px;
 }
@@ -816,7 +821,7 @@ footer {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border-color);
   display: flex;
   align-items: center;
@@ -827,7 +832,7 @@ footer {
 
 .social-icon:hover {
   background: var(--gradient-primary);
-  color: #080c14;
+  color: #050a06;
   border-color: transparent;
   transform: translateY(-2px);
   box-shadow: var(--shadow-glow);
@@ -850,6 +855,15 @@ footer {
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
+}
+
+@keyframes organicShape {
+  0% {
+    border-radius: 40% 60% 50% 50% / 50% 40% 60% 50%;
+  }
+  100% {
+    border-radius: 60% 40% 55% 45% / 45% 55% 45% 55%;
+  }
 }
 
 /* Responsive Rules */

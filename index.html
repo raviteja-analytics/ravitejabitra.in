@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Official website of Ravi Teja Bitra. Explore my journey and insights on fitness, nutrition, endurance running, cycling trips, travel adventures, and motivational talks.">
-  <title>Ravi Teja Bitra | Fitness, Travel & Mindset</title>
+  <meta name="description" content="Official website of Ravi Teja Bitra. Read my journals and reflections on trail running, mountain cycling tours, nature travel, holistic nutrition, and calm decision making.">
+  <title>Ravi Teja Bitra | Trail Running, Cycling & Mindset</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -13,7 +13,8 @@
   <header id="header">
     <div class="nav-container">
       <a href="index.html" class="logo">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        <!-- Mountain path logo -->
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #34d399;"><path d="M17 18a5 5 0 0 0-10 0"></path><path d="M12 2a10 10 0 1 0 10 10"></path><path d="m12 2 4 10H8Z"></path></svg>
         Ravi Teja Bitra
       </a>
       <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Menu">
@@ -34,46 +35,59 @@
   <section class="hero">
     <div class="hero-grid">
       <div class="hero-content">
-        <span class="hero-tag">Welcome to my space</span>
+        <span class="hero-tag">Explore. Breathe. Evolve.</span>
         <h1 class="hero-title">
           Hey, I'm Ravi.<br>
-          I am a <span class="typing-text" id="typing-element">Runner</span><span class="cursor">|</span>
+          I explore <span class="typing-text" id="typing-element">Trails.</span><span class="cursor">|</span>
         </h1>
         <p class="hero-desc">
-          Fueling body, mind, and wanderlust. Here I document my journey through endurance running, cycling adventures, travel logs, lifestyle nutrition, and motivation to live intentionally.
+          Documenting a journey through deep forests, mountain passes, and winding rivers. Here, I share field notes on trail running, multi-day cycling tours, plant-based lifestyle nutrition, and calm mental frameworks to help you navigate life's big decisions.
         </p>
         <div class="hero-actions">
-          <a href="blog.html" class="btn btn-primary">Read My Articles</a>
-          <a href="about.html" class="btn btn-secondary">More About Me</a>
+          <a href="blog.html" class="btn btn-primary">Read My Journals</a>
+          <a href="about.html" class="btn btn-secondary">Explore My Story</a>
         </div>
       </div>
       
       <div class="hero-image-wrapper">
         <div class="hero-image-container">
           <div class="hero-avatar">
-            <!-- approachably professional avatar outline -->
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
+            <!-- Calming Landscape vector art of mountains, sun, and river -->
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%; padding: 24px;">
+              <!-- Sun -->
+              <circle cx="50" cy="35" r="12" fill="url(#sun-gradient)" opacity="0.85"/>
+              <!-- Back Mountains -->
+              <path d="M10 75 L38 42 L60 65 L80 48 L95 75 Z" fill="#13251a" opacity="0.6"/>
+              <!-- Front Mountains -->
+              <path d="M5 80 L30 50 L55 75 L75 58 L95 80 Z" fill="#0b140e" opacity="0.9"/>
+              <!-- River winding -->
+              <path d="M50 72 C48 76, 52 80, 48 84 C44 88, 54 92, 46 100 L54 100 C60 92, 52 88, 56 84 C60 80, 56 76, 58 72 Z" fill="#3b82f6" opacity="0.8"/>
+              <!-- Definitions for gradients -->
+              <defs>
+                <linearGradient id="sun-gradient" x1="50" y1="23" x2="50" y2="47" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#34d399"/>
+                  <stop offset="100%" stop-color="#0ea5e9"/>
+                </linearGradient>
+              </defs>
             </svg>
           </div>
         </div>
         
-        <!-- Floating badge 1: Running -->
+        <!-- Floating badge 1: Running (Mountain Trail) -->
         <div class="floating-badge badge-1">
-          <div class="badge-icon">🏃‍♂️</div>
+          <div class="badge-icon">🏔️</div>
           <div class="badge-info">
             <h4>42.2 K</h4>
-            <p>Full Marathon Finish</p>
+            <p>Mountain Trail Run</p>
           </div>
         </div>
         
-        <!-- Floating badge 2: Cycling -->
+        <!-- Floating badge 2: Cycling (River route) -->
         <div class="floating-badge badge-2">
-          <div class="badge-icon">🚴‍♂️</div>
+          <div class="badge-icon">🌊</div>
           <div class="badge-info">
             <h4>500+ KM</h4>
-            <p>Cycling Expeditions</p>
+            <p>River Valley Cycling</p>
           </div>
         </div>
       </div>
@@ -83,38 +97,47 @@
   <!-- Pillars Section -->
   <section class="section" id="pillars">
     <div class="text-center">
-      <h2 class="section-title">What I Write & Talk About</h2>
-      <p class="section-subtitle">A collection of experiences and strategies focusing on physical and mental evolution.</p>
+      <h2 class="section-title">What I Share</h2>
+      <p class="section-subtitle">Tactical wisdom and personal stories from the outdoors to inspire physical and mental alignment.</p>
     </div>
     
     <div class="pillars-grid">
-      <!-- Pillar 1 -->
+      <!-- Pillar 1: Fitness & Nutrition -->
       <div class="pillar-card fitness" onclick="window.location.href='blog.html?filter=fitness'">
-        <div class="pillar-icon">⚡</div>
+        <div class="pillar-icon">
+          <!-- Leaf / Plant sprout SVG -->
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 1 9.8a7 7 0 0 1-9 8.2Z"></path><path d="M9 22v-4h-4"></path></svg>
+        </div>
         <h3>Fitness & Nutrition</h3>
-        <p>Endurance runs, cycling training protocols, functional strength guides, and clean lifestyle nutrition strategies to build long-term stamina.</p>
+        <p>Trail running endurance training, elevation building, and organic, plant-based nutritional protocols optimized to heal and power your muscles.</p>
         <a href="blog.html?filter=fitness" class="pillar-link">
-          Explore articles 
+          Explore training 
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
         </a>
       </div>
 
-      <!-- Pillar 2 -->
+      <!-- Pillar 2: Travel & Cycling -->
       <div class="pillar-card travel" onclick="window.location.href='blog.html?filter=travel'">
-        <div class="pillar-icon">🌍</div>
+        <div class="pillar-icon">
+          <!-- Mountain Ridge SVG -->
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3Z"></path></svg>
+        </div>
         <h3>Travel & Cycling</h3>
-        <p>Unfiltered logs from high-altitude cycling tours, packing checklists, camera gear guides, and narratives of backpacking off the beaten path.</p>
+        <p>Bikepacking through remote mountain ranges, packing lists, and visual stories of exploring river basins and remote valleys on two wheels.</p>
         <a href="blog.html?filter=travel" class="pillar-link">
-          Explore adventures
+          Explore routes
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
         </a>
       </div>
 
-      <!-- Pillar 3 -->
+      <!-- Pillar 3: Mindset & Motivation -->
       <div class="pillar-card mindset" onclick="window.location.href='blog.html?filter=mindset'">
-        <div class="pillar-icon">💭</div>
+        <div class="pillar-icon">
+          <!-- Calm River Waves SVG -->
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6c.6.5 1.2 1 2.5 1C6 7 7 5 8.5 5c1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 1.5 0 2.5-2 4-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1"></path><path d="M2 12c.6.5 1.2 1 2.5 1C6 13 7 11 8.5 11c1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 1.5 0 2.5-2 4-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1"></path><path d="M2 18c.6.5 1.2 1 2.5 1C6 19 7 17 8.5 17c1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 1.5 0 2.5-2 4-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1"></path></svg>
+        </div>
         <h3>Mindset & Motivation</h3>
-        <p>Weekly breakdowns on mastering self-discipline, making complex life decisions, building focus, and motivational talks to fuel everyday actions.</p>
+        <p>Using nature's calm rhythm to reset focus, navigate hard career and life decisions, and build mental fortitude under stress.</p>
         <a href="blog.html?filter=mindset" class="pillar-link">
           Explore mindset
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
@@ -128,10 +151,10 @@
     <div class="about-teaser-grid">
       <div class="about-teaser-img">
         <div class="about-teaser-img-placeholder">
-          <!-- placeholder with icon representing a life journey -->
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
-            <path d="M12 6v6l4 2"></path>
+          <!-- Compass rose for travel & direction -->
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="color: #9cb3a6;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
           </svg>
         </div>
       </div>
@@ -139,24 +162,24 @@
       <div>
         <h2 class="section-title" style="text-align: left;">The Journey So Far</h2>
         <p style="color: var(--text-secondary); margin-bottom: 24px;">
-          I didn't start as an endurance runner or adventurer. It started with a decision to step out of my comfort zone and see how far my legs could take me. Over the years, that curiosity transformed into marathons, multi-day cycling trips, and a constant drive to motivate others to seek their limits.
+          I didn't start as an outdoor adventurer. My journey began with a simple need to escape urban noise and discover silence. Spending weeks trail running and self-supported cycling through mountains taught me that physical strain combined with nature is the ultimate mental reset.
         </p>
         
         <div class="timeline">
           <div class="timeline-item">
             <div class="timeline-year">2023</div>
-            <h4 class="timeline-title">First Full Marathon (42.2K) Completed</h4>
-            <p class="timeline-desc">Pushed through the mental wall to cross the finish line, unlocking a new level of physical belief.</p>
+            <h4 class="timeline-title">First Mountain Trail Marathon Completed</h4>
+            <p class="timeline-desc">Scaled over 1,500 meters of elevation in a single, grueling run, redefining my understanding of stamina.</p>
           </div>
           <div class="timeline-item">
             <div class="timeline-year">2024</div>
-            <h4 class="timeline-title">The Western Ghats Cycling Route</h4>
-            <p class="timeline-desc">Scaled steep mountain passes and logged over 500 kilometers on a solo self-supported cycling tour.</p>
+            <h4 class="timeline-title">Crossing Mountain Passes (500K)</h4>
+            <p class="timeline-desc">Logged over 500 kilometers of solo, self-supported cycling through the Western Ghats mountain range.</p>
           </div>
           <div class="timeline-item">
             <div class="timeline-year">2025</div>
-            <h4 class="timeline-title">Launching Talks & Community Support</h4>
-            <p class="timeline-desc">Began sharing motivational talks, lifestyle habits, and structured guidance to active communities.</p>
+            <h4 class="timeline-title">Calm Mindset Community Talks</h4>
+            <p class="timeline-desc">Began hosting talks on connecting nature integration, structural habits, and focused life decisions.</p>
           </div>
         </div>
         
@@ -168,15 +191,15 @@
   <!-- Recent Articles -->
   <section class="section" style="border-top: 1px solid var(--border-color);">
     <div class="text-center">
-      <h2 class="section-title">Featured Articles</h2>
-      <p class="section-subtitle">Insights from my training log and personal travel diaries.</p>
+      <h2 class="section-title">Field Notes & Logs</h2>
+      <p class="section-subtitle">Reflections and strategies directly from the trail.</p>
     </div>
     
     <div class="blog-grid">
       <!-- Card 1 -->
       <article class="blog-card fitness">
         <div class="blog-img-placeholder">
-          🏃‍♂️
+          🌲
           <span class="blog-tag">Fitness</span>
         </div>
         <div class="blog-content">
@@ -194,7 +217,7 @@
       <!-- Card 2 -->
       <article class="blog-card travel">
         <div class="blog-img-placeholder">
-          🚴‍♂️
+          🚵‍♂️
           <span class="blog-tag">Travel</span>
         </div>
         <div class="blog-content">
@@ -212,7 +235,7 @@
       <!-- Card 3 -->
       <article class="blog-card mindset">
         <div class="blog-img-placeholder">
-          💡
+          🧘‍♂️
           <span class="blog-tag">Mindset</span>
         </div>
         <div class="blog-content">
@@ -232,8 +255,8 @@
   <!-- Newsletter Signup -->
   <section class="section" id="newsletter">
     <div class="newsletter-card">
-      <h2 class="newsletter-title">Subscribe to the Journey</h2>
-      <p class="newsletter-desc">Get my weekly field notes on training programs, gear reviews, travel checklists, and motivational thoughts straight to your inbox.</p>
+      <h2 class="newsletter-title">Subscribe to the Field Notes</h2>
+      <p class="newsletter-desc">Get weekly guides on outdoor running, organic nutrition checklists, cycling itineraries, and calm mental tips sent straight to your inbox.</p>
       <form class="newsletter-form" id="newsletter-form">
         <input type="email" class="newsletter-input" placeholder="Enter your email address" required id="newsletter-email">
         <button type="submit" class="btn btn-primary">Subscribe</button>
