@@ -54,9 +54,10 @@ export default async function handler(req, res) {
     let activities = [];
     if (activitiesResponse.ok) {
       const allActivities = await activitiesResponse.json();
-      // Filter for Running activities and take the last 3
+      // Filter strictly for Running activities (Run, TrailRun, VirtualRun)
+      const runTypes = ['Run', 'TrailRun', 'VirtualRun'];
       activities = allActivities
-        .filter(act => act.type === 'Run')
+        .filter(act => runTypes.includes(act.type) || runTypes.includes(act.sport_type))
         .slice(0, 3)
         .map(act => ({
           name: act.name,
