@@ -39,10 +39,20 @@ export default async function handler(req, res) {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
 
-    // 3. Fetch recent activities (pull 200 to accurately calculate total strength hours)
-    const activitiesResponse = await fetch(`https://www.strava.com/api/v3/athlete/activities?per_page=200`, {
-      headers: { 'Authorization': `Bearer ${accessToken}` }
-    });
+    // 3. Fetch all activities from starting across pages (up to 1,000 activities)
+    let allActivities = [];
+    let page = 1;
+    while (page <= 5) {
+      const pageRes = await fetch(`https://www.strava.com/api/v3/athlete/activities?per_page=200&page=${page}`, {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+      });
+      if (!pageRes.ok) break;
+      const pageData = await pageRes.json();
+      if (!Array.isArray(pageData) || pageData.length === 0) break;
+      allActivities.push(...pageData);
+      if (pageData.length < 200) break; // Last page reached
+      page++;
+    }
 
     let stats = {};
     if (statsResponse.ok) {
@@ -55,37 +65,31 @@ export default async function handler(req, res) {
     let workouts = [];
     let allWorkouts = [];
     
-    if (activitiesResponse.ok) {
-      const allActivities = await activitiesResponse.json();
-      
-      const runTypes = ['Run', 'TrailRun', 'VirtualRun'];
-      const workoutTypes = ['WeightTraining', 'Workout', 'Crossfit', 'Elliptical'];
+    const runTypes = ['Run', 'TrailRun', 'VirtualRun'];
+    const workoutTypes = ['WeightTraining', 'Workout', 'Crossfit', 'Elliptical'];
 
-      runs = allActivities
-        .filter(act => runTypes.includes(act.type) || runTypes.includes(act.sport_type))
-        .slice(0, 3)
-        .map(act => ({
-          name: act.name,
-          distance: act.distance,
-          moving_time: act.moving_time,
-          start_date: act.start_date,
-          total_elevation_gain: act.total_elevation_gain
-        }));
+    runs = allActivities
+      .filter(act => runTypes.includes(act.type) || runTypes.includes(act.sport_type))
+      .slice(0, 3)
+      .map(act => ({
+        name: act.name,
+        distance: act.distance,
+        moving_time: act.moving_time,
+        start_date: act.start_date,
+        total_elevation_gain: act.total_elevation_gain
+      }));
 
-      allWorkouts = allActivities
-        .filter(act => workoutTypes.includes(act.type) || workoutTypes.includes(act.sport_type));
+    allWorkouts = allActivities
+      .filter(act => workoutTypes.includes(act.type) || workoutTypes.includes(act.sport_type));
 
-      workouts = allWorkouts
-        .slice(0, 5)
-        .map(act => ({
-          name: act.name,
-          moving_time: act.moving_time,
-          start_date: act.start_date,
-          kudos_count: act.kudos_count || 0
-        }));
-    } else {
-      console.error('Strava activities request failed:', await activitiesResponse.text());
-    }
+    workouts = allWorkouts
+      .slice(0, 10)
+      .map(act => ({
+        name: act.name,
+        moving_time: act.moving_time,
+        start_date: act.start_date,
+        kudos_count: act.kudos_count || 0
+      }));
 
     const totalWorkoutTime = allWorkouts.reduce((acc, curr) => acc + (curr.moving_time || 0), 0);
 

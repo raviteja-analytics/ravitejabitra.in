@@ -158,7 +158,7 @@
 
     <!-- Page Header -->
     <div class="hero" style="margin-bottom: 48px;">
-      <div class="hero-eyebrow">4 Years Consistent · Auto-Sync Active</div>
+      <div class="hero-eyebrow">Trying to be consistent · Auto-Sync Active</div>
       <h1 class="hero-title" style="margin-bottom: 16px;">Strength <span class="accent">Training.</span></h1>
       <p class="hero-bio" style="font-size: 1.05rem;">
         Building a solid athletic base requires heavy, progressive iron work. I've been <strong>lifting weights consistently for 4 years</strong> to support athletic longevity, posture, and power.
@@ -174,21 +174,15 @@
     <!-- Stats Grid -->
     <div class="stats-dashboard">
       <div class="stat-hero-card full-width">
-        <span class="stat-lbl">Consistency Milestone</span>
-        <div class="stat-val">4 Years</div>
-        <span class="stat-lbl" style="color: var(--text-muted);">dedication to strength & progressive overload</span>
+        <span class="stat-lbl">Mindset & Approach</span>
+        <div class="stat-val" style="font-size: clamp(2rem, 4vw, 3rem);">Trying to be consistent</div>
+        <span class="stat-lbl" style="color: var(--text-muted);">4 Years of Iron & Progressive Overload</span>
       </div>
       
-      <div class="stat-hero-card">
-        <span class="stat-lbl">Recent Gym Sessions Logged</span>
-        <div id="stat-gym-count" class="stat-val">—</div>
-        <span class="stat-lbl" style="color: var(--text-muted);">synced via Strava / Zepp</span>
-      </div>
-
-      <div class="stat-hero-card">
+      <div class="stat-hero-card full-width">
         <span class="stat-lbl">Total Time Lifted</span>
         <div id="stat-gym-time" class="stat-val">—</div>
-        <span class="stat-lbl" style="color: var(--text-muted);">across all logged workouts</span>
+        <span class="stat-lbl" style="color: var(--text-muted);">total hours calculated across all logged workouts from starting</span>
       </div>
     </div>
 
@@ -233,9 +227,9 @@
       return `${hours} Hours`;
     }
 
-    function formatDate(dateStr) {
+    function formatDateTime(dateStr) {
       const d = new Date(dateStr);
-      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' at ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
     }
 
     async function loadStrengthData() {
@@ -250,7 +244,6 @@
         statusContainer.style.display = 'none';
 
         const strengthStats = data.strength_stats || { total_sessions: 0, total_time_seconds: 0 };
-        document.getElementById('stat-gym-count').innerText = `${strengthStats.total_sessions} sessions`;
         document.getElementById('stat-gym-time').innerText = formatHours(strengthStats.total_time_seconds);
 
         const feed = document.getElementById('workout-feed');
@@ -262,10 +255,10 @@
             el.innerHTML = `
               <div class="feed-info">
                 <h4>🏋️ ${item.name}</h4>
-                <p>${formatDate(item.start_date)} · Synced from Strava/Zepp</p>
+                <p>${formatDateTime(item.start_date)} · Synced from Strava/Zepp</p>
               </div>
               <div class="feed-metrics">
-                <div class="stat-lbl" style="color: var(--accent-color); font-size: 1rem;">${formatDuration(item.moving_time)}</div>
+                <div class="stat-lbl" style="color: var(--accent-color); font-size: 1.1rem; font-weight: 800;">${formatDuration(item.moving_time)}</div>
               </div>
             `;
             feed.appendChild(el);
