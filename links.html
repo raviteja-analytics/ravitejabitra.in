@@ -259,10 +259,16 @@
 
       <div class="section-label">🎟️ Official Event Registrations</div>
 
-      <!-- Events Container (Populated dynamically from Google Sheet) -->
-      <div id="events-feed">
-        <div class="loading-events">
-          <span class="loading-pulse"></span> Syncing official event links from Google Sheet...
+      <!-- Events Container (Populated dynamically from Google Sheet with instant cache) -->
+      <div id="events-feed" style="display: flex; flex-direction: column; gap: 14px; width: 100%;">
+        <!-- Skeleton Loaders (shown only on brand new browser) -->
+        <div class="event-card activity-card skeleton-card" style="opacity: 0.5; pointer-events: none;">
+          <div style="width: 60%; height: 20px; background: rgba(255,255,255,0.1); border-radius: 4px;"></div>
+          <div style="width: 80%; height: 14px; background: rgba(255,255,255,0.06); border-radius: 4px;"></div>
+        </div>
+        <div class="event-card activity-card skeleton-card" style="opacity: 0.5; pointer-events: none;">
+          <div style="width: 50%; height: 20px; background: rgba(255,255,255,0.1); border-radius: 4px;"></div>
+          <div style="width: 75%; height: 14px; background: rgba(255,255,255,0.06); border-radius: 4px;"></div>
         </div>
       </div>
 
@@ -303,6 +309,8 @@
   </div>
 
   <script>
+    const CACHE_KEY = 'cached_events_data';
+
     // CSV Parser that handles quotes
     function parseCSV(text) {
       const lines = [];
@@ -355,24 +363,69 @@
       return { theme: 'running', icon: '🎟️' };
     }
 
-    // Fetch and render Google Sheet CSV
-    async function loadGoogleSheetEvents() {
+    // Render event objects into the container
+    function renderEventsUI(events) {
       const container = document.getElementById('events-feed');
+      if (!events || events.length === 0) {
+        container.innerHTML = `<div style="color: var(--text-muted); padding: 20px;">No active events found.</div>`;
+        return;
+      }
+
+      container.innerHTML = '';
+      events.forEach(item => {
+        const meta = getSportTheme(item.sport);
+        const card = document.createElement('a');
+        card.href = item.url;
+        card.target = '_blank';
+        card.rel = 'noopener noreferrer';
+        card.className = 'event-card activity-card';
+        card.setAttribute('data-theme', meta.theme);
+
+        card.innerHTML = `
+          <div class="event-card-header">
+            <div class="event-title-box">
+              <span class="event-icon">${meta.icon}</span>
+              <span class="event-name">${item.name}</span>
+            </div>
+          </div>
+
+          <div class="event-details">
+            ${item.location ? `<div class="event-detail-item"><span>📍</span> ${item.location}</div>` : ''}
+            ${item.date ? `<div class="event-detail-item"><span>📅</span> ${item.date}</div>` : ''}
+          </div>
+
+          <div class="event-card-footer">
+            <span class="event-deadline">${item.lastDate ? '⏳ ' + item.lastDate : 'Registration Open'}</span>
+            <span class="event-action-btn">Register Official Site →</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Load Events: 0ms Cache + Silent Background Sync
+    async function loadGoogleSheetEvents() {
+      // 1. Instant 0ms Render from Local Cache
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        try {
+          const parsedCache = JSON.parse(cached);
+          renderEventsUI(parsedCache);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      // 2. Fetch live Google Sheet CSV in background
       const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1HmwPdXpSD-NHgFYLQCebiyL15OGoPA2jGnGWtt__CrA/export?format=csv";
 
       try {
         const res = await fetch(sheetCsvUrl);
-        if (!res.ok) throw new Error("Could not access Google Sheet. Make sure it is shared to Anyone with link.");
+        if (!res.ok) throw new Error("Could not access Google Sheet.");
 
         const text = await res.text();
         const rows = parseCSV(text);
 
-        if (rows.length <= 1) {
-          container.innerHTML = `<div style="color: var(--text-muted); padding: 20px;">No active events found in Google Sheet.</div>`;
-          return;
-        }
-
-        // Header: Sport, Event Name, Registration URL, Event Location, Event Date, Last Date of Registration
         const events = [];
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i];
@@ -388,49 +441,19 @@
           }
         }
 
-        if (events.length === 0) {
-          container.innerHTML = `<div style="color: var(--text-muted); padding: 20px;">No events logged yet.</div>`;
-          return;
-        }
-
-        container.innerHTML = '';
-        events.forEach(item => {
-          const meta = getSportTheme(item.sport);
-          const card = document.createElement('a');
-          card.href = item.url;
-          card.target = '_blank';
-          card.rel = 'noopener noreferrer';
-          card.className = 'event-card activity-card';
-          card.setAttribute('data-theme', meta.theme);
-
-          card.innerHTML = `
-            <div class="event-card-header">
-              <div class="event-title-box">
-                <span class="event-icon">${meta.icon}</span>
-                <span class="event-name">${item.name}</span>
-              </div>
-            </div>
-
-            <div class="event-details">
-              ${item.location ? `<div class="event-detail-item"><span>📍</span> ${item.location}</div>` : ''}
-              ${item.date ? `<div class="event-detail-item"><span>📅</span> ${item.date}</div>` : ''}
-            </div>
-
-            <div class="event-card-footer">
-              <span class="event-deadline">${item.lastDate ? '⏳ ' + item.lastDate : 'Registration Open'}</span>
-              <span class="event-action-btn">Register Official Site →</span>
-            </div>
-          `;
-          container.appendChild(card);
-        });
+        // Save fresh data to local cache & update UI seamlessly
+        localStorage.setItem(CACHE_KEY, JSON.stringify(events));
+        renderEventsUI(events);
 
       } catch (err) {
         console.error(err);
-        container.innerHTML = `
-          <div style="color: var(--text-muted); font-size: 0.85rem; padding: 20px;">
-            Unable to load live Google Sheet events. Please check sheet permissions.
-          </div>
-        `;
+        if (!cached) {
+          document.getElementById('events-feed').innerHTML = `
+            <div style="color: var(--text-muted); font-size: 0.85rem; padding: 20px;">
+              Unable to load live Google Sheet events. Please check sheet permissions.
+            </div>
+          `;
+        }
       }
     }
 
