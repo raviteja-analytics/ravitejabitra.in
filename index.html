@@ -3,14 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Personal site of Ravi Teja Bitra. Exploring fitness, nutrition, endurance running, cycling, travel, mindset, and life decisions.">
+  <meta name="description" content="Ravi Teja Bitra — Hybrid Athlete & Explorer. Strength Training, Running, Cycling, Swimming, Badminton, Travel, Nutrition, and Mindset.">
   <title>Ravi Teja Bitra | Fitness, Travel & Lifestyle</title>
-  
-  <!-- Google Fonts: Inter for a bold, athletic look -->
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
-  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -18,108 +16,132 @@
   <!-- Navigation -->
   <header id="header">
     <div class="container nav-content">
-      <a href="#" class="logo">Ravi Teja <span>Bitra</span></a>
-      
+      <a href="#" class="logo">Ravi<span>.</span></a>
+
       <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Menu">
-        <span></span>
-        <span></span>
-        <span></span>
+        <span></span><span></span><span></span>
       </button>
-      
-      <nav class="nav-links" id="nav-links">
-        <a href="#about" class="active">Profile</a>
-        <a href="#focus">Training & Travel</a>
-        <a href="#connect">Connect</a>
-      </nav>
+
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#activities">Activities</a></li>
+        <li><a href="#lifestyle">Lifestyle</a></li>
+        <li><a href="#connect">Connect</a></li>
+      </ul>
     </div>
   </header>
 
-  <!-- Main Content Area -->
   <main class="container">
-    
-    <!-- Hero / Intro Section -->
-    <section id="about" class="intro-section">
-      <span class="intro-tag">Hybrid Athlete & Explorer</span>
-      <h1 class="intro-title">Pushing <br><span class="text-accent">Boundaries.</span></h1>
-      
-      <p class="intro-desc" style="margin-bottom: 24px;">
-        Endurance runner, bikepacking cyclist, and active traveler. I document my training regimens, travel routes, and the mental frameworks required for high-performance living.
-      </p>
 
-      <p class="intro-desc" style="font-size: 1.1rem; color: var(--text-muted);">
-        No shortcuts. Just structured fitness, clean organic nutrition, relentless travel exploration, and calculated life decisions.
+    <!-- ── Hero / About Me ──────────────────────────────────── -->
+    <section id="about" class="hero">
+      <div class="hero-eyebrow">Hybrid Athlete & Explorer</div>
+
+      <h1 class="hero-title">
+        Hi, I'm Ravi<br>
+        Teja <span class="accent">Bitra.</span>
+      </h1>
+
+      <p class="hero-bio">
+        I am a <strong>hybrid athlete, traveler, and motivational thinker</strong> based in India. My life revolves around physical performance, outdoor exploration, and building the mental clarity to make great decisions under pressure.
+      </p>
+      <p class="hero-bio">
+        From trail marathons and iron-strength gym sessions to self-supported cycling tours and open-water swims — I document it all here, along with the nutrition protocols and mindset frameworks that keep me going.
       </p>
     </section>
 
-    <!-- Core Focus Areas Section (Dashboard Style) -->
-    <section id="focus" class="intro-section">
-      <h2 class="section-title">Core Pillars</h2>
-      
-      <div class="focus-grid">
-        <!-- Fitness -->
-        <div class="focus-card">
-          <span class="focus-icon">💪</span>
-          <h3 class="focus-title">Fitness & Gym</h3>
-          <p class="focus-desc">Functional strength conditioning, heavy lifting mechanics, and organic fueling protocols for maximum output.</p>
-        </div>
-        
-        <!-- Running -->
-        <div class="focus-card">
-          <span class="focus-icon">🏃‍♂️</span>
-          <h3 class="focus-title">Endurance Running</h3>
-          <p class="focus-desc">Trail marathons, VO2 max intervals, pacing strategies, and post-race muscle recovery tactics.</p>
-        </div>
+    <!-- ── Physical Activities Section ──────────────────────── -->
+    <section id="activities" class="card-section">
+      <div class="section-header">
+        <h2>Physical Activities</h2>
+        <div class="section-header-line"></div>
+      </div>
 
-        <!-- Cycling -->
-        <div class="focus-card">
-          <span class="focus-icon">🚴‍♂️</span>
-          <h3 class="focus-title">Cycling & Bikepacking</h3>
-          <p class="focus-desc">Self-supported long-distance cycling routes, ultra-light gear setups, and roadside repairs.</p>
-        </div>
+      <div class="card-grid">
 
-        <!-- Travel -->
-        <div class="focus-card">
-          <span class="focus-icon">🌍</span>
-          <h3 class="focus-title">Travel Exploration</h3>
-          <p class="focus-desc">Off-grid wilderness expeditions, altitude acclimatization, and navigating unfamiliar terrains.</p>
-        </div>
+        <a href="#" class="activity-card">
+          <div class="card-icon">🏋️</div>
+          <div class="card-name">Strength Training</div>
+          <div class="card-tag">Gym · Lifting · Conditioning</div>
+        </a>
 
-        <!-- Swimming -->
-        <div class="focus-card">
-          <span class="focus-icon">🏊‍♂️</span>
-          <h3 class="focus-title">Open Water Swim</h3>
-          <p class="focus-desc">Current navigation, breathing rhythms, sighting techniques, and cold water endurance.</p>
-        </div>
+        <a href="#" class="activity-card">
+          <div class="card-icon">🏃‍♂️</div>
+          <div class="card-name">Running</div>
+          <div class="card-tag">Trail · Marathon · Intervals</div>
+        </a>
 
-        <!-- Lifestyle -->
-        <div class="focus-card">
-          <span class="focus-icon">🧠</span>
-          <h3 class="focus-title">Mindset & Lifestyle</h3>
-          <p class="focus-desc">Mental frameworks for high-stakes decisions, motivational talks, and maintaining a stoic daily routine.</p>
-        </div>
+        <a href="#" class="activity-card">
+          <div class="card-icon">🚴‍♂️</div>
+          <div class="card-name">Cycling</div>
+          <div class="card-tag">Road · Bikepacking · Endurance</div>
+        </a>
+
+        <a href="#" class="activity-card">
+          <div class="card-icon">🏊‍♂️</div>
+          <div class="card-name">Swimming</div>
+          <div class="card-tag">Open Water · Pool · Drills</div>
+        </a>
+
+        <a href="#" class="activity-card">
+          <div class="card-icon">🏸</div>
+          <div class="card-name">Badminton</div>
+          <div class="card-tag">Court · Agility · Recreation</div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- ── Exploration & Lifestyle Section ──────────────────── -->
+    <section id="lifestyle" class="card-section">
+      <div class="section-header">
+        <h2>Exploration & Lifestyle</h2>
+        <div class="section-header-line"></div>
+      </div>
+
+      <div class="card-grid">
+
+        <a href="#" class="activity-card">
+          <div class="card-icon">✈️</div>
+          <div class="card-name">Travelling</div>
+          <div class="card-tag">Adventures · Expeditions · Routes</div>
+        </a>
+
+        <a href="#" class="activity-card">
+          <div class="card-icon">🥗</div>
+          <div class="card-name">Nutrition</div>
+          <div class="card-tag">Organic · Fuel · Recovery</div>
+        </a>
+
+        <a href="#" class="activity-card">
+          <div class="card-icon">🧠</div>
+          <div class="card-name">Mindset</div>
+          <div class="card-tag">Habits · Decisions · Clarity</div>
+        </a>
+
+        <a href="#" class="activity-card">
+          <div class="card-icon">🎙️</div>
+          <div class="card-name">Motivation</div>
+          <div class="card-tag">Speaking · Talks · Community</div>
+        </a>
+
       </div>
     </section>
 
     <div class="divider"></div>
 
-    <!-- Connect Section -->
-    <section id="connect" class="contact-section">
-      <h2 class="section-title">Join the Journey</h2>
-      <p style="color: var(--text-secondary); margin-bottom: 32px; font-size: 1.1rem;">
-        Whether you want to discuss a training plan, swap travel routes, or book a motivational session—reach out.
-      </p>
+    <!-- ── Connect Section ───────────────────────────────────── -->
+    <section id="connect">
+      <h2 class="connect-title">Let's Connect.</h2>
+      <p class="connect-desc">Whether it's a training plan, travel collab, or a motivational session — I'd love to hear from you.</p>
 
-      <form id="contact-form" action="#" method="POST">
-        <div class="form-group">
-          <input type="text" class="form-input" placeholder="YOUR NAME" required>
+      <form id="contact-form">
+        <div class="form-grid">
+          <input type="text" class="form-input" id="name" placeholder="Your Name" required>
+          <input type="email" class="form-input" id="email" placeholder="Your Email" required>
         </div>
-        <div class="form-group">
-          <input type="email" class="form-input" placeholder="YOUR EMAIL" required>
-        </div>
-        <div class="form-group">
-          <textarea class="form-input" placeholder="YOUR MESSAGE" required></textarea>
-        </div>
-        <button type="submit" class="btn">Send Transmission</button>
+        <textarea class="form-input" id="message" placeholder="Your Message" required></textarea>
+        <button type="submit" class="btn">Send Message →</button>
       </form>
     </section>
 
@@ -127,13 +149,14 @@
 
   <!-- Footer -->
   <footer>
-    <div class="container">
+    <div class="container footer-inner">
       <div class="footer-socials">
         <a href="#" class="social-link">Strava</a>
         <a href="#" class="social-link">LinkedIn</a>
         <a href="#" class="social-link">Instagram</a>
+        <a href="#" class="social-link">YouTube</a>
       </div>
-      <p class="copyright">&copy; 2026 RAVI TEJA BITRA. ALL RIGHTS RESERVED.</p>
+      <p class="copyright">&copy; 2026 Ravi Teja Bitra</p>
     </div>
   </footer>
 
