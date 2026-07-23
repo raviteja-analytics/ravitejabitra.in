@@ -10,8 +10,7 @@
     .blog-header {
       padding: 160px 24px 60px;
       text-align: center;
-      background: linear-gradient(180deg, rgba(5, 10, 6, 0.4) 0%, var(--bg-primary) 100%),
-                  radial-gradient(circle at 10% 20%, rgba(52, 211, 153, 0.05) 0%, transparent 40%);
+      position: relative;
     }
     
     .search-wrapper {
@@ -87,8 +86,16 @@
     </div>
   </header>
 
-  <!-- Blog Header -->
+  <!-- Blog Header with Live Video Background -->
   <section class="blog-header">
+    <div class="video-bg-container">
+      <video autoplay loop muted playsinline>
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-river-flowing-in-front-of-a-mountain-41589-large.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div class="video-bg-overlay"></div>
+    </div>
+
     <h1 class="section-title" style="font-size: 3.5rem;">Field Notes & Guides</h1>
     <p class="section-subtitle" style="margin-bottom: 30px;">Reflections, guides, and strategic advice written on the trail.</p>
     
@@ -110,13 +117,12 @@
   </section>
 
   <!-- Blog Content Grid -->
-  <main class="section" style="padding-top: 0;">
+  <main class="section" style="padding-top: 60px;">
     <div class="blog-grid" id="blog-grid">
       
       <!-- Post 1 -->
       <article class="blog-card fitness" data-category="fitness">
-        <div class="blog-img-placeholder">
-          🌲
+        <div class="blog-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=600&q=80');">
           <span class="blog-tag">Fitness</span>
         </div>
         <div class="blog-content">
@@ -133,8 +139,7 @@
 
       <!-- Post 2 -->
       <article class="blog-card travel" data-category="travel">
-        <div class="blog-img-placeholder">
-          🏔️
+        <div class="blog-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1541614101331-1a5a3a194e92?auto=format&fit=crop&w=600&q=80');">
           <span class="blog-tag">Travel</span>
         </div>
         <div class="blog-content">
@@ -151,8 +156,7 @@
 
       <!-- Post 3 -->
       <article class="blog-card mindset" data-category="mindset">
-        <div class="blog-img-placeholder">
-          🌊
+        <div class="blog-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=600&q=80');">
           <span class="blog-tag">Mindset</span>
         </div>
         <div class="blog-content">
@@ -169,8 +173,7 @@
 
       <!-- Post 4 -->
       <article class="blog-card fitness" data-category="fitness">
-        <div class="blog-img-placeholder">
-          🌿
+        <div class="blog-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=600&q=80');">
           <span class="blog-tag">Fitness</span>
         </div>
         <div class="blog-content">
@@ -187,8 +190,7 @@
 
       <!-- Post 5 -->
       <article class="blog-card travel" data-category="travel">
-        <div class="blog-img-placeholder">
-          🎒
+        <div class="blog-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=600&q=80');">
           <span class="blog-tag">Travel</span>
         </div>
         <div class="blog-content">
@@ -205,8 +207,7 @@
 
       <!-- Post 6 -->
       <article class="blog-card mindset" data-category="mindset">
-        <div class="blog-img-placeholder">
-          🗻
+        <div class="blog-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80');">
           <span class="blog-tag">Mindset</span>
         </div>
         <div class="blog-content">

@@ -13,8 +13,7 @@
   <header id="header">
     <div class="nav-container">
       <a href="index.html" class="logo">
-        <!-- Mountain path logo -->
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #34d399;"><path d="M17 18a5 5 0 0 0-10 0"></path><path d="M12 2a10 10 0 1 0 10 10"></path><path d="m12 2 4 10H8Z"></path></svg>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #34d399;"><path d="M17 18a5 5 0 0 0-10 0"></path><path d="M12 2a10 10 0 1 0 10 10"></path><path d="m12 2 4 10H8Z"></path></svg>
         Ravi Teja Bitra
       </a>
       <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Menu">
@@ -31,8 +30,16 @@
     </div>
   </header>
 
-  <!-- Hero Section -->
+  <!-- Hero Section with Calming Live Video Background -->
   <section class="hero">
+    <div class="video-bg-container">
+      <video autoplay loop muted playsinline>
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-river-flowing-in-front-of-a-mountain-41589-large.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div class="video-bg-overlay"></div>
+    </div>
+
     <div class="hero-grid">
       <div class="hero-content">
         <span class="hero-tag">Explore. Breathe. Evolve.</span>
@@ -52,24 +59,8 @@
       <div class="hero-image-wrapper">
         <div class="hero-image-container">
           <div class="hero-avatar">
-            <!-- Calming Landscape vector art of mountains, sun, and river -->
-            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%; padding: 24px;">
-              <!-- Sun -->
-              <circle cx="50" cy="35" r="12" fill="url(#sun-gradient)" opacity="0.85"/>
-              <!-- Back Mountains -->
-              <path d="M10 75 L38 42 L60 65 L80 48 L95 75 Z" fill="#13251a" opacity="0.6"/>
-              <!-- Front Mountains -->
-              <path d="M5 80 L30 50 L55 75 L75 58 L95 80 Z" fill="#0b140e" opacity="0.9"/>
-              <!-- River winding -->
-              <path d="M50 72 C48 76, 52 80, 48 84 C44 88, 54 92, 46 100 L54 100 C60 92, 52 88, 56 84 C60 80, 56 76, 58 72 Z" fill="#3b82f6" opacity="0.8"/>
-              <!-- Definitions for gradients -->
-              <defs>
-                <linearGradient id="sun-gradient" x1="50" y1="23" x2="50" y2="47" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stop-color="#34d399"/>
-                  <stop offset="100%" stop-color="#0ea5e9"/>
-                </linearGradient>
-              </defs>
-            </svg>
+            <!-- Round-cropped photo of hiker overlooking mountains -->
+            <img src="https://images.unsplash.com/photo-1501555088652-021faa106b9b?auto=format&fit=crop&w=400&h=400&q=80" alt="Ravi Teja Bitra Outdoors" style="width: 100%; height: 100%; object-fit: cover;">
           </div>
         </div>
         
@@ -105,7 +96,6 @@
       <!-- Pillar 1: Fitness & Nutrition -->
       <div class="pillar-card fitness" onclick="window.location.href='blog.html?filter=fitness'">
         <div class="pillar-icon">
-          <!-- Leaf / Plant sprout SVG -->
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 1 9.8a7 7 0 0 1-9 8.2Z"></path><path d="M9 22v-4h-4"></path></svg>
         </div>
         <h3>Fitness & Nutrition</h3>
@@ -119,7 +109,6 @@
       <!-- Pillar 2: Travel & Cycling -->
       <div class="pillar-card travel" onclick="window.location.href='blog.html?filter=travel'">
         <div class="pillar-icon">
-          <!-- Mountain Ridge SVG -->
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3Z"></path></svg>
         </div>
         <h3>Travel & Cycling</h3>
@@ -133,7 +122,6 @@
       <!-- Pillar 3: Mindset & Motivation -->
       <div class="pillar-card mindset" onclick="window.location.href='blog.html?filter=mindset'">
         <div class="pillar-icon">
-          <!-- Calm River Waves SVG -->
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6c.6.5 1.2 1 2.5 1C6 7 7 5 8.5 5c1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 1.5 0 2.5-2 4-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1"></path><path d="M2 12c.6.5 1.2 1 2.5 1C6 13 7 11 8.5 11c1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 1.5 0 2.5-2 4-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1"></path><path d="M2 18c.6.5 1.2 1 2.5 1C6 19 7 17 8.5 17c1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 1.5 0 2.5-2 4-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1"></path></svg>
         </div>
         <h3>Mindset & Motivation</h3>
@@ -150,12 +138,9 @@
   <section class="section" id="about-teaser" style="border-top: 1px solid var(--border-color);">
     <div class="about-teaser-grid">
       <div class="about-teaser-img">
-        <div class="about-teaser-img-placeholder">
-          <!-- Compass rose for travel & direction -->
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="color: #9cb3a6;">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
-          </svg>
+        <div class="about-teaser-img-placeholder" style="background: none; padding: 0; overflow: hidden;">
+          <!-- Misty green hills and forests -->
+          <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=600&q=80" alt="Calming Misty Forests" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--border-radius-md);">
         </div>
       </div>
       
@@ -198,8 +183,7 @@
     <div class="blog-grid">
       <!-- Card 1 -->
       <article class="blog-card fitness">
-        <div class="blog-img-placeholder">
-          🌲
+        <div class="blog-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=600&q=80');">
           <span class="blog-tag">Fitness</span>
         </div>
         <div class="blog-content">
@@ -216,8 +200,7 @@
 
       <!-- Card 2 -->
       <article class="blog-card travel">
-        <div class="blog-img-placeholder">
-          🚵‍♂️
+        <div class="blog-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1541614101331-1a5a3a194e92?auto=format&fit=crop&w=600&q=80');">
           <span class="blog-tag">Travel</span>
         </div>
         <div class="blog-content">
@@ -234,8 +217,7 @@
 
       <!-- Card 3 -->
       <article class="blog-card mindset">
-        <div class="blog-img-placeholder">
-          🧘‍♂️
+        <div class="blog-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=600&q=80');">
           <span class="blog-tag">Mindset</span>
         </div>
         <div class="blog-content">

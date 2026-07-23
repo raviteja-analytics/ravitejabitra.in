@@ -10,8 +10,7 @@
     .about-hero {
       padding: 160px 24px 80px;
       text-align: center;
-      background: linear-gradient(180deg, rgba(5, 10, 6, 0.4) 0%, var(--bg-primary) 100%),
-                  radial-gradient(circle at 50% 30%, rgba(52, 211, 153, 0.05) 0%, transparent 50%);
+      position: relative;
     }
     .about-story {
       display: grid;
@@ -127,14 +126,22 @@
     </div>
   </header>
 
-  <!-- About Hero -->
+  <!-- About Hero with Live Video Background -->
   <section class="about-hero">
+    <div class="video-bg-container">
+      <video autoplay loop muted playsinline>
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-river-flowing-in-front-of-a-mountain-41589-large.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div class="video-bg-overlay"></div>
+    </div>
+
     <h1 class="section-title" style="font-size: 3.5rem;">The Trail Log</h1>
     <p class="section-subtitle" style="font-size: 1.2rem;">Seeking calm, clarity, and physical thresholds in mountains and remote valleys.</p>
   </section>
 
   <!-- Story Section -->
-  <main class="section" style="padding-top: 0;">
+  <main class="section" style="padding-top: 60px;">
     <div class="about-story">
       <div class="about-text">
         <p>

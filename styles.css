@@ -91,15 +91,15 @@ header {
   left: 0;
   width: 100%;
   z-index: 1000;
-  background: rgba(5, 10, 6, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(5, 10, 6, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-color);
   transition: var(--transition-smooth);
 }
 
 header.scrolled {
-  background: rgba(5, 10, 6, 0.9);
+  background: rgba(5, 10, 6, 0.95);
   padding: 10px 0;
 }
 
@@ -196,6 +196,7 @@ header.scrolled {
   padding: 100px 24px 80px;
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
 }
 
 .text-center { text-align: center; }
@@ -215,7 +216,39 @@ header.scrolled {
   margin: 0 auto 60px;
 }
 
-/* Hero Section with Calmer Soft Radials */
+/* =========================================================================
+   Live Video Background System
+   ========================================================================= */
+.video-bg-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.video-bg-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.28; /* Calming subtle visual value */
+  filter: saturate(0.7) contrast(1.05) brightness(0.9);
+}
+
+.video-bg-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(5, 10, 6, 0.4) 0%, rgba(5, 10, 6, 0.8) 50%, var(--bg-primary) 100%);
+  z-index: 2;
+}
+
+/* Hero Section with Live Background */
 .hero {
   min-height: 100vh;
   display: flex;
@@ -223,8 +256,7 @@ header.scrolled {
   padding: 140px 24px 80px;
   position: relative;
   overflow: hidden;
-  background: radial-gradient(circle at 80% 20%, rgba(52, 211, 153, 0.06) 0%, transparent 40%),
-              radial-gradient(circle at 10% 80%, rgba(14, 165, 233, 0.06) 0%, transparent 40%);
+  background: var(--bg-primary);
 }
 
 .hero-grid {
@@ -235,6 +267,8 @@ header.scrolled {
   gap: 48px;
   align-items: center;
   width: 100%;
+  position: relative;
+  z-index: 10;
 }
 
 .hero-content {
@@ -303,7 +337,9 @@ header.scrolled {
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(11, 20, 14, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
 }
@@ -320,6 +356,7 @@ header.scrolled {
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 10;
 }
 
 .hero-image-container {
@@ -359,6 +396,7 @@ header.scrolled {
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
+  overflow: hidden;
 }
 
 .hero-avatar svg {
@@ -371,9 +409,9 @@ header.scrolled {
 /* Stats Floating Badge */
 .floating-badge {
   position: absolute;
-  background: rgba(11, 20, 14, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(11, 20, 14, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-color);
   padding: 12px 20px;
   border-radius: var(--border-radius-md);
@@ -659,6 +697,8 @@ header.scrolled {
   color: var(--text-secondary);
   font-size: 3rem;
   position: relative;
+  background-size: cover;
+  background-position: center;
 }
 
 .blog-tag {
@@ -864,6 +904,18 @@ footer {
   100% {
     border-radius: 60% 40% 55% 45% / 45% 55% 45% 55%;
   }
+}
+
+/* Additional specific headers for page consistency */
+.about-hero, .blog-header {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+.about-hero *, .blog-header * {
+  position: relative;
+  z-index: 10;
 }
 
 /* Responsive Rules */
