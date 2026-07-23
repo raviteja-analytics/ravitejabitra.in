@@ -39,8 +39,8 @@ export default async function handler(req, res) {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
 
-    // 3. Fetch recent activities (pull 10 to filter for runs)
-    const activitiesResponse = await fetch(`https://www.strava.com/api/v3/athlete/activities?per_page=15`, {
+    // 3. Fetch recent activities (pull 30 to categorize runs, strength, etc.)
+    const activitiesResponse = await fetch(`https://www.strava.com/api/v3/athlete/activities?per_page=30`, {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
 
@@ -51,32 +51,56 @@ export default async function handler(req, res) {
       console.error('Strava stats request failed:', await statsResponse.text());
     }
 
-    let activities = [];
+    let runs = [];
+    let workouts = [];
+    
     if (activitiesResponse.ok) {
       const allActivities = await activitiesResponse.json();
-      // Filter strictly for Running activities (Run, TrailRun, VirtualRun)
+      
       const runTypes = ['Run', 'TrailRun', 'VirtualRun'];
-      activities = allActivities
+      const workoutTypes = ['WeightTraining', 'Workout', 'Crossfit', 'Elliptical'];
+
+      runs = allActivities
         .filter(act => runTypes.includes(act.type) || runTypes.includes(act.sport_type))
         .slice(0, 3)
         .map(act => ({
           name: act.name,
-          distance: act.distance, // in meters
-          moving_time: act.moving_time, // in seconds
+          distance: act.distance,
+          moving_time: act.moving_time,
           start_date: act.start_date,
           total_elevation_gain: act.total_elevation_gain
+        }));
+
+      workouts = allActivities
+        .filter(act => workoutTypes.includes(act.type) || workoutTypes.includes(act.sport_type))
+        .slice(0, 5)
+        .map(act => ({
+          name: act.name,
+          moving_time: act.moving_time,
+          start_date: act.start_date,
+          kudos_count: act.kudos_count || 0
         }));
     } else {
       console.error('Strava activities request failed:', await activitiesResponse.text());
     }
 
-    // Return aggregated clean stats to the frontend
+    // Calculate total workout sessions count and total moving time from activities
+    const workoutTypes = ['WeightTraining', 'Workout', 'Crossfit', 'Elliptical'];
+    const allWorkouts = activitiesResponse.ok ? (await activitiesResponse.clone().json()).filter(act => workoutTypes.includes(act.type) || workoutTypes.includes(act.sport_type)) : [];
+    
+    const totalWorkoutTime = allWorkouts.reduce((acc, curr) => acc + (curr.moving_time || 0), 0);
+
     return res.status(200).json({
       stats: {
         all_run_totals: stats.all_run_totals || { count: 0, distance: 0, moving_time: 0 },
         ytd_run_totals: stats.ytd_run_totals || { count: 0, distance: 0, moving_time: 0 }
       },
-      recent_runs: activities
+      recent_runs: runs,
+      strength_stats: {
+        total_sessions: allWorkouts.length,
+        total_time_seconds: totalWorkoutTime
+      },
+      recent_workouts: workouts
     });
 
   } catch (error) {
