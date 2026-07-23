@@ -10,14 +10,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // Discipline aura color mapping
   const auraColors = {
     strength:   'rgba(245, 158, 11, 0.22)',  /* Iron Amber Gold */
-    running:    'rgba(217, 249, 93, 0.22)',  /* Electric Lime */
+    running:    'rgba(226, 184, 87, 0.22)',  /* Titanium Gold */
     cycling:    'rgba(6, 182, 212, 0.22)',   /* Velocity Cyan */
     swimming:   'rgba(56, 189, 248, 0.22)',  /* Hydro Ocean Blue */
     badminton:  'rgba(244, 63, 94, 0.22)',   /* Smash Rose Crimson */
     travel:     'rgba(168, 85, 247, 0.22)',  /* Aurora Violet */
     nutrition:  'rgba(16, 185, 129, 0.22)',  /* Vitality Emerald */
     mindset:    'rgba(139, 92, 246, 0.22)',  /* Cosmic Indigo */
-    motivation: 'rgba(234, 179, 8, 0.22)'    /* Solar Gold Spotlight */
+    motivation: 'rgba(226, 184, 87, 0.22)'    /* Titanium Gold Spotlight */
   };
 
   // 1. Interactive Mouse Tracking & Ambient Aura Shift
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Move and color ambient aura
         if (aura) {
           const theme = card.getAttribute('data-theme');
-          const color = auraColors[theme] || 'rgba(217, 249, 93, 0.15)';
+          const color = auraColors[theme] || 'rgba(226, 184, 87, 0.18)';
           
           aura.style.setProperty('--aura-color', color);
           aura.style.transform = `translate(${e.clientX - 450}px, ${e.clientY - 450}px)`;
