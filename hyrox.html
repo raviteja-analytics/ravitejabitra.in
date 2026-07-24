@@ -448,21 +448,32 @@
         }
       }
 
-      // ── Procedural Wolverine Hyrox Sled Pusher ────────────
+      // ── Procedural Wolverine Hyrox Athlete (Multi-Station) ──
       class WolverinePusher {
         constructor() {
+          this.stationIndex = 0;
           this.initPosition();
         }
 
         initPosition() {
+          this.stationIndex = (this.stationIndex + 1) % 3; // Cycle station: 0 = Sled, 1 = Wall Ball, 2 = Farmer Carry
           this.scale = Math.random() * 0.35 + 0.45;
           this.direction = Math.random() > 0.5 ? 1 : -1;
-          this.x = this.direction === 1 ? -220 : width + 220;
-          this.y = Math.random() * (height - 300) + 200;
           
-          // Sled pushing is heavy & steady: 4.5 to 7.5 px per frame
-          this.vx = (Math.random() * 3 + 4.5) * this.direction;
-          this.vy = (Math.random() - 0.5) * 1.0;
+          if (this.stationIndex === 1) { // Wall Ball Station (Stationary center wall)
+            this.x = width * 0.5 + (Math.random() - 0.5) * 100;
+            this.y = height * 0.7;
+            this.vx = 0;
+            this.vy = 0;
+            this.stationTime = 0;
+            this.maxStationTime = 240; // 4 seconds of wall balls
+          } else { // Sled Push or Farmer Carry
+            this.x = this.direction === 1 ? -220 : width + 220;
+            this.y = Math.random() * (height - 320) + 180;
+            this.vx = (this.stationIndex === 0 ? Math.random() * 2 + 4.5 : Math.random() * 1.5 + 3.5) * this.direction;
+            this.vy = (Math.random() - 0.5) * 0.8;
+          }
+
           this.driveCycle = 0;
           this.active = true;
           this.disappearTimer = 0;
@@ -477,175 +488,227 @@
             return;
           }
 
-          this.x += this.vx;
-          this.y += this.vy;
-          this.driveCycle += 0.16; // heavy leg drive cycle
+          this.driveCycle += 0.14;
 
-          // Spawn friction sparks off bottom sled runners
-          const sledX = this.x + (40 * this.scale) * this.direction;
-          sparks.push(new MetalSpark(sledX, this.y - 5));
+          if (this.stationIndex === 1) { // Wall Ball update
+            this.stationTime++;
+            if (this.stationTime >= this.maxStationTime) {
+              slashes.push(new AdamantiumSlash(this.x, this.y - 40 * this.scale));
+              this.active = false;
+              this.disappearTimer = Math.floor(Math.random() * 60) + 30;
+            }
+          } else { // Movement update
+            this.x += this.vx;
+            this.y += this.vy;
 
-          // Exit boundary triggers teleport
-          const isExit = (this.direction === 1 && this.x > width + 220) || (this.direction === -1 && this.x < -220);
-          if (isExit || Math.random() < 0.0035) {
-            // Trigger claw slash explosion
-            slashes.push(new AdamantiumSlash(this.x, this.y - 40 * this.scale));
-            this.active = false;
-            this.disappearTimer = Math.floor(Math.random() * 70) + 35;
+            if (this.stationIndex === 0) { // Sled friction sparks
+              const sledX = this.x + (40 * this.scale) * this.direction;
+              sparks.push(new MetalSpark(sledX, this.y - 5));
+            }
+
+            const isExit = (this.direction === 1 && this.x > width + 220) || (this.direction === -1 && this.x < -220);
+            if (isExit || Math.random() < 0.003) {
+              slashes.push(new AdamantiumSlash(this.x, this.y - 40 * this.scale));
+              this.active = false;
+              this.disappearTimer = Math.floor(Math.random() * 60) + 30;
+            }
           }
         }
 
         draw() {
           if (!this.active) return;
-          this.drawWolverine(this.x, this.y, this.driveCycle, this.direction, this.scale);
+          
+          if (this.stationIndex === 0) {
+            this.drawSledPush(this.x, this.y, this.driveCycle, this.direction, this.scale);
+          } else if (this.stationIndex === 1) {
+            this.drawWallBall(this.x, this.y, this.driveCycle, this.direction, this.scale);
+          } else {
+            this.drawFarmerCarry(this.x, this.y, this.driveCycle, this.direction, this.scale);
+          }
         }
 
-        drawWolverine(x, y, cycle, dir, scale) {
+        // STATION 0: Sled Push
+        drawSledPush(x, y, cycle, dir, scale) {
           ctx.save();
           ctx.translate(x, y);
           ctx.scale(dir, 1);
 
-          // 1. Draw Hyrox Heavy Sled in front of Wolverine
-          const sledX = 40 * scale;
-          const sledY = 0;
-          const sledWidth = 45 * scale;
-          const sledHeight = 35 * scale;
-          const handleBarHeight = 55 * scale;
+          // Heavy Sled Geometry
+          const sledX = 40 * scale, sledY = 0;
+          const sledWidth = 45 * scale, sledHeight = 35 * scale, handleBarHeight = 55 * scale;
 
-          ctx.lineCap = 'round';
-          ctx.lineJoin = 'round';
-          ctx.shadowBlur = 12;
-          ctx.shadowColor = '#38bdf8';
+          ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+          ctx.shadowBlur = 12; ctx.shadowColor = '#38bdf8';
 
-          // Sled Base Runners
-          ctx.strokeStyle = '#38bdf8'; // cyber blue heavy steel
-          ctx.lineWidth = 5 * scale;
-          ctx.beginPath();
-          ctx.moveTo(sledX - 10 * scale, sledY - 2 * scale);
-          ctx.lineTo(sledX + sledWidth + 10 * scale, sledY - 2 * scale);
-          ctx.stroke();
+          // Sled Base & Weights
+          ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 5 * scale;
+          ctx.beginPath(); ctx.moveTo(sledX - 10 * scale, sledY - 2 * scale); ctx.lineTo(sledX + sledWidth + 10 * scale, sledY - 2 * scale); ctx.stroke();
 
-          // Sled Weight Stack (Steel plates)
-          ctx.fillStyle = '#1e293b';
-          ctx.fillRect(sledX, sledY - sledHeight, sledWidth, sledHeight);
-          ctx.strokeStyle = '#38bdf8';
-          ctx.lineWidth = 2 * scale;
-          ctx.strokeRect(sledX, sledY - sledHeight, sledWidth, sledHeight);
+          ctx.fillStyle = '#1e293b'; ctx.fillRect(sledX, sledY - sledHeight, sledWidth, sledHeight);
+          ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2 * scale; ctx.strokeRect(sledX, sledY - sledHeight, sledWidth, sledHeight);
 
-          // Sled Vertical Push Handles
-          ctx.strokeStyle = '#ffc800';
-          ctx.lineWidth = 4 * scale;
-          ctx.beginPath();
-          ctx.moveTo(sledX + 5 * scale, sledY - sledHeight);
-          ctx.lineTo(sledX + 5 * scale, sledY - handleBarHeight);
-          ctx.stroke();
+          // Handles
+          ctx.strokeStyle = '#ffc800'; ctx.lineWidth = 4 * scale;
+          ctx.beginPath(); ctx.moveTo(sledX + 5 * scale, sledY - sledHeight); ctx.lineTo(sledX + 5 * scale, sledY - handleBarHeight); ctx.stroke();
 
-          // 2. Draw Wolverine (Heavy forward leg driving pose)
+          // Wolverine Pushing Joints
           const hipX = -35 * scale, hipY = -40 * scale;
           const chestX = -10 * scale, chestY = -55 * scale;
           const headX = 5 * scale, headY = -62 * scale;
 
-          // Leg driving angles
-          const legPhase1 = Math.sin(cycle);
-          const legPhase2 = Math.sin(cycle + Math.PI);
+          const leg1 = Math.sin(cycle), leg2 = Math.sin(cycle + Math.PI);
+          const lKneeX = hipX + Math.sin(leg1) * 20 * scale - 10 * scale, lKneeY = hipY + Math.cos(leg1) * 12 * scale + 15 * scale;
+          const lFootX = lKneeX + Math.sin(leg1 - 0.6) * 22 * scale - 12 * scale, lFootY = lKneeY + Math.cos(leg1 - 0.6) * 16 * scale;
 
-          const lKneeX = hipX + Math.sin(legPhase1) * 20 * scale - 10 * scale;
-          const lKneeY = hipY + Math.cos(legPhase1) * 12 * scale + 15 * scale;
-          const lFootX = lKneeX + Math.sin(legPhase1 - 0.6) * 22 * scale - 12 * scale;
-          const lFootY = lKneeY + Math.cos(legPhase1 - 0.6) * 16 * scale;
+          const rKneeX = hipX + Math.sin(leg2) * 20 * scale - 10 * scale, rKneeY = hipY + Math.cos(leg2) * 12 * scale + 15 * scale;
+          const rFootX = rKneeX + Math.sin(leg2 - 0.6) * 22 * scale - 12 * scale, rFootY = rKneeY + Math.cos(leg2 - 0.6) * 16 * scale;
 
-          const rKneeX = hipX + Math.sin(legPhase2) * 20 * scale - 10 * scale;
-          const rKneeY = hipY + Math.cos(legPhase2) * 12 * scale + 15 * scale;
-          const rFootX = rKneeX + Math.sin(legPhase2 - 0.6) * 22 * scale - 12 * scale;
-          const rFootY = rKneeY + Math.cos(legPhase2 - 0.6) * 16 * scale;
-
-          // 3. Draw Legs (Yellow suit legs with blue boots)
-          ctx.strokeStyle = '#ffc800'; // Yellow X-Men Suit
-          ctx.lineWidth = 8 * scale;
+          // Legs & Suit
+          ctx.strokeStyle = '#ffc800'; ctx.lineWidth = 8 * scale;
           ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(lKneeX, lKneeY); ctx.stroke();
           ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(rKneeX, rKneeY); ctx.stroke();
 
-          // Calves & Boots (Blue boots)
-          ctx.strokeStyle = '#0284c7';
-          ctx.lineWidth = 6 * scale;
+          ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 6 * scale;
           ctx.beginPath(); ctx.moveTo(lKneeX, lKneeY); ctx.lineTo(lFootX, lFootY); ctx.stroke();
           ctx.beginPath(); ctx.moveTo(rKneeX, rKneeY); ctx.lineTo(rFootX, rFootY); ctx.stroke();
 
-          // 4. Draw Muscular Torso (Yellow chest plate with black tiger stripes)
+          // Torso & Arms
           ctx.fillStyle = '#ffc800';
-          ctx.beginPath();
-          ctx.moveTo(hipX - 6 * scale, hipY);
-          ctx.lineTo(hipX + 6 * scale, hipY);
-          ctx.lineTo(chestX + 12 * scale, chestY);
-          ctx.lineTo(chestX - 10 * scale, chestY);
-          ctx.closePath();
-          ctx.fill();
+          ctx.beginPath(); ctx.moveTo(hipX - 6 * scale, hipY); ctx.lineTo(hipX + 6 * scale, hipY); ctx.lineTo(chestX + 12 * scale, chestY); ctx.lineTo(chestX - 10 * scale, chestY); ctx.closePath(); ctx.fill();
 
-          // Black Tiger Stripes on torso
-          ctx.strokeStyle = '#111';
-          ctx.lineWidth = 2.5 * scale;
-          ctx.beginPath();
-          ctx.moveTo(chestX - 6 * scale, chestY + 6 * scale);
-          ctx.lineTo(chestX + 4 * scale, chestY + 2 * scale);
-          ctx.stroke();
-
-          // 5. Arms pushing Sled Handle with claws extending!
           const handX = sledX + 5 * scale, handY = sledY - handleBarHeight + 10 * scale;
-          
-          ctx.strokeStyle = '#0284c7'; // Blue shoulder & glove
-          ctx.lineWidth = 6 * scale;
-          ctx.beginPath();
-          ctx.moveTo(chestX, chestY);
-          ctx.lineTo(handX, handY);
-          ctx.stroke();
+          ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 6 * scale;
+          ctx.beginPath(); ctx.moveTo(chestX, chestY); ctx.lineTo(handX, handY); ctx.stroke();
 
-          // 6. Draw 3 Metallic Adamantium Claws extending from fists!
-          ctx.shadowBlur = 15;
-          ctx.shadowColor = '#38bdf8';
-          ctx.strokeStyle = '#f8fafc'; // gleaming steel
-          ctx.lineWidth = 2 * scale;
-
+          // Claws
+          ctx.shadowBlur = 15; ctx.shadowColor = '#38bdf8'; ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 2 * scale;
           for (let i = -1; i <= 1; i++) {
-            ctx.beginPath();
-            ctx.moveTo(handX + i * 3 * scale, handY - 4 * scale);
-            ctx.lineTo(handX + 22 * scale + i * 3 * scale, handY - 14 * scale);
-            ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(handX + i * 3 * scale, handY - 4 * scale); ctx.lineTo(handX + 22 * scale + i * 3 * scale, handY - 14 * scale); ctx.stroke();
           }
 
-          // 7. Draw Wolverine Head Mask & Signature Black Cowl Wings
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = '#ffc800';
-          ctx.fillStyle = '#ffc800'; // yellow mask
-          ctx.beginPath();
-          ctx.arc(headX, headY, 9 * scale, 0, Math.PI * 2);
-          ctx.fill();
-
-          // Black Cowl Wings extending from sides of mask
-          ctx.fillStyle = '#0f172a';
-          ctx.beginPath();
-          ctx.moveTo(headX - 2 * scale, headY - 4 * scale);
-          ctx.lineTo(headX - 16 * scale, headY - 18 * scale); // back wing
-          ctx.lineTo(headX - 6 * scale, headY + 2 * scale);
-          ctx.closePath();
-          ctx.fill();
-
-          ctx.beginPath();
-          ctx.moveTo(headX + 2 * scale, headY - 4 * scale);
-          ctx.lineTo(headX + 16 * scale, headY - 18 * scale); // front wing
-          ctx.lineTo(headX + 6 * scale, headY + 2 * scale);
-          ctx.closePath();
-          ctx.fill();
-
-          // White Glowing Eyes
-          ctx.fillStyle = '#ffffff';
-          ctx.beginPath();
-          ctx.moveTo(headX + 2 * scale, headY - 2 * scale);
-          ctx.lineTo(headX + 8 * scale, headY - 2 * scale);
-          ctx.lineTo(headX + 5 * scale, headY + 2 * scale);
-          ctx.closePath();
-          ctx.fill();
-
+          // Wolverine Head
+          this.drawHead(headX, headY, scale);
           ctx.restore();
+        }
+
+        // STATION 1: Wall Balls
+        drawWallBall(x, y, cycle, dir, scale) {
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.scale(dir, 1);
+
+          // Wall target line on right side
+          const targetX = 60 * scale;
+          const targetY = -140 * scale;
+
+          ctx.strokeStyle = 'rgba(255, 200, 0, 0.4)'; ctx.lineWidth = 3 * scale;
+          ctx.beginPath(); ctx.moveTo(targetX - 20 * scale, targetY); ctx.lineTo(targetX + 20 * scale, targetY); ctx.stroke();
+
+          // Squat and ball toss cycle (0 to 1)
+          const squatProgress = (Math.sin(cycle * 1.5) + 1) / 2; // 0 = lowest squat, 1 = highest throw
+          const squatYOffset = (1 - squatProgress) * 25 * scale;
+
+          const hipX = 0, hipY = -35 * scale + squatYOffset;
+          const chestX = 0, chestY = -65 * scale + squatYOffset;
+          const headX = 0, headY = -80 * scale + squatYOffset;
+
+          // Animated Wall Ball trajectory
+          const ballY = -65 * scale + squatYOffset - squatProgress * 80 * scale;
+          const ballX = 15 * scale + squatProgress * 35 * scale;
+
+          // Draw Heavy Hyrox Wall Ball (Black/Gold ball)
+          ctx.shadowBlur = 15; ctx.shadowColor = '#ffc800';
+          ctx.fillStyle = '#1e293b'; ctx.beginPath(); ctx.arc(ballX, ballY, 12 * scale, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = '#ffc800'; ctx.lineWidth = 2 * scale; ctx.stroke();
+
+          // Legs in squat posture
+          const kneeX = 18 * scale, kneeY = -15 * scale + squatYOffset * 0.5;
+          const footX = 12 * scale, footY = 0;
+
+          ctx.strokeStyle = '#ffc800'; ctx.lineWidth = 8 * scale;
+          ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(kneeX, kneeY); ctx.stroke();
+          ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 6 * scale;
+          ctx.beginPath(); ctx.moveTo(kneeX, kneeY); ctx.lineTo(footX, footY); ctx.stroke();
+
+          // Torso & Upward Reaching Arms
+          ctx.fillStyle = '#ffc800';
+          ctx.beginPath(); ctx.moveTo(hipX - 8 * scale, hipY); ctx.lineTo(hipX + 8 * scale, hipY); ctx.lineTo(chestX + 10 * scale, chestY); ctx.lineTo(chestX - 10 * scale, chestY); ctx.closePath(); ctx.fill();
+
+          ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 5 * scale;
+          ctx.beginPath(); ctx.moveTo(chestX, chestY); ctx.lineTo(ballX - 5 * scale, ballY + 10 * scale); ctx.stroke();
+
+          // Head
+          this.drawHead(headX, headY, scale);
+          ctx.restore();
+        }
+
+        // STATION 2: Farmer Carry (Kettlebells)
+        drawFarmerCarry(x, y, cycle, dir, scale) {
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.scale(dir, 1);
+
+          const hipX = 0, hipY = -45 * scale;
+          const chestX = 0, chestY = -75 * scale;
+          const headX = 0, headY = -90 * scale;
+
+          const leg1 = Math.sin(cycle * 1.5), leg2 = Math.sin(cycle * 1.5 + Math.PI);
+          const lKneeX = hipX + Math.sin(leg1) * 16 * scale, lKneeY = hipY + 22 * scale;
+          const lFootX = lKneeX + Math.sin(leg1 - 0.4) * 18 * scale, lFootY = lKneeY + 20 * scale;
+
+          const rKneeX = hipX + Math.sin(leg2) * 16 * scale, rKneeY = hipY + 22 * scale;
+          const rFootX = rKneeX + Math.sin(leg2 - 0.4) * 18 * scale, rFootY = rKneeY + 20 * scale;
+
+          // Legs
+          ctx.strokeStyle = '#ffc800'; ctx.lineWidth = 8 * scale;
+          ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(lKneeX, lKneeY); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(rKneeX, rKneeY); ctx.stroke();
+
+          ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 6 * scale;
+          ctx.beginPath(); ctx.moveTo(lKneeX, lKneeY); ctx.lineTo(lFootX, lFootY); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(rKneeX, rKneeY); ctx.lineTo(rFootX, rFootY); ctx.stroke();
+
+          // Torso & Heavy Arms carrying Kettlebells
+          ctx.fillStyle = '#ffc800';
+          ctx.beginPath(); ctx.moveTo(hipX - 8 * scale, hipY); ctx.lineTo(hipX + 8 * scale, hipY); ctx.lineTo(chestX + 12 * scale, chestY); ctx.lineTo(chestX - 12 * scale, chestY); ctx.closePath(); ctx.fill();
+
+          // Heavy Kettlebells in hands
+          const kbLeftX = chestX - 16 * scale, kbLeftY = chestY + 30 * scale;
+          const kbRightX = chestX + 16 * scale, kbRightY = chestY + 30 * scale;
+
+          ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 5 * scale;
+          ctx.beginPath(); ctx.moveTo(chestX - 10 * scale, chestY); ctx.lineTo(kbLeftX, kbLeftY - 12 * scale); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(chestX + 10 * scale, chestY); ctx.lineTo(kbRightX, kbRightY - 12 * scale); ctx.stroke();
+
+          // Draw Kettlebell weights
+          ctx.shadowBlur = 12; ctx.shadowColor = '#38bdf8';
+          ctx.fillStyle = '#0f172a'; ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2 * scale;
+          ctx.beginPath(); ctx.arc(kbLeftX, kbLeftY, 9 * scale, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.beginPath(); ctx.arc(kbRightX, kbRightY, 9 * scale, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+          // Claws extended sideways!
+          ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 2 * scale;
+          for (let i = -1; i <= 1; i++) {
+            ctx.beginPath(); ctx.moveTo(kbRightX + i * 3 * scale, kbRightY); ctx.lineTo(kbRightX + 18 * scale + i * 3 * scale, kbRightY - 8 * scale); ctx.stroke();
+          }
+
+          // Head
+          this.drawHead(headX, headY, scale);
+          ctx.restore();
+        }
+
+        // Shared Wolverine Head Mask & Wings
+        drawHead(headX, headY, scale) {
+          ctx.shadowBlur = 10; ctx.shadowColor = '#ffc800';
+          ctx.fillStyle = '#ffc800';
+          ctx.beginPath(); ctx.arc(headX, headY, 9 * scale, 0, Math.PI * 2); ctx.fill();
+
+          ctx.fillStyle = '#0f172a';
+          ctx.beginPath(); ctx.moveTo(headX - 2 * scale, headY - 4 * scale); ctx.lineTo(headX - 16 * scale, headY - 18 * scale); ctx.lineTo(headX - 6 * scale, headY + 2 * scale); ctx.closePath(); ctx.fill();
+          ctx.beginPath(); ctx.moveTo(headX + 2 * scale, headY - 4 * scale); ctx.lineTo(headX + 16 * scale, headY - 18 * scale); ctx.lineTo(headX + 6 * scale, headY + 2 * scale); ctx.closePath(); ctx.fill();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath(); ctx.moveTo(headX + 2 * scale, headY - 2 * scale); ctx.lineTo(headX + 8 * scale, headY - 2 * scale); ctx.lineTo(headX + 5 * scale, headY + 2 * scale); ctx.closePath(); ctx.fill();
         }
       }
 
