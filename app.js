@@ -14,22 +14,36 @@ document.addEventListener('DOMContentLoaded', () => {
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
 
-    let mouse = { x: width / 2, y: height / 2, active: false };
+    let mouse = { x: width / 2, y: height / 2, active: false, holdTime: 0 };
+    let touchStartTime = 0;
 
     window.addEventListener('resize', () => {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
     });
 
-    window.addEventListener('mousemove', (e) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-      mouse.active = true;
-    });
+    function setMousePos(e) {
+      if (e.touches && e.touches.length > 0) {
+        mouse.x = e.touches[0].clientX;
+        mouse.y = e.touches[0].clientY;
+      } else {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+      }
+      if (!mouse.active) {
+        mouse.active = true;
+        touchStartTime = Date.now();
+      }
+    }
 
-    window.addEventListener('mouseleave', () => {
-      mouse.active = false;
-    });
+    window.addEventListener('mousemove', setMousePos);
+    window.addEventListener('mouseenter', setMousePos);
+    window.addEventListener('mouseleave', () => { mouse.active = false; mouse.holdTime = 0; });
+
+    window.addEventListener('touchstart', (e) => { setMousePos(e); }, { passive: true });
+    window.addEventListener('touchmove', (e) => { setMousePos(e); }, { passive: true });
+    window.addEventListener('touchend', () => { mouse.active = false; mouse.holdTime = 0; });
+    window.addEventListener('touchcancel', () => { mouse.active = false; mouse.holdTime = 0; });
 
     const glowwormCount = Math.min(55, Math.floor(window.innerWidth / 20));
     const glowworms = [];
@@ -82,14 +96,33 @@ document.addEventListener('DOMContentLoaded', () => {
         if (this.y < -20) this.y = height + 20;
         if (this.y > height + 20) this.y = -20;
 
-        // Gently drift towards cursor if mouse is nearby (firefly attraction)
+        // Firefly Attraction & Circular Vortex formation on mouse/finger hold
         if (mouse.active) {
           const dx = mouse.x - this.x;
           const dy = mouse.y - this.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 180 && dist > 20) {
-            this.x += (dx / dist) * 0.6;
-            this.y += (dy / dist) * 0.6;
+          
+          // Measure hold duration
+          const holdSecs = Math.min(3.0, (Date.now() - touchStartTime) / 1000);
+          
+          // Influence radius expands with hold time (up to full screen)
+          const influenceRadius = 180 + holdSecs * 250;
+          
+          if (dist < influenceRadius && dist > 5) {
+            // Stronger pull as hold time increases
+            const pullFactor = 0.6 + holdSecs * 1.5;
+            const angleToMouse = Math.atan2(dy, dx);
+
+            if (dist < 60 + holdSecs * 15) {
+              // Form a spinning circular ring around finger
+              const orbitAngle = angleToMouse + Math.PI / 2;
+              this.x += Math.cos(orbitAngle) * (2.0 + holdSecs) + (dx / dist) * 0.3;
+              this.y += Math.sin(orbitAngle) * (2.0 + holdSecs) + (dy / dist) * 0.3;
+            } else {
+              // Direct gravitational pull toward center
+              this.x += (dx / dist) * pullFactor;
+              this.y += (dy / dist) * pullFactor;
+            }
           }
         }
       }

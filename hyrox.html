@@ -717,22 +717,55 @@
       const sparks = Array.from({ length: 30 }, () => new MetalSpark());
       const runner = new WolverinePusher();
 
-      // Mouse interactive Adamantium Slash
-      let lastSlashTime = 0;
-      window.addEventListener('mousemove', (e) => {
-        const now = Date.now();
-        if (now - lastSlashTime > 180 && Math.random() > 0.4) {
-          slashes.push(new AdamantiumSlash(e.clientX, e.clientY));
-          for (let i = 0; i < 8; i++) {
-            sparks.push(new MetalSpark(e.clientX, e.clientY));
-          }
-          lastSlashTime = now;
+      // Touch & Mouse position tracking
+      let mouse = { x: width / 2, y: height / 2, active: false };
+      let touchStartTime = 0;
+
+      function setPos(e) {
+        if (e.touches && e.touches.length > 0) {
+          mouse.x = e.touches[0].clientX;
+          mouse.y = e.touches[0].clientY;
+        } else {
+          mouse.x = e.clientX;
+          mouse.y = e.clientY;
         }
-      });
+        if (!mouse.active) {
+          mouse.active = true;
+          touchStartTime = Date.now();
+        }
+      }
+
+      window.addEventListener('mousemove', setPos);
+      window.addEventListener('mouseenter', setPos);
+      window.addEventListener('mouseleave', () => { mouse.active = false; });
+
+      window.addEventListener('touchstart', (e) => { setPos(e); }, { passive: true });
+      window.addEventListener('touchmove', (e) => { setPos(e); }, { passive: true });
+      window.addEventListener('touchend', () => { mouse.active = false; });
+      window.addEventListener('touchcancel', () => { mouse.active = false; });
+
+      let lastSlashTime = 0;
 
       // ── Main Render Loop ──────────────────────────────────
       function animate() {
         ctx.clearRect(0, 0, width, height);
+
+        const now = Date.now();
+
+        // Continuous Adamantium Claw Slash & Spark Storm when held/moving
+        if (mouse.active) {
+          const holdSecs = Math.min(3.0, (now - touchStartTime) / 1000);
+          const interval = Math.max(40, 140 - holdSecs * 40);
+          if (now - lastSlashTime > interval) {
+            const offsetX = (Math.random() - 0.5) * (40 + holdSecs * 60);
+            const offsetY = (Math.random() - 0.5) * (40 + holdSecs * 60);
+            slashes.push(new AdamantiumSlash(mouse.x + offsetX, mouse.y + offsetY));
+            for (let i = 0; i < 6 + Math.floor(holdSecs * 4); i++) {
+              sparks.push(new MetalSpark(mouse.x + offsetX, mouse.y + offsetY));
+            }
+            lastSlashTime = now;
+          }
+        }
 
         // Randomly spawn background Adamantium claw slashes
         if (Math.random() < 0.02 && slashes.length < 4) {

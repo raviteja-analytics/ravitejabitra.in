@@ -655,20 +655,39 @@
         }
       }
 
+      // Touch & Mouse position tracking
+      let mouse = { x: width / 2, y: height / 2, active: false };
+      let touchStartTime = 0;
+
+      function setPos(e) {
+        if (e.touches && e.touches.length > 0) {
+          mouse.x = e.touches[0].clientX;
+          mouse.y = e.touches[0].clientY;
+        } else {
+          mouse.x = e.clientX;
+          mouse.y = e.clientY;
+        }
+        if (!mouse.active) {
+          mouse.active = true;
+          touchStartTime = Date.now();
+        }
+      }
+
+      window.addEventListener('mousemove', setPos);
+      window.addEventListener('mouseenter', setPos);
+      window.addEventListener('mouseleave', () => { mouse.active = false; });
+
+      window.addEventListener('touchstart', (e) => { setPos(e); }, { passive: true });
+      window.addEventListener('touchmove', (e) => { setPos(e); }, { passive: true });
+      window.addEventListener('touchend', () => { mouse.active = false; });
+      window.addEventListener('touchcancel', () => { mouse.active = false; });
+
       // Pools
-      const bubbles = Array.from({ length: 40 }, () => new WaterBubble(null, null, true));
+      const bubbles = Array.from({ length: 45 }, () => new WaterBubble(null, null, true));
       const currents = [];
       const swimmer = new AquamanSwimmer();
 
-      // Mouse interactive water waves
       let lastWaveTime = 0;
-      window.addEventListener('mousemove', (e) => {
-        const now = Date.now();
-        if (now - lastWaveTime > 150 && Math.random() > 0.4) {
-          currents.push(new WaterCurrent(e.clientX, e.clientY));
-          lastWaveTime = now;
-        }
-      });
 
       // ── Main Render Loop ──────────────────────────────────
       function animate() {
@@ -688,9 +707,39 @@
         ctx.closePath();
         ctx.fill();
 
-        // Update rising oxygen bubbles
+        // Spawn water currents continuously if held/moving
+        const now = Date.now();
+        if (mouse.active) {
+          const holdSecs = Math.min(3.0, (now - touchStartTime) / 1000);
+          const interval = Math.max(50, 160 - holdSecs * 40);
+          if (now - lastWaveTime > interval) {
+            currents.push(new WaterCurrent(mouse.x, mouse.y));
+            lastWaveTime = now;
+          }
+        }
+
+        // Update rising oxygen bubbles & attract to held finger/mouse
         bubbles.forEach(b => {
           b.update();
+          if (mouse.active) {
+            const dx = mouse.x - b.x;
+            const dy = mouse.y - b.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const holdSecs = Math.min(3.0, (now - touchStartTime) / 1000);
+            const influence = 160 + holdSecs * 200;
+
+            if (dist < influence && dist > 5) {
+              const angle = Math.atan2(dy, dx);
+              if (dist < 50 + holdSecs * 10) {
+                // Swirl in whirlpool ring around held finger
+                b.x += Math.cos(angle + Math.PI / 2) * 3.5 + (dx / dist) * 0.4;
+                b.y += Math.sin(angle + Math.PI / 2) * 3.5 + (dy / dist) * 0.4;
+              } else {
+                b.x += (dx / dist) * (1.2 + holdSecs * 1.5);
+                b.y += (dy / dist) * (1.2 + holdSecs * 1.5);
+              }
+            }
+          }
           b.draw();
         });
 

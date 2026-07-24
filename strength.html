@@ -642,19 +642,66 @@
       const bolts = Array.from({ length: 2 }, () => new ThorLightning());
       const lifter = new ThorLifter();
 
-      // Mouse interactive Divine Lightning Strike
-      let lastBoltTime = 0;
-      window.addEventListener('mousemove', (e) => {
-        const now = Date.now();
-        if (now - lastBoltTime > 120 && Math.random() > 0.4) {
-          bolts.push(new ThorLightning(e.clientX, 0, e.clientX, e.clientY, true));
-          lastBoltTime = now;
+      // Touch & Mouse position tracking
+      let mouse = { x: width / 2, y: height / 2, active: false };
+      let touchStartTime = 0;
+
+      function setPos(e) {
+        if (e.touches && e.touches.length > 0) {
+          mouse.x = e.touches[0].clientX;
+          mouse.y = e.touches[0].clientY;
+        } else {
+          mouse.x = e.clientX;
+          mouse.y = e.clientY;
         }
-      });
+        if (!mouse.active) {
+          mouse.active = true;
+          touchStartTime = Date.now();
+        }
+      }
+
+      window.addEventListener('mousemove', setPos);
+      window.addEventListener('mouseenter', setPos);
+      window.addEventListener('mouseleave', () => { mouse.active = false; });
+
+      window.addEventListener('touchstart', (e) => { setPos(e); }, { passive: true });
+      window.addEventListener('touchmove', (e) => { setPos(e); }, { passive: true });
+      window.addEventListener('touchend', () => { mouse.active = false; });
+      window.addEventListener('touchcancel', () => { mouse.active = false; });
+
+      let lastBoltTime = 0;
 
       // ── Main Render Loop ──────────────────────────────────
       function animate() {
         ctx.clearRect(0, 0, width, height);
+
+        const now = Date.now();
+
+        // Summon Thor Divine Lightning Strike & Orbiting Mjolnir Aura when held/moving
+        if (mouse.active) {
+          const holdSecs = Math.min(3.0, (now - touchStartTime) / 1000);
+          const interval = Math.max(40, 140 - holdSecs * 30);
+          if (now - lastBoltTime > interval) {
+            bolts.push(new ThorLightning(mouse.x + (Math.random() - 0.5) * 40, 0, mouse.x, mouse.y, true));
+            lastBoltTime = now;
+          }
+
+          // Draw orbiting Mjolnir hammer aura around finger/cursor
+          ctx.save();
+          ctx.translate(mouse.x, mouse.y);
+          ctx.rotate(now * 0.005);
+          ctx.shadowBlur = 20; ctx.shadowColor = '#ffd700';
+          ctx.fillStyle = '#ffd700'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5;
+          const orbitRadius = 40 + holdSecs * 25;
+          for (let k = 0; k < 3; k++) {
+            const kAngle = (k * Math.PI * 2) / 3;
+            const kx = Math.cos(kAngle) * orbitRadius;
+            const ky = Math.sin(kAngle) * orbitRadius;
+            ctx.fillRect(kx - 6, ky - 9, 12, 18);
+            ctx.strokeRect(kx - 6, ky - 9, 12, 18);
+          }
+          ctx.restore();
+        }
 
         // Random background lightning flashes
         if (Math.random() < 0.02 && bolts.length < 5) {
