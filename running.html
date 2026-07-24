@@ -12,6 +12,68 @@
   <link rel="stylesheet" href="styles.css">
   
   <style>
+    :root {
+      --accent-color: #ffde00; /* Speed Force Lightning Gold */
+      --bg-primary: #120204;   /* Dark Scarlet Red */
+      --bg-secondary: #1a0407;
+      --bg-card: #28060b;
+      --border-color: rgba(255, 222, 0, 0.15);
+      --border-hover: rgba(255, 222, 0, 0.5);
+      --text-secondary: #ffd5db;
+    }
+
+    body {
+      background: radial-gradient(circle at center, #1b0204 0%, #070102 100%) !important;
+    }
+
+    .hero-eyebrow {
+      background: #ffde00 !important;
+      color: #000000 !important;
+      font-weight: 900 !important;
+      clip-path: polygon(0 0, 100% 0, 94% 100%, 0 100%);
+      box-shadow: 0 0 15px rgba(255, 222, 0, 0.4);
+    }
+    
+    .hero-title .accent {
+      color: #ffde00 !important;
+      text-shadow: 0 0 20px rgba(255, 222, 0, 0.5);
+    }
+
+    .stat-hero-card {
+      border: 1px solid rgba(255, 222, 0, 0.15);
+      background: linear-gradient(135deg, #28060b 0%, #150305 100%) !important;
+    }
+
+    .stat-hero-card::before {
+      content: '⚡';
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      font-size: 1.2rem;
+      opacity: 0.35;
+      color: #ffde00;
+    }
+
+    .stat-hero-card:hover {
+      border-color: rgba(255, 222, 0, 0.6);
+      box-shadow: 0 0 25px rgba(255, 222, 0, 0.15);
+    }
+
+    .feed-item {
+      border: 1px solid rgba(255, 222, 0, 0.1);
+      background: #1a0407 !important;
+    }
+
+    .feed-item:hover {
+      border-color: rgba(255, 222, 0, 0.4);
+      background: #28060b !important;
+      box-shadow: 0 0 15px rgba(255, 222, 0, 0.1);
+    }
+
+    .feed-dist {
+      color: #ffde00 !important;
+    }
+
     .back-btn {
       display: inline-flex;
       align-items: center;
@@ -190,10 +252,10 @@
 
     <!-- Page Header -->
     <div class="hero" style="margin-bottom: 48px;">
-      <div class="hero-eyebrow">Strava Sync Active</div>
-      <h1 class="hero-title" style="margin-bottom: 16px;">Running <span class="accent">Log.</span></h1>
+      <div class="hero-eyebrow">⚡ SPEED FORCE SYNCHRONIZED</div>
+      <h1 class="hero-title" style="margin-bottom: 16px;">Scarlet <span class="accent">Speedster.</span></h1>
       <p class="hero-bio" style="font-size: 1.05rem;">
-        I started my running journey <strong>4 months ago</strong>. This page connects directly to my Strava account to display real-time fitness metrics and log my latest runs automatically.
+        Four months ago, I tapped into the Speed Force. This training hub is directly connected to my Strava console, tracking velocity, cadence, and mileage in real-time as I test my physical limits.
       </p>
     </div>
 
@@ -347,7 +409,7 @@
     loadStravaData();
   </script>
 
-  <!-- Footstep Echo Ripples — Kinetic Ground Energy -->
+  <!-- The Flash Speed Force Lightning Storm Canvas Engine -->
   <script>
     (function() {
       const canvas = document.getElementById('live-bg');
@@ -361,180 +423,467 @@
         height = canvas.height = window.innerHeight;
       });
 
-      // ── Footstep Ripple ──────────────────────────────────
-      // Elliptical rings that spawn from the ground and expand upward
-      class FootstepRipple {
-        constructor(x, groundY) {
+      let mouse = { x: width / 2, y: height / 2, active: false };
+      window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+        mouse.active = true;
+      });
+      window.addEventListener('mouseleave', () => {
+        mouse.active = false;
+      });
+
+      // ── Speed Force Vortex / Teleportation Portal ────────
+      class SpeedForceVortex {
+        constructor(x, y) {
           this.x = x;
-          this.y = groundY;
-          this.radius = 0;
-          this.maxRadius = Math.random() * 160 + 100;
-          this.speed = Math.random() * 1.2 + 0.8;
-          this.lineWidth = Math.random() * 1.5 + 1.5;
-          // Warm amber / burnt orange palette
-          const hue = Math.random() * 30 + 20; // 20–50 range (orange-gold)
-          const sat = Math.random() * 20 + 70;
-          this.color = `hsla(${hue}, ${sat}%, 58%,`;
+          this.y = y;
+          this.radius = 5;
+          this.maxRadius = Math.random() * 90 + 80;
+          this.speed = 7;
+          this.alpha = 1.0;
+          this.color = Math.random() > 0.4 ? '#ffde00' : '#ff1e46'; // Gold or Crimson
         }
 
         update() {
           this.radius += this.speed;
-        }
-
-        get alive() {
-          return this.radius < this.maxRadius;
+          this.alpha = 1 - (this.radius / this.maxRadius);
         }
 
         draw() {
-          const progress = this.radius / this.maxRadius;
-          const alpha = (1 - progress) * 0.55;
-          if (alpha <= 0) return;
-
+          if (this.alpha <= 0) return;
           ctx.save();
-          ctx.translate(this.x, this.y);
-          // Squash vertically to look like ground-perspective rings
-          ctx.scale(1, 0.35);
+          ctx.shadowBlur = 25;
+          ctx.shadowColor = this.color;
+          ctx.strokeStyle = this.color;
+          ctx.globalAlpha = this.alpha;
+          
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.lineWidth = 4 * this.alpha;
+          ctx.stroke();
 
           ctx.beginPath();
-          ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
-          ctx.strokeStyle = this.color + alpha + ')';
-          ctx.lineWidth = this.lineWidth * (1 - progress * 0.6);
+          ctx.arc(this.x, this.y, this.radius * 0.7, 0, Math.PI * 2);
+          ctx.lineWidth = 2 * this.alpha;
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      // ── Speed Force Lightning Bolt ────────────────────────
+      class LightningBolt {
+        constructor() {
+          this.reset();
+        }
+
+        reset() {
+          this.startX = Math.random() > 0.5 ? 0 : Math.random() * width;
+          this.startY = this.startX === 0 ? Math.random() * height : 0;
+          this.endX = width;
+          this.endY = Math.random() * height;
+          this.life = Math.floor(Math.random() * 8) + 4;
+          this.maxLife = this.life;
+          this.color = Math.random() > 0.3 ? '#ffde00' : '#ffffff';
+          this.lineWidth = Math.random() * 2 + 1;
+          this.path = [];
+          this.generatePath();
+        }
+
+        generatePath() {
+          const dx = this.endX - this.startX;
+          const dy = this.endY - this.startY;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          const steps = Math.floor(distance / 25);
+          
+          let currentX = this.startX;
+          let currentY = this.startY;
+          this.path.push({ x: currentX, y: currentY });
+
+          for (let i = 1; i < steps; i++) {
+            const t = i / steps;
+            let targetX = this.startX + dx * t;
+            let targetY = this.startY + dy * t;
+
+            const offset = (Math.random() - 0.5) * 35;
+            const nx = -dy / distance;
+            const ny = dx / distance;
+
+            currentX = targetX + nx * offset;
+            currentY = targetY + ny * offset;
+            this.path.push({ x: currentX, y: currentY });
+          }
+          this.path.push({ x: this.endX, y: this.endY });
+        }
+
+        update() {
+          this.life--;
+        }
+
+        draw() {
+          if (this.life <= 0) return;
+          const alpha = this.life / this.maxLife;
+
+          ctx.save();
+          ctx.shadowBlur = 20;
+          ctx.shadowColor = this.color;
+          ctx.strokeStyle = this.color;
+          ctx.lineWidth = this.lineWidth;
+          ctx.globalAlpha = alpha;
+
+          ctx.beginPath();
+          ctx.moveTo(this.path[0].x, this.path[0].y);
+          for (let i = 1; i < this.path.length; i++) {
+            ctx.lineTo(this.path[i].x, this.path[i].y);
+          }
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      // ── Speed Force Fast Blur Lines ───────────────────────
+      class SpeedLine {
+        constructor() {
+          this.reset(true);
+        }
+
+        reset(init = false) {
+          this.x = init ? Math.random() * width : -200;
+          this.y = Math.random() * height;
+          this.length = Math.random() * 180 + 90;
+          this.speed = Math.random() * 20 + 20;
+          this.alpha = Math.random() * 0.35 + 0.15;
+          this.color = Math.random() > 0.4 ? 'rgba(255, 222, 0, ' : 'rgba(255, 30, 70, ';
+        }
+
+        update() {
+          this.x += this.speed;
+          if (this.x > width) {
+            this.reset(false);
+          }
+        }
+
+        draw() {
+          ctx.beginPath();
+          ctx.moveTo(this.x, this.y);
+          ctx.lineTo(this.x + this.length, this.y);
+          ctx.strokeStyle = this.color + this.alpha + ')';
+          ctx.lineWidth = Math.random() * 1.5 + 0.6;
+          ctx.stroke();
+        }
+      }
+
+      // ── Cursor Discharge Electric Arcs ───────────────────
+      class ElectricArc {
+        constructor(startX, startY, endX, endY) {
+          this.startX = startX;
+          this.startY = startY;
+          this.endX = endX;
+          this.endY = endY;
+          this.life = 7;
+          this.maxLife = this.life;
+          this.color = Math.random() > 0.5 ? '#ffde00' : '#ff1e46';
+          this.path = [];
+          this.generatePath();
+        }
+
+        generatePath() {
+          const dx = this.endX - this.startX;
+          const dy = this.endY - this.startY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const steps = Math.floor(dist / 15);
+          
+          let cx = this.startX;
+          let cy = this.startY;
+          this.path.push({ x: cx, y: cy });
+
+          for (let i = 1; i < steps; i++) {
+            const t = i / steps;
+            const tx = this.startX + dx * t;
+            const ty = this.startY + dy * t;
+            
+            const offset = (Math.random() - 0.5) * 12;
+            const nx = -dy / dist;
+            const ny = dx / dist;
+
+            cx = tx + nx * offset;
+            cy = ty + ny * offset;
+            this.path.push({ x: cx, y: cy });
+          }
+          this.path.push({ x: this.endX, y: this.endY });
+        }
+
+        update() {
+          this.life--;
+        }
+
+        draw() {
+          if (this.life <= 0) return;
+          ctx.save();
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = this.color;
+          ctx.strokeStyle = this.color;
+          ctx.lineWidth = Math.random() * 1.5 + 0.8;
+          ctx.globalAlpha = this.life / this.maxLife;
+
+          ctx.beginPath();
+          ctx.moveTo(this.path[0].x, this.path[0].y);
+          for (let i = 1; i < this.path.length; i++) {
+            ctx.lineTo(this.path[i].x, this.path[i].y);
+          }
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      // ── Procedural Stickman Runner (The Flash) ───────────
+      class FlashRunner {
+        constructor() {
+          this.initPosition();
+        }
+
+        initPosition() {
+          this.scale = Math.random() * 0.35 + 0.35; // Random size for depth
+          this.direction = Math.random() > 0.5 ? 1 : -1;
+          this.x = this.direction === 1 ? -150 : width + 150;
+          this.y = Math.random() * (height - 250) + 120;
+          this.vx = (Math.random() * 10 + 16) * this.direction;
+          this.vy = (Math.random() - 0.5) * 2;
+          this.runCycle = Math.random() * 100;
+          this.trail = [];
+          this.active = true;
+          this.disappearTimer = 0;
+        }
+
+        update() {
+          if (!this.active) {
+            this.disappearTimer--;
+            if (this.disappearTimer <= 0) {
+              this.initPosition();
+            }
+            return;
+          }
+
+          this.x += this.vx;
+          this.y += this.vy;
+          this.runCycle += 0.35;
+
+          // Push trail states
+          this.trail.push({ x: this.x, y: this.y, cycle: this.runCycle, direction: this.direction, scale: this.scale });
+          if (this.trail.length > 8) {
+            this.trail.shift();
+          }
+
+          // Trigger speed teleport/vortex transition randomly or when exit
+          const isExit = (this.direction === 1 && this.x > width + 150) || (this.direction === -1 && this.x < -150);
+          if (isExit || (Math.random() < 0.006 && this.trail.length > 5)) {
+            vortices.push(new SpeedForceVortex(this.x, this.y));
+            this.active = false;
+            this.disappearTimer = Math.floor(Math.random() * 60) + 30; // 0.5s to 1.5s invisible
+            this.trail = [];
+          }
+        }
+
+        draw() {
+          if (!this.active) return;
+
+          // Draw Speed-Blur ghost afterimages
+          this.trail.forEach((t, index) => {
+            const alpha = (index / this.trail.length) * 0.45;
+            this.drawStickman(t.x, t.y, t.cycle, t.direction, t.scale, alpha, '#ff1a3d');
+          });
+
+          // Draw Main glowing scarlet speedster
+          this.drawStickman(this.x, this.y, this.runCycle, this.direction, this.scale, 1.0, '#ff1a3d');
+
+          // Crackle body electricity
+          if (Math.random() < 0.45) {
+            const angle = Math.random() * Math.PI * 2;
+            const rx = this.x + Math.cos(angle) * (50 * this.scale);
+            const ry = this.y - (50 * this.scale) + Math.sin(angle) * (50 * this.scale);
+            arcs.push(new ElectricArc(this.x, this.y - 45 * this.scale, rx, ry));
+          }
+        }
+
+        drawStickman(x, y, cycle, dir, scale, alpha, mainColor) {
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.translate(x, y);
+          ctx.scale(dir, 1);
+          ctx.rotate(0.35); // Leaning forward into velocity
+
+          const hipX = 0, hipY = -40 * scale;
+          const chestX = 5 * scale, chestY = -70 * scale;
+          const neckX = 10 * scale, neckY = -90 * scale;
+          const headX = 15 * scale, headY = -105 * scale;
+
+          const angle1 = Math.sin(cycle);
+          const angle2 = Math.sin(cycle + Math.PI);
+
+          const lThighX = hipX + Math.sin(angle1) * 20 * scale;
+          const lThighY = hipY + Math.cos(angle1) * 15 * scale + 10 * scale;
+          const lFootX = lThighX + Math.sin(angle1 - 0.8) * 22 * scale - 5 * scale;
+          const lFootY = lThighY + Math.cos(angle1 - 0.8) * 18 * scale;
+
+          const rThighX = hipX + Math.sin(angle2) * 20 * scale;
+          const rThighY = hipY + Math.cos(angle2) * 15 * scale + 10 * scale;
+          const rFootX = rThighX + Math.sin(angle2 - 0.8) * 22 * scale - 5 * scale;
+          const rFootY = rThighY + Math.cos(angle2 - 0.8) * 18 * scale;
+
+          const lElbowX = chestX + Math.sin(angle2) * 15 * scale - 5 * scale;
+          const lElbowY = chestY + Math.cos(angle2) * 15 * scale;
+          const lHandX = lElbowX + Math.sin(angle2 + 1.0) * 15 * scale;
+          const lHandY = lElbowY + Math.cos(angle2 + 1.0) * 10 * scale;
+
+          const rElbowX = chestX + Math.sin(angle1) * 15 * scale - 5 * scale;
+          const rElbowY = chestY + Math.cos(angle1) * 15 * scale;
+          const rHandX = rElbowX + Math.sin(angle1 + 1.0) * 15 * scale;
+          const rHandY = rElbowY + Math.cos(angle1 + 1.0) * 10 * scale;
+
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.shadowBlur = 15;
+          ctx.shadowColor = '#ffde00';
+          
+          ctx.strokeStyle = mainColor;
+          ctx.lineWidth = 6 * scale;
+          
+          // Back Leg
+          ctx.beginPath();
+          ctx.moveTo(hipX, hipY);
+          ctx.lineTo(lThighX, lThighY);
+          ctx.lineTo(lFootX, lFootY);
+          ctx.stroke();
+
+          // Front Leg
+          ctx.beginPath();
+          ctx.moveTo(hipX, hipY);
+          ctx.lineTo(rThighX, rThighY);
+          ctx.lineTo(rFootX, rFootY);
+          ctx.stroke();
+
+          // Spine / Torso
+          ctx.beginPath();
+          ctx.moveTo(hipX, hipY);
+          ctx.lineTo(chestX, chestY);
+          ctx.lineTo(neckX, neckY);
+          ctx.stroke();
+
+          // Glowing Speedster Head
+          ctx.beginPath();
+          ctx.arc(headX, headY, 9 * scale, 0, Math.PI * 2);
+          ctx.fillStyle = mainColor;
+          ctx.fill();
+          ctx.strokeStyle = '#ffde00';
+          ctx.lineWidth = 1.5 * scale;
+          ctx.stroke();
+
+          // Wing Accents on Head
+          ctx.beginPath();
+          ctx.moveTo(headX - 3 * scale, headY);
+          ctx.lineTo(headX - 12 * scale, headY - 5 * scale);
+          ctx.lineTo(headX - 7 * scale, headY + 2 * scale);
+          ctx.closePath();
+          ctx.fillStyle = '#ffde00';
+          ctx.fill();
+
+          ctx.strokeStyle = mainColor;
+          ctx.lineWidth = 4 * scale;
+
+          // Back Arm
+          ctx.beginPath();
+          ctx.moveTo(chestX, chestY);
+          ctx.lineTo(lElbowX, lElbowY);
+          ctx.lineTo(lHandX, lHandY);
+          ctx.stroke();
+
+          // Front Arm
+          ctx.beginPath();
+          ctx.moveTo(chestX, chestY);
+          ctx.lineTo(rElbowX, rElbowY);
+          ctx.lineTo(rHandX, rHandY);
+          ctx.stroke();
+
+          // Chest Lightning emblem
+          ctx.beginPath();
+          ctx.moveTo(chestX - 2 * scale, chestY - 10 * scale);
+          ctx.lineTo(chestX + 3 * scale, chestY - 4 * scale);
+          ctx.lineTo(chestX - 3 * scale, chestY - 2 * scale);
+          ctx.lineTo(chestX + 2 * scale, chestY + 6 * scale);
+          ctx.strokeStyle = '#ffde00';
+          ctx.lineWidth = 2 * scale;
           ctx.stroke();
 
           ctx.restore();
         }
       }
 
-      // ── Dust Mote ────────────────────────────────────────
-      // Tiny ambient particles that drift lazily upward like kicked-up trail dust
-      class DustMote {
-        constructor() {
-          this.reset(true);
+      // Pools
+      const bolts = [];
+      const lines = Array.from({ length: 30 }, () => new SpeedLine());
+      const arcs = [];
+      const vortices = [];
+      const runner = new FlashRunner();
+
+      // Mouse movements generate electric discharges
+      let lastArcTime = 0;
+      window.addEventListener('mousemove', (e) => {
+        const now = Date.now();
+        if (now - lastArcTime > 50) {
+          const angle = Math.random() * Math.PI * 2;
+          const dist = Math.random() * 150 + 50;
+          const tx = e.clientX + Math.cos(angle) * dist;
+          const ty = e.clientY + Math.sin(angle) * dist;
+          arcs.push(new ElectricArc(e.clientX, e.clientY, tx, ty));
+          lastArcTime = now;
         }
-
-        reset(init = false) {
-          this.x = Math.random() * width;
-          this.y = init ? Math.random() * height : height + 10;
-          this.vy = -(Math.random() * 0.4 + 0.15);
-          this.vx = (Math.random() - 0.5) * 0.3;
-          this.radius = Math.random() * 2 + 0.8;
-          this.alpha = Math.random() * 0.3 + 0.1;
-          this.wobblePhase = Math.random() * Math.PI * 2;
-          this.wobbleSpeed = Math.random() * 0.02 + 0.008;
-          // Earthy warm tones
-          const pick = Math.random();
-          if (pick < 0.4) {
-            this.r = 255; this.g = 180; this.b = 60;  // amber
-          } else if (pick < 0.7) {
-            this.r = 220; this.g = 140; this.b = 50;  // burnt orange
-          } else {
-            this.r = 255; this.g = 220; this.b = 160; // warm cream
-          }
-        }
-
-        update() {
-          this.wobblePhase += this.wobbleSpeed;
-          this.x += this.vx + Math.sin(this.wobblePhase) * 0.3;
-          this.y += this.vy;
-          if (this.y < -10) this.reset();
-        }
-
-        draw() {
-          const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius * 3);
-          grad.addColorStop(0, `rgba(${this.r},${this.g},${this.b},${this.alpha})`);
-          grad.addColorStop(1, `rgba(${this.r},${this.g},${this.b},0)`);
-          ctx.beginPath();
-          ctx.arc(this.x, this.y, this.radius * 3, 0, Math.PI * 2);
-          ctx.fillStyle = grad;
-          ctx.fill();
-        }
-      }
-
-      // ── Cursor Ripple ────────────────────────────────────
-      // Ripple rings that appear wherever the user clicks or touches
-      class CursorRipple {
-        constructor(x, y) {
-          this.x = x;
-          this.y = y;
-          this.radius = 0;
-          this.maxRadius = Math.random() * 80 + 60;
-          this.speed = 2.5;
-        }
-
-        update() { this.radius += this.speed; }
-        get alive() { return this.radius < this.maxRadius; }
-
-        draw() {
-          const progress = this.radius / this.maxRadius;
-          const alpha = (1 - progress) * 0.4;
-          if (alpha <= 0) return;
-          ctx.beginPath();
-          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(255, 200, 80, ${alpha})`;
-          ctx.lineWidth = 1.8 * (1 - progress * 0.5);
-          ctx.stroke();
-        }
-      }
-
-      // ── Pools ────────────────────────────────────────────
-      const ripples = [];
-      const dustMotes = [];
-      const cursorRipples = [];
-
-      const dustCount = Math.min(50, Math.floor(width / 25));
-      for (let i = 0; i < dustCount; i++) dustMotes.push(new DustMote());
-
-      // Auto-spawn footstep ripples rhythmically from the bottom
-      let stepTimer = 0;
-      const stepInterval = 55; // frames between footsteps (~0.9s at 60fps)
-      let leftFoot = true;
-
-      // Mouse / touch interaction
-      window.addEventListener('click', (e) => {
-        cursorRipples.push(new CursorRipple(e.clientX, e.clientY));
       });
-      window.addEventListener('touchstart', (e) => {
-        const t = e.touches[0];
-        cursorRipples.push(new CursorRipple(t.clientX, t.clientY));
-      }, { passive: true });
 
-      // ── Render Loop ──────────────────────────────────────
+      // ── Main Render Loop ──────────────────────────────────
       function animate() {
         ctx.clearRect(0, 0, width, height);
 
-        // Spawn rhythmic footsteps
-        stepTimer++;
-        if (stepTimer >= stepInterval) {
-          stepTimer = 0;
-          // Alternate left / right foot positions
-          const footX = leftFoot
-            ? width * 0.35 + (Math.random() - 0.5) * width * 0.15
-            : width * 0.65 + (Math.random() - 0.5) * width * 0.15;
-          const groundY = height - 30 - Math.random() * 40;
-          ripples.push(new FootstepRipple(footX, groundY));
-          // Sometimes spawn a second echo ring slightly delayed
-          if (Math.random() > 0.5) {
-            ripples.push(new FootstepRipple(footX + (Math.random() - 0.5) * 30, groundY + 10));
-          }
-          leftFoot = !leftFoot;
+        // Ambient Speed Force lightning flashes
+        if (Math.random() < 0.015) {
+          ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255, 222, 0, 0.04)' : 'rgba(255, 30, 70, 0.04)';
+          ctx.fillRect(0, 0, width, height);
         }
 
-        // Update & draw footstep ripples
-        for (let i = ripples.length - 1; i >= 0; i--) {
-          ripples[i].update();
-          ripples[i].draw();
-          if (!ripples[i].alive) ripples.splice(i, 1);
+        // Randomly spawn background lightning bolts
+        if (Math.random() < 0.05 && bolts.length < 3) {
+          bolts.push(new LightningBolt());
         }
 
-        // Update & draw dust motes
-        dustMotes.forEach(d => { d.update(); d.draw(); });
+        // Draw Speed force lines
+        lines.forEach(l => {
+          l.update();
+          l.draw();
+        });
 
-        // Update & draw cursor ripples
-        for (let i = cursorRipples.length - 1; i >= 0; i--) {
-          cursorRipples[i].update();
-          cursorRipples[i].draw();
-          if (!cursorRipples[i].alive) cursorRipples.splice(i, 1);
+        // Draw lightning bolts
+        for (let i = bolts.length - 1; i >= 0; i--) {
+          bolts[i].update();
+          bolts[i].draw();
+          if (bolts[i].life <= 0) bolts.splice(i, 1);
         }
+
+        // Draw electric arcs
+        for (let i = arcs.length - 1; i >= 0; i--) {
+          arcs[i].update();
+          arcs[i].draw();
+          if (arcs[i].life <= 0) arcs.splice(i, 1);
+        }
+
+        // Draw Speed force portals/vortices
+        for (let i = vortices.length - 1; i >= 0; i--) {
+          vortices[i].update();
+          vortices[i].draw();
+          if (vortices[i].alpha <= 0) vortices.splice(i, 1);
+        }
+
+        // Update & draw Flash runner
+        runner.update();
+        runner.draw();
 
         requestAnimationFrame(animate);
       }
