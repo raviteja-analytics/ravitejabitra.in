@@ -737,14 +737,52 @@
 
       window.addEventListener('mousemove', setPos);
       window.addEventListener('mouseenter', setPos);
-      window.addEventListener('mouseleave', () => { mouse.active = false; });
+      // Web Audio Sound Synthesizer Engine (Wolverine Adamantium Metal Blade Slash)
+      let audioCtx = null;
+      function getAudioCtx() {
+        if (!audioCtx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) audioCtx = new AudioContext();
+        }
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        return audioCtx;
+      }
 
-      window.addEventListener('touchstart', (e) => { setPos(e); }, { passive: true });
-      window.addEventListener('touchmove', (e) => { setPos(e); }, { passive: true });
-      window.addEventListener('touchend', () => { mouse.active = false; });
-      window.addEventListener('touchcancel', () => { mouse.active = false; });
+      let lastSlashSoundTime = 0;
+      function playClawSlashSound(holdSecs) {
+        const now = Date.now();
+        if (now - lastSlashSoundTime < Math.max(90, 200 - holdSecs * 40)) return;
+        lastSlashSoundTime = now;
 
-      let lastSlashTime = 0;
+        const ctxAudio = getAudioCtx();
+        if (!ctxAudio) return;
+
+        try {
+          const osc1 = ctxAudio.createOscillator();
+          const osc2 = ctxAudio.createOscillator();
+          const gain = ctxAudio.createGain();
+
+          const baseFreq = 1400 + Math.random() * 600;
+          osc1.type = 'sawtooth';
+          osc1.frequency.setValueAtTime(baseFreq, ctxAudio.currentTime);
+          osc1.frequency.exponentialRampToValueAtTime(300, ctxAudio.currentTime + 0.09);
+
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(baseFreq * 1.5, ctxAudio.currentTime);
+          osc2.frequency.exponentialRampToValueAtTime(400, ctxAudio.currentTime + 0.09);
+
+          gain.gain.setValueAtTime(0.04, ctxAudio.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctxAudio.currentTime + 0.09);
+
+          osc1.connect(gain);
+          osc2.connect(gain);
+          gain.connect(ctxAudio.destination);
+
+          osc1.start(); osc2.start();
+          osc1.stop(ctxAudio.currentTime + 0.09);
+          osc2.stop(ctxAudio.currentTime + 0.09);
+        } catch (e) {}
+      }
 
       // ── Main Render Loop ──────────────────────────────────
       function animate() {
@@ -755,6 +793,7 @@
         // Continuous Adamantium Claw Slash & Spark Storm when held/moving
         if (mouse.active) {
           const holdSecs = Math.min(3.0, (now - touchStartTime) / 1000);
+          playClawSlashSound(holdSecs);
           const interval = Math.max(40, 140 - holdSecs * 40);
           if (now - lastSlashTime > interval) {
             const offsetX = (Math.random() - 0.5) * (40 + holdSecs * 60);

@@ -667,22 +667,45 @@
           mouse.x = e.clientX;
           mouse.y = e.clientY;
         }
-        if (!mouse.active) {
-          mouse.active = true;
-          touchStartTime = Date.now();
+      // Web Audio Sound Synthesizer Engine (Aquaman Ocean Waves & Bubble Pops)
+      let audioCtx = null;
+      function getAudioCtx() {
+        if (!audioCtx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) audioCtx = new AudioContext();
         }
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        return audioCtx;
       }
 
-      window.addEventListener('mousemove', setPos);
-      window.addEventListener('mouseenter', setPos);
-      window.addEventListener('mouseleave', () => { mouse.active = false; });
+      let lastBubbleSoundTime = 0;
+      function playBubblePopSound(holdSecs) {
+        const now = Date.now();
+        if (now - lastBubbleSoundTime < Math.max(80, 220 - holdSecs * 50)) return;
+        lastBubbleSoundTime = now;
 
-      window.addEventListener('touchstart', (e) => { setPos(e); }, { passive: true });
-      window.addEventListener('touchmove', (e) => { setPos(e); }, { passive: true });
-      window.addEventListener('touchend', () => { mouse.active = false; });
-      window.addEventListener('touchcancel', () => { mouse.active = false; });
+        const ctxAudio = getAudioCtx();
+        if (!ctxAudio) return;
 
-      // Pools
+        try {
+          const osc = ctxAudio.createOscillator();
+          const gain = ctxAudio.createGain();
+
+          const startFreq = 300 + Math.random() * 400;
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(startFreq, ctxAudio.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(startFreq * 2.2, ctxAudio.currentTime + 0.08);
+
+          gain.gain.setValueAtTime(0.05, ctxAudio.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctxAudio.currentTime + 0.08);
+
+          osc.connect(gain);
+          gain.connect(ctxAudio.destination);
+
+          osc.start();
+          osc.stop(ctxAudio.currentTime + 0.08);
+        } catch (e) {}
+      }
       const bubbles = Array.from({ length: 45 }, () => new WaterBubble(null, null, true));
       const currents = [];
       const swimmer = new AquamanSwimmer();
@@ -711,6 +734,7 @@
         const now = Date.now();
         if (mouse.active) {
           const holdSecs = Math.min(3.0, (now - touchStartTime) / 1000);
+          playBubblePopSound(holdSecs);
           const interval = Math.max(50, 160 - holdSecs * 40);
           if (now - lastWaveTime > interval) {
             currents.push(new WaterCurrent(mouse.x, mouse.y));

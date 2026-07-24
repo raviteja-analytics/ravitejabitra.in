@@ -22,6 +22,47 @@ document.addEventListener('DOMContentLoaded', () => {
       height = canvas.height = window.innerHeight;
     });
 
+    // Web Audio Sound Synthesizer Engine
+    let audioCtx = null;
+    function getAudioCtx() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    let lastSoundTime = 0;
+    function playGlowwormSound(holdSecs) {
+      const now = Date.now();
+      if (now - lastSoundTime < Math.max(120, 300 - holdSecs * 80)) return;
+      lastSoundTime = now;
+
+      const ctxAudio = getAudioCtx();
+      if (!ctxAudio) return;
+
+      try {
+        const osc = ctxAudio.createOscillator();
+        const gain = ctxAudio.createGain();
+
+        // Pentatonic bioluminescent frequencies
+        const freqs = [329.63, 392.00, 440.00, 523.25, 659.25]; // E4, G4, A4, C5, E5
+        osc.type = 'sine';
+        osc.frequency.value = freqs[Math.floor(Math.random() * freqs.length)];
+
+        const vol = Math.min(0.08, 0.02 + holdSecs * 0.02);
+        gain.gain.setValueAtTime(vol, ctxAudio.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctxAudio.currentTime + 0.5);
+
+        osc.connect(gain);
+        gain.connect(ctxAudio.destination);
+
+        osc.start();
+        osc.stop(ctxAudio.currentTime + 0.5);
+      } catch (e) {}
+    }
+
     function setMousePos(e) {
       if (e.touches && e.touches.length > 0) {
         mouse.x = e.touches[0].clientX;
@@ -104,6 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
           
           // Measure hold duration
           const holdSecs = Math.min(3.0, (Date.now() - touchStartTime) / 1000);
+          playGlowwormSound(holdSecs);
           
           // Influence radius expands with hold time (up to full screen)
           const influenceRadius = 180 + holdSecs * 250;

@@ -873,12 +873,45 @@
       window.addEventListener('mouseenter', setPos);
       window.addEventListener('mouseleave', () => { mouse.active = false; });
 
-      window.addEventListener('touchstart', (e) => { setPos(e); }, { passive: true });
-      window.addEventListener('touchmove', (e) => { setPos(e); }, { passive: true });
-      window.addEventListener('touchend', () => { mouse.active = false; });
-      window.addEventListener('touchcancel', () => { mouse.active = false; });
+      // Web Audio Sound Synthesizer Engine (The Flash Speed Force Electric Zaps)
+      let audioCtx = null;
+      function getAudioCtx() {
+        if (!audioCtx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) audioCtx = new AudioContext();
+        }
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        return audioCtx;
+      }
 
-      let lastArcTime = 0;
+      let lastZapSoundTime = 0;
+      function playSpeedForceZap(holdSecs) {
+        const now = Date.now();
+        if (now - lastZapSoundTime < Math.max(60, 160 - holdSecs * 35)) return;
+        lastZapSoundTime = now;
+
+        const ctxAudio = getAudioCtx();
+        if (!ctxAudio) return;
+
+        try {
+          const osc = ctxAudio.createOscillator();
+          const gain = ctxAudio.createGain();
+
+          const startFreq = 800 + Math.random() * 1200;
+          osc.type = Math.random() > 0.5 ? 'sawtooth' : 'triangle';
+          osc.frequency.setValueAtTime(startFreq, ctxAudio.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(80, ctxAudio.currentTime + 0.05);
+
+          gain.gain.setValueAtTime(0.04, ctxAudio.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctxAudio.currentTime + 0.05);
+
+          osc.connect(gain);
+          gain.connect(ctxAudio.destination);
+
+          osc.start();
+          osc.stop(ctxAudio.currentTime + 0.05);
+        } catch (e) {}
+      }
 
       // ── Main Render Loop ──────────────────────────────────
       function animate() {
@@ -889,6 +922,7 @@
         // Speed Force electric arc stream when held/moving
         if (mouse.active) {
           const holdSecs = Math.min(3.0, (now - touchStartTime) / 1000);
+          playSpeedForceZap(holdSecs);
           const interval = Math.max(30, 100 - holdSecs * 30);
           if (now - lastArcTime > interval) {
             const angle = Math.random() * Math.PI * 2;

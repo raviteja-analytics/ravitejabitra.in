@@ -663,14 +663,44 @@
 
       window.addEventListener('mousemove', setPos);
       window.addEventListener('mouseenter', setPos);
-      window.addEventListener('mouseleave', () => { mouse.active = false; });
+      // Web Audio Sound Synthesizer Engine (Spider-Man Web Shooter THWIP!)
+      let audioCtx = null;
+      function getAudioCtx() {
+        if (!audioCtx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) audioCtx = new AudioContext();
+        }
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        return audioCtx;
+      }
 
-      window.addEventListener('touchstart', (e) => { setPos(e); }, { passive: true });
-      window.addEventListener('touchmove', (e) => { setPos(e); }, { passive: true });
-      window.addEventListener('touchend', () => { mouse.active = false; });
-      window.addEventListener('touchcancel', () => { mouse.active = false; });
+      let lastThwipSoundTime = 0;
+      function playThwipSound(holdSecs) {
+        const now = Date.now();
+        if (now - lastThwipSoundTime < Math.max(70, 160 - holdSecs * 30)) return;
+        lastThwipSoundTime = now;
 
-      let lastWebTime = 0;
+        const ctxAudio = getAudioCtx();
+        if (!ctxAudio) return;
+
+        try {
+          const osc = ctxAudio.createOscillator();
+          const gain = ctxAudio.createGain();
+
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(250 + Math.random() * 150, ctxAudio.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(1400 + Math.random() * 400, ctxAudio.currentTime + 0.06);
+
+          gain.gain.setValueAtTime(0.05, ctxAudio.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctxAudio.currentTime + 0.06);
+
+          osc.connect(gain);
+          gain.connect(ctxAudio.destination);
+
+          osc.start();
+          osc.stop(ctxAudio.currentTime + 0.06);
+        } catch (e) {}
+      }
 
       // ── Main Render Loop ──────────────────────────────────
       function animate() {
@@ -681,6 +711,7 @@
         // Shoot continuous Spider-Man Web Lines when held/moving
         if (mouse.active) {
           const holdSecs = Math.min(3.0, (now - touchStartTime) / 1000);
+          playThwipSound(holdSecs);
           const interval = Math.max(35, 120 - holdSecs * 30);
           if (now - lastWebTime > interval) {
             const anchorX = mouse.x + (Math.random() - 0.5) * (120 + holdSecs * 150);
