@@ -174,11 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cycling:    'rgba(0, 230, 255, 0.35)',   /* Arc Reactor Cyan */
     swimming:   'rgba(0, 160, 255, 0.35)',   /* Hydro Ocean Blue */
     badminton:  'rgba(255, 0, 120, 0.35)',   /* Anime Rose Slash */
-    hyrox:      'rgba(255, 180, 0, 0.35)',   /* Wolverine Berserker Gold */
-    travel:     'rgba(170, 0, 255, 0.35)',   /* Multiverse Portal Violet */
-    nutrition:  'rgba(0, 230, 120, 0.35)',   /* Sensus Emerald */
-    mindset:    'rgba(140, 60, 255, 0.35)',  /* Mind Stone Purple */
-    motivation: 'rgba(255, 200, 0, 0.35)'    /* All Might Gold */
+    hyrox:      'rgba(255, 180, 0, 0.35)'    /* Wolverine Berserker Gold */
   };
 
   if (cards.length > 0) {
