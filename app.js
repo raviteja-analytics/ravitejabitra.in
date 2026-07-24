@@ -1,12 +1,12 @@
 /**
- * ravitejabitra.in - Anime & Marvel/DC Cinematic Universe Engine
- * Features: 60fps HTML5 Live Canvas Energy Particle System + Mouse Attractor
+ * ravitejabitra.in - Live Bioluminescent & Robotic Glowworm Canvas Engine
+ * Features: 60fps Organic & Cyber Glowworms with sine-wave floating, pulsing halos & mouse attraction
  */
 
 document.addEventListener('DOMContentLoaded', () => {
 
   // =========================================================================
-  // 1. LIVE ANIMATED CANVAS BACKGROUND ENGINE
+  // 1. LIVE GLOWWORM CANVAS BACKGROUND ENGINE
   // =========================================================================
   const canvas = document.getElementById('live-bg');
   if (canvas) {
@@ -31,99 +31,129 @@ document.addEventListener('DOMContentLoaded', () => {
       mouse.active = false;
     });
 
-    // Particle Array
-    const particleCount = Math.min(80, Math.floor(window.innerWidth / 16));
-    const particles = [];
+    const glowwormCount = Math.min(55, Math.floor(window.innerWidth / 20));
+    const glowworms = [];
 
-    // Superhero Energy Particle Class
-    class EnergyParticle {
+    // Organic / Cyber Glowworm Class
+    class Glowworm {
       constructor() {
-        this.reset();
+        this.reset(true);
       }
 
-      reset() {
+      reset(initial = false) {
         this.x = Math.random() * width;
         this.y = Math.random() * height;
-        this.vx = (Math.random() - 0.5) * 1.2;
-        this.vy = (Math.random() - 0.5) * 1.2;
-        this.radius = Math.random() * 2 + 1;
-        this.alpha = Math.random() * 0.6 + 0.2;
+        this.radius = Math.random() * 2.5 + 1.8;
         
-        // Superhero colors (Gold, Cyan, Crimson, Violet)
+        // Velocity & organic float angle
+        this.angle = Math.random() * Math.PI * 2;
+        this.speed = Math.random() * 0.4 + 0.2;
+        this.wobbleSpeed = Math.random() * 0.03 + 0.01;
+        
+        // Glow pulse phase
+        this.pulsePhase = Math.random() * Math.PI * 2;
+        this.pulseSpeed = Math.random() * 0.04 + 0.015;
+        this.alpha = Math.random() * 0.5 + 0.3;
+
+        // Bioluminescent & Cyber Colors (Emerald, Electric Lime, Cyber Gold, Bio Cyan)
         const colors = [
-          'rgba(255, 200, 0, ',    /* Saiyan Gold */
-          'rgba(0, 230, 255, ',    /* Arc Cyan */
-          'rgba(255, 40, 100, ',   /* Speed Force Crimson */
-          'rgba(170, 0, 255, '     /* Multiverse Violet */
+          { r: 74,  g: 222, b: 128 }, /* Bio Emerald Green */
+          { r: 163, g: 230, b: 53  }, /* Electric Lime Glow */
+          { r: 251, g: 191, b: 36  }, /* Cyber Amber Gold */
+          { r: 56,  g: 189, b: 248 }  /* Hydro Bio Cyan */
         ];
-        this.colorBase = colors[Math.floor(Math.random() * colors.length)];
+        this.color = colors[Math.floor(Math.random() * colors.length)];
       }
 
       update() {
-        this.x += this.vx;
-        this.y += this.vy;
+        // Natural organic sine-wave floating motion
+        this.angle += (Math.random() - 0.5) * 0.08;
+        this.x += Math.cos(this.angle) * this.speed;
+        this.y += Math.sin(this.angle) * this.speed;
 
-        if (this.x < 0) this.x = width;
-        if (this.x > width) this.x = 0;
-        if (this.y < 0) this.y = height;
-        if (this.y > height) this.y = 0;
+        // Pulse glowing intensity
+        this.pulsePhase += this.pulseSpeed;
+        const pulse = (Math.sin(this.pulsePhase) + 1) / 2; // 0 to 1
+        this.currentAlpha = 0.25 + pulse * 0.55;
 
+        // Wrap around screen edges smoothly
+        if (this.x < -20) this.x = width + 20;
+        if (this.x > width + 20) this.x = -20;
+        if (this.y < -20) this.y = height + 20;
+        if (this.y > height + 20) this.y = -20;
+
+        // Gently drift towards cursor if mouse is nearby (firefly attraction)
         if (mouse.active) {
           const dx = mouse.x - this.x;
           const dy = mouse.y - this.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 140) {
-            const angle = Math.atan2(dy, dx);
-            const force = (140 - dist) / 140;
-            this.x -= Math.cos(angle) * force * 3;
-            this.y -= Math.sin(angle) * force * 3;
+          if (dist < 180 && dist > 20) {
+            this.x += (dx / dist) * 0.6;
+            this.y += (dy / dist) * 0.6;
           }
         }
       }
 
       draw() {
+        const { r, g, b } = this.color;
+        
+        // Soft glowing outer halo
+        const gradient = ctx.createRadialGradient(
+          this.x, this.y, 0,
+          this.x, this.y, this.radius * 6
+        );
+        gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${this.currentAlpha})`);
+        gradient.addColorStop(0.4, `rgba(${r}, ${g}, ${b}, ${this.currentAlpha * 0.4})`);
+        gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius * 6, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        // Intense core dot
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = this.colorBase + this.alpha + ')';
-        ctx.shadowColor = this.colorBase + '0.8)';
-        ctx.shadowBlur = 8;
+        ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, this.currentAlpha + 0.2)})`;
         ctx.fill();
-        ctx.shadowBlur = 0;
       }
     }
 
-    for (let i = 0; i < particleCount; i++) {
-      particles.push(new EnergyParticle());
+    // Populate glowworms
+    for (let i = 0; i < glowwormCount; i++) {
+      glowworms.push(new Glowworm());
     }
 
-    function drawEnergyLines() {
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
+    // Draw subtle bio-electric connection threads when glowworms pass close by
+    function drawGlowwormThreads() {
+      for (let i = 0; i < glowworms.length; i++) {
+        for (let j = i + 1; j < glowworms.length; j++) {
+          const dx = glowworms[i].x - glowworms[j].x;
+          const dy = glowworms[i].y - glowworms[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
-          if (dist < 110) {
-            const lineAlpha = (1 - dist / 110) * 0.25;
+          if (dist < 90) {
+            const threadAlpha = (1 - dist / 90) * 0.15;
             ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(255, 220, 100, ${lineAlpha})`;
-            ctx.lineWidth = 0.8;
+            ctx.moveTo(glowworms[i].x, glowworms[i].y);
+            ctx.lineTo(glowworms[j].x, glowworms[j].y);
+            ctx.strokeStyle = `rgba(74, 222, 128, ${threadAlpha})`;
+            ctx.lineWidth = 0.6;
             ctx.stroke();
           }
         }
       }
     }
 
+    // Main 60fps Animation Loop
     function animate() {
       ctx.clearRect(0, 0, width, height);
 
-      drawEnergyLines();
+      drawGlowwormThreads();
 
-      particles.forEach((p) => {
-        p.update();
-        p.draw();
+      glowworms.forEach((gw) => {
+        gw.update();
+        gw.draw();
       });
 
       requestAnimationFrame(animate);
