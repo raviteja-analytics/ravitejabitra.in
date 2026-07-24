@@ -347,7 +347,7 @@
     loadStravaData();
   </script>
 
-  <!-- Speed Force Lightning Streaks Animation Script -->
+  <!-- Footstep Echo Ripples — Kinetic Ground Energy -->
   <script>
     (function() {
       const canvas = document.getElementById('live-bg');
@@ -361,173 +361,180 @@
         height = canvas.height = window.innerHeight;
       });
 
-      let mouse = { x: 0, y: 0, active: false };
-      window.addEventListener('mousemove', (e) => {
-        mouse.x = e.clientX;
-        mouse.y = e.clientY;
-        mouse.active = true;
-      });
-      window.addEventListener('mouseleave', () => {
-        mouse.active = false;
-      });
-
-      // Lightning Bolt Class
-      class LightningBolt {
-        constructor() {
-          this.reset();
-        }
-
-        reset() {
-          this.startX = 0;
-          this.startY = Math.random() * height;
-          this.endX = width;
-          this.endY = this.startY + (Math.random() - 0.5) * 200;
-          this.segments = [];
-          this.color = Math.random() > 0.4 ? 'rgba(255, 40, 80, ' : 'rgba(255, 255, 255, '; // Crimson or White
-          this.opacity = Math.random() * 0.7 + 0.3;
-          this.life = Math.random() * 20 + 10;
-          this.maxLife = this.life;
-          this.generateSegments();
-        }
-
-        generateSegments() {
-          let currX = this.startX;
-          let currY = this.startY;
-          const steps = Math.floor(width / 35);
-          
-          for (let i = 0; i <= steps; i++) {
-            const progress = i / steps;
-            const targetX = progress * width;
-            const targetY = this.startY + progress * (this.endY - this.startY);
-            
-            const offsetMultiplier = (1 - Math.sin(progress * Math.PI)) * 40 + 15;
-            const x = targetX + (Math.random() - 0.5) * 15;
-            const y = targetY + (Math.random() - 0.5) * offsetMultiplier;
-            
-            this.segments.push({ x, y });
-          }
-        }
-
-        update() {
-          this.life--;
-          if (this.life <= 0) {
-            this.reset();
-          }
-        }
-
-        draw() {
-          const ratio = this.life / this.maxLife;
-          const currentAlpha = this.opacity * ratio;
-          
-          ctx.beginPath();
-          ctx.moveTo(this.segments[0].x, this.segments[0].y);
-          for (let i = 1; i < this.segments.length; i++) {
-            ctx.lineTo(this.segments[i].x, this.segments[i].y);
-          }
-          
-          ctx.strokeStyle = this.color + currentAlpha + ')';
-          ctx.lineWidth = Math.random() * 2.5 + 1.2;
-          ctx.shadowColor = this.color.includes('40') ? 'rgba(255, 40, 80, 0.9)' : 'rgba(255, 255, 255, 0.9)';
-          ctx.shadowBlur = 18;
-          ctx.stroke();
-          ctx.shadowBlur = 0;
-        }
-      }
-
-      // Spark trail particles that fly across the screen
-      class SpeedParticle {
-        constructor() {
-          this.reset();
-        }
-
-        reset() {
-          this.x = Math.random() * width;
-          this.y = Math.random() * height;
-          this.vx = Math.random() * 20 + 25; // Left-to-right high speed
-          this.vy = (Math.random() - 0.5) * 1.5;
-          this.length = Math.random() * 80 + 40;
-          this.alpha = Math.random() * 0.5 + 0.2;
-          this.color = Math.random() > 0.4 ? 'rgba(255, 40, 80, ' : 'rgba(255, 200, 0, '; // Crimson or Gold sparks
-        }
-
-        update() {
-          this.x += this.vx;
-          this.y += this.vy;
-          if (this.x - this.length > width) {
-            this.reset();
-            this.x = -this.length;
-          }
-        }
-
-        draw() {
-          ctx.beginPath();
-          ctx.moveTo(this.x, this.y);
-          ctx.lineTo(this.x - this.length, this.y);
-          ctx.strokeStyle = this.color + this.alpha + ')';
-          ctx.lineWidth = Math.random() * 1.5 + 0.8;
-          ctx.stroke();
-        }
-      }
-
-      // Shockwave ring class
-      class Shockwave {
-        constructor(x, y) {
+      // ── Footstep Ripple ──────────────────────────────────
+      // Elliptical rings that spawn from the ground and expand upward
+      class FootstepRipple {
+        constructor(x, groundY) {
           this.x = x;
-          this.y = y;
-          this.radius = 1;
-          this.maxRadius = Math.random() * 120 + 80;
-          this.speed = Math.random() * 4 + 4;
-          this.alpha = 0.8;
+          this.y = groundY;
+          this.radius = 0;
+          this.maxRadius = Math.random() * 160 + 100;
+          this.speed = Math.random() * 1.2 + 0.8;
+          this.lineWidth = Math.random() * 1.5 + 1.5;
+          // Warm amber / burnt orange palette
+          const hue = Math.random() * 30 + 20; // 20–50 range (orange-gold)
+          const sat = Math.random() * 20 + 70;
+          this.color = `hsla(${hue}, ${sat}%, 58%,`;
         }
 
         update() {
           this.radius += this.speed;
-          this.alpha = 1 - (this.radius / this.maxRadius);
+        }
+
+        get alive() {
+          return this.radius < this.maxRadius;
         }
 
         draw() {
-          if (this.alpha <= 0) return;
+          const progress = this.radius / this.maxRadius;
+          const alpha = (1 - progress) * 0.55;
+          if (alpha <= 0) return;
+
+          ctx.save();
+          ctx.translate(this.x, this.y);
+          // Squash vertically to look like ground-perspective rings
+          ctx.scale(1, 0.35);
+
+          ctx.beginPath();
+          ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+          ctx.strokeStyle = this.color + alpha + ')';
+          ctx.lineWidth = this.lineWidth * (1 - progress * 0.6);
+          ctx.stroke();
+
+          ctx.restore();
+        }
+      }
+
+      // ── Dust Mote ────────────────────────────────────────
+      // Tiny ambient particles that drift lazily upward like kicked-up trail dust
+      class DustMote {
+        constructor() {
+          this.reset(true);
+        }
+
+        reset(init = false) {
+          this.x = Math.random() * width;
+          this.y = init ? Math.random() * height : height + 10;
+          this.vy = -(Math.random() * 0.4 + 0.15);
+          this.vx = (Math.random() - 0.5) * 0.3;
+          this.radius = Math.random() * 2 + 0.8;
+          this.alpha = Math.random() * 0.3 + 0.1;
+          this.wobblePhase = Math.random() * Math.PI * 2;
+          this.wobbleSpeed = Math.random() * 0.02 + 0.008;
+          // Earthy warm tones
+          const pick = Math.random();
+          if (pick < 0.4) {
+            this.r = 255; this.g = 180; this.b = 60;  // amber
+          } else if (pick < 0.7) {
+            this.r = 220; this.g = 140; this.b = 50;  // burnt orange
+          } else {
+            this.r = 255; this.g = 220; this.b = 160; // warm cream
+          }
+        }
+
+        update() {
+          this.wobblePhase += this.wobbleSpeed;
+          this.x += this.vx + Math.sin(this.wobblePhase) * 0.3;
+          this.y += this.vy;
+          if (this.y < -10) this.reset();
+        }
+
+        draw() {
+          const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius * 3);
+          grad.addColorStop(0, `rgba(${this.r},${this.g},${this.b},${this.alpha})`);
+          grad.addColorStop(1, `rgba(${this.r},${this.g},${this.b},0)`);
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius * 3, 0, Math.PI * 2);
+          ctx.fillStyle = grad;
+          ctx.fill();
+        }
+      }
+
+      // ── Cursor Ripple ────────────────────────────────────
+      // Ripple rings that appear wherever the user clicks or touches
+      class CursorRipple {
+        constructor(x, y) {
+          this.x = x;
+          this.y = y;
+          this.radius = 0;
+          this.maxRadius = Math.random() * 80 + 60;
+          this.speed = 2.5;
+        }
+
+        update() { this.radius += this.speed; }
+        get alive() { return this.radius < this.maxRadius; }
+
+        draw() {
+          const progress = this.radius / this.maxRadius;
+          const alpha = (1 - progress) * 0.4;
+          if (alpha <= 0) return;
           ctx.beginPath();
           ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(255, 40, 80, ${this.alpha * 0.4})`;
-          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = `rgba(255, 200, 80, ${alpha})`;
+          ctx.lineWidth = 1.8 * (1 - progress * 0.5);
           ctx.stroke();
         }
       }
 
-      const bolts = Array.from({ length: 3 }, () => new LightningBolt());
-      const particles = Array.from({ length: 45 }, () => new SpeedParticle());
-      const shockwaves = [];
+      // ── Pools ────────────────────────────────────────────
+      const ripples = [];
+      const dustMotes = [];
+      const cursorRipples = [];
 
-      let lastMoveTime = 0;
-      window.addEventListener('mousemove', (e) => {
-        const now = Date.now();
-        if (now - lastMoveTime > 120 && Math.random() > 0.5) {
-          shockwaves.push(new Shockwave(e.clientX, e.clientY));
-          lastMoveTime = now;
-        }
+      const dustCount = Math.min(50, Math.floor(width / 25));
+      for (let i = 0; i < dustCount; i++) dustMotes.push(new DustMote());
+
+      // Auto-spawn footstep ripples rhythmically from the bottom
+      let stepTimer = 0;
+      const stepInterval = 55; // frames between footsteps (~0.9s at 60fps)
+      let leftFoot = true;
+
+      // Mouse / touch interaction
+      window.addEventListener('click', (e) => {
+        cursorRipples.push(new CursorRipple(e.clientX, e.clientY));
       });
+      window.addEventListener('touchstart', (e) => {
+        const t = e.touches[0];
+        cursorRipples.push(new CursorRipple(t.clientX, t.clientY));
+      }, { passive: true });
 
+      // ── Render Loop ──────────────────────────────────────
       function animate() {
         ctx.clearRect(0, 0, width, height);
 
-        for (let i = shockwaves.length - 1; i >= 0; i--) {
-          shockwaves[i].update();
-          shockwaves[i].draw();
-          if (shockwaves[i].alpha <= 0) {
-            shockwaves.splice(i, 1);
+        // Spawn rhythmic footsteps
+        stepTimer++;
+        if (stepTimer >= stepInterval) {
+          stepTimer = 0;
+          // Alternate left / right foot positions
+          const footX = leftFoot
+            ? width * 0.35 + (Math.random() - 0.5) * width * 0.15
+            : width * 0.65 + (Math.random() - 0.5) * width * 0.15;
+          const groundY = height - 30 - Math.random() * 40;
+          ripples.push(new FootstepRipple(footX, groundY));
+          // Sometimes spawn a second echo ring slightly delayed
+          if (Math.random() > 0.5) {
+            ripples.push(new FootstepRipple(footX + (Math.random() - 0.5) * 30, groundY + 10));
           }
+          leftFoot = !leftFoot;
         }
 
-        particles.forEach(p => {
-          p.update();
-          p.draw();
-        });
+        // Update & draw footstep ripples
+        for (let i = ripples.length - 1; i >= 0; i--) {
+          ripples[i].update();
+          ripples[i].draw();
+          if (!ripples[i].alive) ripples.splice(i, 1);
+        }
 
-        bolts.forEach(b => {
-          b.update();
-          b.draw();
-        });
+        // Update & draw dust motes
+        dustMotes.forEach(d => { d.update(); d.draw(); });
+
+        // Update & draw cursor ripples
+        for (let i = cursorRipples.length - 1; i >= 0; i--) {
+          cursorRipples[i].update();
+          cursorRipples[i].draw();
+          if (!cursorRipples[i].alive) cursorRipples.splice(i, 1);
+        }
 
         requestAnimationFrame(animate);
       }
