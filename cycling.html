@@ -779,9 +779,9 @@
         return audioCtx;
       }
 
-      // Direct User Gesture Unlock Listeners
-      window.addEventListener('click', () => { getAudioCtx(); });
-      window.addEventListener('touchstart', () => { getAudioCtx(); }, { passive: true });
+      ['click', 'mousedown', 'mouseup', 'touchstart', 'touchmove', 'mousemove'].forEach(evt => {
+        window.addEventListener(evt, () => { getAudioCtx(); }, { passive: true });
+      });
 
       let lastKiSoundTime = 0;
       function playKiAuraSound(holdSecs) {
@@ -790,7 +790,7 @@
         lastKiSoundTime = now;
 
         const ctxAudio = getAudioCtx();
-        if (!ctxAudio || ctxAudio.state !== 'running') return; // Only play if unlocked!
+        if (!ctxAudio) return;
 
         try {
           const osc1 = ctxAudio.createOscillator();

@@ -35,9 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
       return audioCtx;
     }
 
-    // Direct User Gesture Unlock Listeners
-    window.addEventListener('click', () => { getAudioCtx(); });
-    window.addEventListener('touchstart', () => { getAudioCtx(); }, { passive: true });
+    // Direct User Gesture Unlock Listeners across all mouse/touch interactions
+    ['click', 'mousedown', 'mouseup', 'touchstart', 'touchmove', 'mousemove'].forEach(evt => {
+      window.addEventListener(evt, () => { getAudioCtx(); }, { passive: true });
+    });
 
     let lastSoundTime = 0;
     function playGlowwormSound(holdSecs) {
@@ -46,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
       lastSoundTime = now;
 
       const ctxAudio = getAudioCtx();
-      if (!ctxAudio || ctxAudio.state !== 'running') return; // Only play if unlocked!
+      if (!ctxAudio) return;
 
       try {
         const osc = ctxAudio.createOscillator();
