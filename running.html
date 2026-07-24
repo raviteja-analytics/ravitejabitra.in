@@ -659,14 +659,13 @@
         }
 
         initPosition() {
-          this.scale = Math.random() * 0.4 + 0.45; // slightly larger for detail
+          this.scale = Math.random() * 0.35 + 0.55; // Crisp visible scale
           this.direction = Math.random() > 0.5 ? 1 : -1;
-          this.x = this.direction === 1 ? -200 : width + 200;
-          this.y = Math.random() * (height - 350) + 180;
+          this.x = this.direction === 1 ? -220 : width + 220;
+          this.y = height * 0.52 + (Math.random() - 0.5) * (height * 0.35); // Center visible height
           
-          // Slower flow: 6 to 10 pixels per frame instead of 16 to 28
-          this.vx = (Math.random() * 4 + 6) * this.direction;
-          this.vy = (Math.random() - 0.5) * 1.5;
+          this.vx = (Math.random() * 5 + 8) * this.direction; // Smooth visible speed
+          this.vy = (Math.random() - 0.5) * 1.0;
           this.runCycle = Math.random() * 100;
           this.trail = [];
           this.active = true;
@@ -684,18 +683,18 @@
 
           this.x += this.vx;
           this.y += this.vy;
-          this.runCycle += 0.20; // Slower leg cycle matching speed
+          this.runCycle += 0.22; // Smooth leg movement
 
           this.trail.push({ x: this.x, y: this.y, cycle: this.runCycle, direction: this.direction, scale: this.scale });
-          if (this.trail.length > 8) {
+          if (this.trail.length > 10) {
             this.trail.shift();
           }
 
-          const isExit = (this.direction === 1 && this.x > width + 200) || (this.direction === -1 && this.x < -200);
-          if (isExit || (Math.random() < 0.005 && this.trail.length > 5)) {
+          const isExit = (this.direction === 1 && this.x > width + 250) || (this.direction === -1 && this.x < -250);
+          if (isExit) {
             vortices.push(new SpeedForceVortex(this.x, this.y - 40 * this.scale));
             this.active = false;
-            this.disappearTimer = Math.floor(Math.random() * 80) + 40; // slightly longer interval between appearances
+            this.disappearTimer = Math.floor(Math.random() * 20) + 10; // Short 0.3s break
             this.trail = [];
           }
         }
