@@ -182,6 +182,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function animate() {
       ctx.clearRect(0, 0, width, height);
 
+      const now = Date.now();
+
+      // Bio-Electric Pulse Halo Ring on Touch / Mouse Hold
+      if (mouse.active) {
+        const holdSecs = Math.min(3.0, (now - touchStartTime) / 1000);
+        ctx.save();
+        ctx.beginPath();
+        const ringR = 26 + Math.sin(now * 0.012) * 5 + holdSecs * 15;
+        ctx.arc(mouse.x, mouse.y, ringR, 0, Math.PI * 2);
+        ctx.shadowBlur = 20; ctx.shadowColor = '#ffc800';
+        ctx.strokeStyle = 'rgba(255, 200, 0, 0.85)'; ctx.lineWidth = 2.5;
+        ctx.stroke();
+        ctx.restore();
+      }
+
       drawGlowwormThreads();
 
       glowworms.forEach((gw) => {

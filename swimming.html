@@ -40,8 +40,10 @@
     }
 
     .stat-hero-card {
-      border: 1px solid rgba(0, 216, 255, 0.15);
-      background: linear-gradient(135deg, #082538 0%, #031018 100%) !important;
+      border: 1px solid rgba(0, 216, 255, 0.2);
+      background: rgba(8, 37, 56, 0.82) !important;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       position: relative;
     }
 
@@ -60,8 +62,10 @@
     }
 
     .feed-item {
-      border: 1px solid rgba(0, 216, 255, 0.1);
-      background: #041824 !important;
+      border: 1px solid rgba(0, 216, 255, 0.15);
+      background: rgba(4, 24, 36, 0.82) !important;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
     }
 
     .feed-item:hover {
@@ -478,10 +482,11 @@
         }
 
         initPosition() {
-          this.scale = Math.random() * 0.35 + 0.45;
+          const isMobile = width < 600;
+          this.scale = (Math.random() * 0.35 + 0.52) * (isMobile ? 0.78 : 1.0);
           this.direction = Math.random() > 0.5 ? 1 : -1;
           this.x = this.direction === 1 ? -250 : width + 250;
-          this.y = Math.random() * (height - 350) + 180;
+          this.y = height * 0.52 + (Math.random() - 0.5) * (height * 0.35);
           
           // Steady horizontal glide
           this.vx = (Math.random() * 2.0 + 3.0) * this.direction;
@@ -707,10 +712,21 @@
         ctx.closePath();
         ctx.fill();
 
-        // Spawn water currents continuously if held/moving
+        // Spawn water currents & touch energy halo continuously if held/moving
         const now = Date.now();
         if (mouse.active) {
           const holdSecs = Math.min(3.0, (now - touchStartTime) / 1000);
+
+          // Touch Sonar Wave Pulse Halo Ring
+          ctx.save();
+          ctx.beginPath();
+          const ringR = 26 + Math.sin(now * 0.012) * 5 + holdSecs * 15;
+          ctx.arc(mouse.x, mouse.y, ringR, 0, Math.PI * 2);
+          ctx.shadowBlur = 20; ctx.shadowColor = '#00d8ff';
+          ctx.strokeStyle = 'rgba(0, 216, 255, 0.85)'; ctx.lineWidth = 2.5;
+          ctx.stroke();
+          ctx.restore();
+
           const interval = Math.max(50, 160 - holdSecs * 40);
           if (now - lastWaveTime > interval) {
             currents.push(new WaterCurrent(mouse.x, mouse.y));

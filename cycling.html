@@ -40,8 +40,10 @@
     }
 
     .stat-hero-card {
-      border: 1px solid rgba(255, 180, 0, 0.15);
-      background: linear-gradient(135deg, #201b08 0%, #100b02 100%) !important;
+      border: 1px solid rgba(255, 180, 0, 0.2);
+      background: rgba(32, 27, 8, 0.82) !important;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       position: relative;
     }
 
@@ -60,8 +62,10 @@
     }
 
     .feed-item {
-      border: 1px solid rgba(255, 180, 0, 0.1);
-      background: #141004 !important;
+      border: 1px solid rgba(255, 180, 0, 0.15);
+      background: rgba(20, 16, 4, 0.82) !important;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
     }
 
     .feed-item:hover {
@@ -519,10 +523,11 @@
         }
 
         initPosition() {
-          this.scale = Math.random() * 0.35 + 0.45;
+          const isMobile = width < 600;
+          this.scale = (Math.random() * 0.35 + 0.52) * (isMobile ? 0.78 : 1.0);
           this.direction = Math.random() > 0.5 ? 1 : -1;
           this.x = this.direction === 1 ? -250 : width + 250;
-          this.y = Math.random() * (height - 350) + 200;
+          this.y = height * 0.52 + (Math.random() - 0.5) * (height * 0.35);
           this.vx = (Math.random() * 2 + 5) * this.direction; // steady slow speed
           this.vy = (Math.random() - 0.5) * 1.0;
           this.pedalCycle = 0;
@@ -784,6 +789,17 @@
         // Continuous Blue Ki Crackles & Ki Aura pull when held/moving
         if (mouse.active) {
           const holdSecs = Math.min(3.0, (now - touchStartTime) / 1000);
+
+          // Touch Ki Energy Pulse Halo Ring
+          ctx.save();
+          ctx.beginPath();
+          const ringR = 26 + Math.sin(now * 0.012) * 5 + holdSecs * 15;
+          ctx.arc(mouse.x, mouse.y, ringR, 0, Math.PI * 2);
+          ctx.shadowBlur = 20; ctx.shadowColor = '#ffb400';
+          ctx.strokeStyle = 'rgba(255, 180, 0, 0.85)'; ctx.lineWidth = 2.5;
+          ctx.stroke();
+          ctx.restore();
+
           const interval = Math.max(40, 140 - holdSecs * 35);
           if (now - lastCrackleTime > interval) {
             const rx = mouse.x + (Math.random() - 0.5) * (100 + holdSecs * 100);

@@ -274,7 +274,9 @@ main {
   flex-direction: column;
   gap: 12px;
   padding: 28px 24px;
-  background: var(--bg-card);
+  background: rgba(20, 23, 34, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--border-color);
   border-radius: 14px;
   cursor: pointer;

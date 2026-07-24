@@ -40,8 +40,10 @@
     }
 
     .stat-hero-card {
-      border: 1px solid rgba(255, 222, 0, 0.15);
-      background: linear-gradient(135deg, #28060b 0%, #150305 100%) !important;
+      border: 1px solid rgba(255, 222, 0, 0.2);
+      background: rgba(40, 6, 11, 0.82) !important;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
     }
 
     .stat-hero-card::before {
@@ -60,8 +62,10 @@
     }
 
     .feed-item {
-      border: 1px solid rgba(255, 222, 0, 0.1);
-      background: #1a0407 !important;
+      border: 1px solid rgba(255, 222, 0, 0.15);
+      background: rgba(26, 4, 7, 0.82) !important;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
     }
 
     .feed-item:hover {
@@ -659,7 +663,8 @@
         }
 
         initPosition() {
-          this.scale = Math.random() * 0.35 + 0.60; // Bold prominent scale
+          const isMobile = width < 600;
+          this.scale = (Math.random() * 0.35 + 0.58) * (isMobile ? 0.78 : 1.0); // Mobile responsive scale
           this.direction = Math.random() > 0.5 ? 1 : -1;
           this.x = this.direction === 1 ? -150 : width + 150;
           // Appear at random screen height (between 20% and 80%)
@@ -672,7 +677,7 @@
           this.active = true;
           this.disappearTimer = 0;
           this.distanceRun = 0;
-          this.targetDistance = Math.random() * (width * 0.7) + (width * 0.3); // Run a random stretch before teleporting!
+          this.targetDistance = Math.random() * (width * 0.7) + (width * 0.3);
 
           // Spawn entry vortex portal!
           vortices.push(new SpeedForceVortex(this.x, this.y - 45 * this.scale));
@@ -892,9 +897,20 @@
 
         const now = Date.now();
 
-        // Speed Force electric arc stream when held/moving
+        // Speed Force electric arc stream & touch energy halo when held/moving
         if (mouse.active) {
           const holdSecs = Math.min(3.0, (now - touchStartTime) / 1000);
+
+          // Touch Energy Pulse Halo Ring
+          ctx.save();
+          ctx.beginPath();
+          const ringR = 26 + Math.sin(now * 0.012) * 5 + holdSecs * 15;
+          ctx.arc(mouse.x, mouse.y, ringR, 0, Math.PI * 2);
+          ctx.shadowBlur = 20; ctx.shadowColor = '#ffde00';
+          ctx.strokeStyle = 'rgba(255, 222, 0, 0.85)'; ctx.lineWidth = 2.5;
+          ctx.stroke();
+          ctx.restore();
+
           const interval = Math.max(30, 100 - holdSecs * 30);
           if (now - lastArcTime > interval) {
             const angle = Math.random() * Math.PI * 2;
