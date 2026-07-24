@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Ravi Teja Bitra - Badminton & Agility Log. Spider-Sense reflexes, web-swings, and court coverage.">
+  <title>Badminton | Ravi Teja Bitra</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  
+  <style>
+    :root {
+      --accent-color: #ff0055; /* Spider Crimson */
+      --bg-primary: #0a0104;   /* Deep Web Onyx */
+      --bg-secondary: #140209;
+      --bg-card: #200410;
+      --border-color: rgba(255, 0, 85, 0.15);
+      --border-hover: rgba(255, 0, 85, 0.5);
+      --text-secondary: #ffd0e0;
+    }
+
+    body {
+      background: radial-gradient(circle at center, #1e020c 0%, #080104 100%) !important;
+    }
+
+    .hero-eyebrow {
+      background: #ff0055 !important;
+      color: #ffffff !important;
+      font-weight: 900 !important;
+      clip-path: polygon(0 0, 100% 0, 94% 100%, 0 100%);
+      box-shadow: 0 0 15px rgba(255, 0, 85, 0.4);
+    }
+    
+    .hero-title .accent {
+      color: #ff0055 !important;
+      text-shadow: 0 0 20px rgba(255, 0, 85, 0.5);
+    }
+
+    .stat-hero-card {
+      border: 1px solid rgba(255, 0, 85, 0.15);
+      background: linear-gradient(135deg, #200410 0%, #0e0106 100%) !important;
+      position: relative;
+    }
+
+    .stat-hero-card::before {
+      content: '🕷️';
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      font-size: 1.2rem;
+      opacity: 0.35;
+    }
+
+    .stat-hero-card:hover {
+      border-color: rgba(255, 0, 85, 0.6);
+      box-shadow: 0 0 25px rgba(255, 0, 85, 0.15);
+    }
+
+    .feed-item {
+      border: 1px solid rgba(255, 0, 85, 0.1);
+      background: #140209 !important;
+    }
+
+    .feed-item:hover {
+      border-color: rgba(255, 0, 85, 0.4);
+      background: #200410 !important;
+      box-shadow: 0 0 15px rgba(255, 0, 85, 0.1);
+    }
+
+    .feed-dist {
+      color: #ff0055 !important;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+      transition: var(--transition);
+    }
+    .back-btn:hover {
+      color: var(--accent-color);
+      transform: translateX(-4px);
+    }
+    
+    .stats-dashboard {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: 48px;
+    }
+    
+    .stat-val {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 900;
+      color: var(--accent-color);
+      line-height: 1;
+      letter-spacing: -0.03em;
+      margin: 8px 0;
+    }
+    
+    .stat-lbl {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+    }
+    
+    .activity-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .feed-info h4 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      letter-spacing: -0.01em;
+    }
+    
+    .feed-info p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    
+    .feed-metrics {
+      text-align: right;
+    }
+    
+    .feed-dist {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    
+    .feed-meta {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    /* Loading / Error States */
+    .loading-pulse {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      animation: pulse 1.5s infinite;
+      margin-right: 8px;
+    }
+
+    .status-msg {
+      display: flex;
+      align-items: center;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 16px 20px;
+      border-radius: 8px;
+      margin-bottom: 32px;
+    }
+    
+    @media (max-width: 600px) {
+      .stats-dashboard {
+        grid-template-columns: 1fr;
+      }
+      .stat-hero-card.full-width {
+        grid-column: span 1;
+      }
+      .feed-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+      .feed-metrics {
+        text-align: left;
+        width: 100%;
+        border-top: 1px solid var(--border-color);
+        padding-top: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 60fps Live Animated Background Canvas -->
+  <canvas id="live-bg" data-custom-bg="spider-badminton"></canvas>
+
+  <!-- Ambient Lighting Aura -->
+  <div id="ambient-aura"></div>
+
+  <!-- Navigation -->
+  <header id="header">
+    <div class="container nav-content">
+      <a href="index.html" class="logo">Ravi<span>.</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html#about">Profile</a></li>
+        <li><a href="index.html#activities">Activities</a></li>
+        <li><a href="index.html#connect">Connect</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="container">
+    
+    <!-- Back Button -->
+    <a href="index.html" class="back-btn">← Back to Journey</a>
+
+    <!-- Page Header -->
+    <div class="hero" style="margin-bottom: 48px;">
+      <div class="hero-eyebrow">🕷️ SPIDER-SENSE ACTIVE · COURT AGILITY</div>
+      <h1 class="hero-title" style="margin-bottom: 16px;">Spider-Man <span class="accent">Badminton.</span></h1>
+      <p class="hero-bio" style="font-size: 1.05rem;">
+        Spider-Sense reflexes on the court. Badminton requires split-second footwork, acrobatic dives, and lightning reaction times. This page logs court agility and conditioning sessions live via Strava.
+      </p>
+    </div>
+
+    <!-- Status Messages (Loading/Error) -->
+    <div id="status-container" class="status-msg">
+      <span class="loading-pulse"></span>
+      <span id="status-text">Webbing court perimeter... fetching Strava metrics...</span>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-dashboard">
+      <div class="stat-hero-card full-width">
+        <span class="stat-lbl">Court Agility & Conditioning Hours</span>
+        <div id="stat-total-hours" class="stat-val">—</div>
+        <span class="stat-lbl" id="stat-total-sessions" style="color: var(--text-muted);">— court sessions logged</span>
+      </div>
+      
+      <div class="stat-hero-card">
+        <span class="stat-lbl">Reaction Metric</span>
+        <div class="stat-val">Spider-Sense</div>
+        <span class="stat-lbl" style="color: var(--text-muted);">Split-Second Reflexes</span>
+      </div>
+
+      <div class="stat-hero-card">
+        <span class="stat-lbl">Court Coverage</span>
+        <div class="stat-val">Full Court</div>
+        <span class="stat-lbl" style="color: var(--text-muted);">Web-Diving Racket Saves</span>
+      </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <section class="card-section">
+      <div class="section-header" style="margin-bottom: 24px;">
+        <h2>Recent Badminton & Agility Sessions</h2>
+        <div class="section-header-line"></div>
+      </div>
+      
+      <div class="activity-feed" id="activity-feed">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-socials">
+        <a href="https://www.strava.com/athletes/ravitejabitra" target="_blank" rel="noopener noreferrer" class="social-link">Strava</a>
+        <a href="https://www.instagram.com/raviteja_bitra" target="_blank" rel="noopener noreferrer" class="social-link">Instagram</a>
+        <a href="https://www.youtube.com/@Raviteja_Bitra" target="_blank" rel="noopener noreferrer" class="social-link">YouTube</a>
+      </div>
+      <p class="copyright">&copy; 2026 Ravi Teja Bitra</p>
+    </div>
+  </footer>
+
+  <script>
+    function formatDuration(seconds) {
+      if (!seconds) return '0m';
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      if (h > 0) return `${h}h ${m}m`;
+      return `${m} mins`;
+    }
+
+    function formatHours(seconds) {
+      if (!seconds) return '0 Hours';
+      const hours = (seconds / 3600).toFixed(1);
+      return `${hours} Hours`;
+    }
+
+    function formatDate(dateStr) {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    // Fetch live stats
+    async function loadStravaData() {
+      const statusContainer = document.getElementById('status-container');
+      const statusText = document.getElementById('status-text');
+
+      try {
+        const res = await fetch('/api/strava');
+        if (!res.ok) throw new Error(`Server returned ${res.status}`);
+        
+        const data = await res.json();
+        statusContainer.style.display = 'none';
+
+        const strengthStats = data.strength_stats || { total_sessions: 0, total_time_seconds: 0 };
+        document.getElementById('stat-total-hours').innerText = formatHours(strengthStats.total_time_seconds);
+        document.getElementById('stat-total-sessions').innerText = `${strengthStats.total_sessions} agility sessions logged`;
+
+        const feed = document.getElementById('activity-feed');
+        if (data.recent_workouts && data.recent_workouts.length > 0) {
+          feed.innerHTML = '';
+          data.recent_workouts.forEach(workout => {
+            const item = document.createElement('div');
+            item.className = 'feed-item';
+            item.innerHTML = `
+              <div class="feed-info">
+                <h4>🏸 ${workout.name}</h4>
+                <p>${formatDate(workout.start_date)} · Badminton & Court Agility Session</p>
+              </div>
+              <div class="feed-metrics">
+                <div class="feed-dist">${formatDuration(workout.moving_time)}</div>
+                <div class="feed-meta">👏 ${workout.kudos_count} Kudos</div>
+              </div>
+            `;
+            feed.appendChild(item);
+          });
+        } else {
+          feed.innerHTML = '<div style="color: var(--text-muted);">No recent Badminton sessions found in feed. Make sure your sessions are logged on Strava!</div>';
+        }
+
+      } catch (err) {
+        console.error(err);
+        statusContainer.style.background = 'rgba(255, 0, 85, 0.08)';
+        statusContainer.style.borderColor = 'rgba(255, 0, 85, 0.3)';
+        statusText.style.color = '#ff0055';
+        statusText.innerHTML = `<strong>Console offline:</strong> ${err.message}. Please configure your Vercel Environment Variables.`;
+        const pulse = statusContainer.querySelector('.loading-pulse');
+        if (pulse) pulse.style.display = 'none';
+      }
+    }
+
+    loadStravaData();
+  </script>
+
+  <!-- Spider-Man Web Swing & Diving Racket Save Canvas Animation Engine -->
+  <script>
+    (function() {
+      const canvas = document.getElementById('live-bg');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let width = (canvas.width = window.innerWidth);
+      let height = (canvas.height = window.innerHeight);
+
+      window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      // ── Web Line Particle ────────────────────────────────
+      class WebLine {
+        constructor(x1, y1, x2, y2) {
+          this.x1 = x1;
+          this.y1 = y1;
+          this.x2 = x2;
+          this.y2 = y2;
+          this.life = 18;
+          this.maxLife = this.life;
+        }
+
+        update() {
+          this.life--;
+        }
+
+        draw() {
+          if (this.life <= 0) return;
+          const alpha = this.life / this.maxLife;
+          ctx.save();
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = '#38bdf8';
+          ctx.strokeStyle = `rgba(240, 249, 255, ${alpha * 0.9})`;
+          ctx.lineWidth = 2.0;
+
+          ctx.beginPath();
+          ctx.moveTo(this.x1, this.y1);
+          ctx.lineTo(this.x2, this.y2);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      // ── Shuttlecock Particle ─────────────────────────────
+      class Shuttlecock {
+        constructor(x, y, vx, vy) {
+          this.x = x;
+          this.y = y;
+          this.vx = vx;
+          this.vy = vy;
+          this.alpha = 1.0;
+        }
+
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          this.vy += 0.15; // gravity pull
+        }
+
+        draw() {
+          ctx.save();
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = '#ff0078';
+          
+          // White Cork Head
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Feathers cone trailing behind velocity
+          const angle = Math.atan2(this.vy, this.vx);
+          ctx.strokeStyle = 'rgba(255, 0, 120, 0.8)';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(this.x, this.y);
+          ctx.lineTo(this.x - Math.cos(angle) * 14, this.y - Math.sin(angle) * 14);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      // ── Procedural Spider-Man Badminton Player ────────────
+      class SpiderBadmintonPlayer {
+        constructor() {
+          this.initSequence();
+        }
+
+        initSequence() {
+          this.scale = Math.random() * 0.35 + 0.45;
+          this.direction = Math.random() > 0.5 ? 1 : -1;
+          this.anchorX = width * 0.5 + (Math.random() - 0.5) * (width * 0.4);
+          this.anchorY = 0; // Ceiling anchor for web
+
+          // Sequence States: 
+          // 0 = Web Swing Down
+          // 1 = Diving Racket Save (low near floor)
+          // 2 = Web Zip Up & Exit
+          this.state = 0;
+          this.phase = 0;
+          this.x = this.anchorX - 250 * this.direction;
+          this.y = 80;
+          this.active = true;
+          this.disappearTimer = 0;
+
+          // Shuttlecock drop target
+          this.shuttleX = this.anchorX + 50 * this.direction;
+          this.shuttleY = height * 0.72;
+          this.shuttle = new Shuttlecock(this.shuttleX - 120 * this.direction, 50, 3.5 * this.direction, 2.5);
+          this.hitShuttle = false;
+        }
+
+        update() {
+          if (!this.active) {
+            this.disappearTimer--;
+            if (this.disappearTimer <= 0) {
+              this.initSequence();
+            }
+            return;
+          }
+
+          this.phase += 0.04;
+          this.shuttle.update();
+
+          if (this.state === 0) { // Web Swing Entry
+            this.x += 6 * this.direction;
+            this.y += Math.sin(this.phase * 2) * 4 + 3;
+
+            // Transition to dive when near shuttlecock drop area
+            if (Math.abs(this.x - this.shuttleX) < 140) {
+              this.state = 1;
+            }
+          } else if (this.state === 1) { // Low Acrobatic Dive to pick up shuttle
+            this.x += 5 * this.direction;
+            this.y = height * 0.72; // Low dive near floor
+
+            // Pick up shuttlecock with racket!
+            if (!this.hitShuttle && Math.abs(this.x - this.shuttle.x) < 40) {
+              this.hitShuttle = true;
+              // Reverse shuttlecock velocity high into the air with smash trail!
+              this.shuttle.vx = 14 * this.direction;
+              this.shuttle.vy = -12;
+
+              // Shoot web line to ceiling
+              webs.push(new WebLine(this.x, this.y, this.x + 80 * this.direction, 0));
+            }
+
+            if (this.hitShuttle && Math.abs(this.x - this.shuttleX) > 120) {
+              this.state = 2; // Web zip exit
+            }
+          } else if (this.state === 2) { // Zip Away
+            this.x += 8 * this.direction;
+            this.y -= 7; // zipping upward
+
+            if (this.y < -100 || this.x < -200 || this.x > width + 200) {
+              this.active = false;
+              this.disappearTimer = Math.floor(Math.random() * 80) + 40;
+            }
+          }
+        }
+
+        draw() {
+          if (!this.active) return;
+
+          // Draw active Web Line during swing or zip
+          if (this.state === 0 || this.state === 2) {
+            ctx.save();
+            ctx.shadowBlur = 10; ctx.shadowColor = '#ffffff';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+            ctx.lineWidth = 1.8;
+            ctx.beginPath();
+            ctx.moveTo(this.anchorX, this.anchorY);
+            ctx.lineTo(this.x, this.y - 20 * this.scale);
+            ctx.stroke();
+            ctx.restore();
+          }
+
+          // Draw Shuttlecock
+          this.shuttle.draw();
+
+          // Draw Spider-Man Player
+          this.drawSpiderMan(this.x, this.y, this.state, this.direction, this.scale);
+        }
+
+        drawSpiderMan(x, y, state, dir, scale) {
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.scale(dir, 1);
+
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = '#ff0055';
+
+          if (state === 1) {
+            // Horizontal Spider-Man Low Dive Pose!
+            ctx.rotate(0.6); // diving forward low
+
+            const hipX = -30 * scale, hipY = 0;
+            const chestX = 10 * scale, chestY = -10 * scale;
+            const headX = 28 * scale, headY = -14 * scale;
+
+            // Extended Racket Arm picking up shuttlecock
+            const handX = 55 * scale, handY = -15 * scale;
+
+            // Legs trailing in air
+            const lKneeX = hipX - 25 * scale, lKneeY = -15 * scale;
+            const lFootX = lKneeX - 22 * scale, lFootY = -25 * scale;
+
+            const rKneeX = hipX - 20 * scale, rKneeY = 15 * scale;
+            const rFootX = rKneeX - 22 * scale, rFootY = 20 * scale;
+
+            // Draw Blue Suit Legs
+            ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 7 * scale;
+            ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(lKneeX, lKneeY); ctx.lineTo(lFootX, lFootY); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(rKneeX, rKneeY); ctx.lineTo(rFootX, rFootY); ctx.stroke();
+
+            // Draw Red Suit Torso
+            ctx.fillStyle = '#ff0055';
+            ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(chestX, chestY); ctx.lineTo(chestX - 5 * scale, chestY + 15 * scale); ctx.closePath(); ctx.fill();
+
+            // Draw Extended Racket Arm
+            ctx.strokeStyle = '#ff0055'; ctx.lineWidth = 5 * scale;
+            ctx.beginPath(); ctx.moveTo(chestX, chestY); ctx.lineTo(handX, handY); ctx.stroke();
+
+            // Draw Badminton Racket in Spider-Man's hand!
+            ctx.shadowBlur = 15; ctx.shadowColor = '#38bdf8';
+            ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2 * scale;
+            // Shaft
+            ctx.beginPath(); ctx.moveTo(handX, handY); ctx.lineTo(handX + 25 * scale, handY - 5 * scale); ctx.stroke();
+            // Oval Racket Head
+            ctx.beginPath(); ctx.ellipse(handX + 38 * scale, handY - 7 * scale, 12 * scale, 8 * scale, -0.2, 0, Math.PI * 2); ctx.stroke();
+            // Strings
+            ctx.lineWidth = 0.8 * scale; ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.beginPath();
+            ctx.moveTo(handX + 30 * scale, handY - 7 * scale); ctx.lineTo(handX + 46 * scale, handY - 7 * scale);
+            ctx.moveTo(handX + 38 * scale, handY - 13 * scale); ctx.lineTo(handX + 38 * scale, handY - 1 * scale);
+            ctx.stroke();
+
+            // Head & Spider-Man White Eyes
+            this.drawSpiderHead(headX, headY, scale);
+
+          } else {
+            // Web Swing / Zip Pose
+            ctx.rotate(-0.4);
+
+            const hipX = 0, hipY = 0;
+            const chestX = 10 * scale, chestY = -35 * scale;
+            const headX = 18 * scale, headY = -50 * scale;
+
+            // Legs tucked
+            ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 6 * scale;
+            ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(hipX - 20 * scale, hipY + 20 * scale); ctx.stroke();
+
+            // Torso & Arm shooting web up
+            ctx.fillStyle = '#ff0055';
+            ctx.beginPath(); ctx.arc(chestX, chestY, 10 * scale, 0, Math.PI * 2); ctx.fill();
+
+            ctx.strokeStyle = '#ff0055'; ctx.lineWidth = 5 * scale;
+            ctx.beginPath(); ctx.moveTo(chestX, chestY); ctx.lineTo(chestX - 10 * scale, chestY - 25 * scale); ctx.stroke();
+
+            this.drawSpiderHead(headX, headY, scale);
+          }
+
+          ctx.restore();
+        }
+
+        drawSpiderHead(headX, headY, scale) {
+          // Red Mask Head
+          ctx.fillStyle = '#ff0055';
+          ctx.beginPath(); ctx.arc(headX, headY, 9 * scale, 0, Math.PI * 2); ctx.fill();
+
+          // Spider-Man Iconic White Angular Eyes
+          ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#111111'; ctx.lineWidth = 1.5 * scale;
+          ctx.beginPath();
+          ctx.moveTo(headX + 2 * scale, headY - 4 * scale);
+          ctx.lineTo(headX + 9 * scale, headY - 1 * scale);
+          ctx.lineTo(headX + 4 * scale, headY + 3 * scale);
+          ctx.closePath();
+          ctx.fill(); ctx.stroke();
+        }
+      }
+
+      // Pools
+      const webs = [];
+      const player = new SpiderBadmintonPlayer();
+
+      // Mouse Interactive Web Shooter
+      let lastWebTime = 0;
+      window.addEventListener('mousemove', (e) => {
+        const now = Date.now();
+        if (now - lastWebTime > 100 && Math.random() > 0.45) {
+          const targetX = e.clientX + (Math.random() - 0.5) * 100;
+          webs.push(new WebLine(e.clientX, e.clientY, targetX, 0));
+          lastWebTime = now;
+        }
+      });
+
+      // ── Main Render Loop ──────────────────────────────────
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+
+        // Draw active web lines
+        for (let i = webs.length - 1; i >= 0; i--) {
+          webs[i].update();
+          webs[i].draw();
+          if (webs[i].life <= 0) webs.splice(i, 1);
+        }
+
+        // Draw Spider-Man badminton player
+        player.update();
+        player.draw();
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    })();
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
