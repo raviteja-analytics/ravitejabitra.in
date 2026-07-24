@@ -662,51 +662,14 @@
 
       window.addEventListener('mousemove', setPos);
       window.addEventListener('mouseenter', setPos);
-      // Web Audio Sound Synthesizer Engine (Thor Divine Thunder Strike & Mjolnir Rumble)
-      let audioCtx = null;
-      function getAudioCtx() {
-        if (!audioCtx) {
-          const AudioContext = window.AudioContext || window.webkitAudioContext;
-          if (AudioContext) audioCtx = new AudioContext();
-        }
-        if (audioCtx && audioCtx.state === 'suspended') {
-          audioCtx.resume().catch(() => {});
-        }
-        return audioCtx;
-      }
+      window.addEventListener('mouseleave', () => { mouse.active = false; });
 
-      ['click', 'mousedown', 'mouseup', 'touchstart', 'touchmove', 'mousemove'].forEach(evt => {
-        window.addEventListener(evt, () => { getAudioCtx(); }, { passive: true });
-      });
+      window.addEventListener('touchstart', (e) => { setPos(e); }, { passive: true });
+      window.addEventListener('touchmove', (e) => { setPos(e); }, { passive: true });
+      window.addEventListener('touchend', () => { mouse.active = false; });
+      window.addEventListener('touchcancel', () => { mouse.active = false; });
 
-      let lastThunderSoundTime = 0;
-      function playThunderStrikeSound(holdSecs) {
-        const now = Date.now();
-        if (now - lastThunderSoundTime < Math.max(100, 250 - holdSecs * 50)) return;
-        lastThunderSoundTime = now;
-
-        const ctxAudio = getAudioCtx();
-        if (!ctxAudio) return;
-
-        try {
-          const osc = ctxAudio.createOscillator();
-          const gain = ctxAudio.createGain();
-
-          // Sub-bass divine thunder frequency
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(110, ctxAudio.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(30, ctxAudio.currentTime + 0.15);
-
-          gain.gain.setValueAtTime(0.06, ctxAudio.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.0001, ctxAudio.currentTime + 0.15);
-
-          osc.connect(gain);
-          gain.connect(ctxAudio.destination);
-
-          osc.start();
-          osc.stop(ctxAudio.currentTime + 0.15);
-        } catch (e) {}
-      }
+      let lastBoltTime = 0;
 
       // ── Main Render Loop ──────────────────────────────────
       function animate() {
@@ -717,7 +680,6 @@
         // Summon Thor Divine Lightning Strike & Orbiting Mjolnir Aura when held/moving
         if (mouse.active) {
           const holdSecs = Math.min(3.0, (now - touchStartTime) / 1000);
-          playThunderStrikeSound(holdSecs);
           const interval = Math.max(40, 140 - holdSecs * 30);
           if (now - lastBoltTime > interval) {
             bolts.push(new ThorLightning(mouse.x + (Math.random() - 0.5) * 40, 0, mouse.x, mouse.y, true));
