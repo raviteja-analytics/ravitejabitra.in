@@ -6,10 +6,10 @@
 document.addEventListener('DOMContentLoaded', () => {
 
   // =========================================================================
-  // 1. LIVE GLOWWORM CANVAS BACKGROUND ENGINE
+  // 1. LIVE ANIMATED CANVAS BACKGROUND ENGINE
   // =========================================================================
   const canvas = document.getElementById('live-bg');
-  if (canvas) {
+  if (canvas && !canvas.hasAttribute('data-custom-bg')) {
     const ctx = canvas.getContext('2d');
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);

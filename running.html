@@ -166,7 +166,7 @@
 <body>
 
   <!-- 60fps Live Animated Background Canvas -->
-  <canvas id="live-bg"></canvas>
+  <canvas id="live-bg" data-custom-bg="lightning"></canvas>
 
   <!-- Ambient Lighting Aura -->
   <div id="ambient-aura"></div>
@@ -345,6 +345,195 @@
     }
 
     loadStravaData();
+  </script>
+
+  <!-- Speed Force Lightning Streaks Animation Script -->
+  <script>
+    (function() {
+      const canvas = document.getElementById('live-bg');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let width = (canvas.width = window.innerWidth);
+      let height = (canvas.height = window.innerHeight);
+
+      window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      let mouse = { x: 0, y: 0, active: false };
+      window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+        mouse.active = true;
+      });
+      window.addEventListener('mouseleave', () => {
+        mouse.active = false;
+      });
+
+      // Lightning Bolt Class
+      class LightningBolt {
+        constructor() {
+          this.reset();
+        }
+
+        reset() {
+          this.startX = 0;
+          this.startY = Math.random() * height;
+          this.endX = width;
+          this.endY = this.startY + (Math.random() - 0.5) * 200;
+          this.segments = [];
+          this.color = Math.random() > 0.4 ? 'rgba(255, 40, 80, ' : 'rgba(255, 255, 255, '; // Crimson or White
+          this.opacity = Math.random() * 0.7 + 0.3;
+          this.life = Math.random() * 20 + 10;
+          this.maxLife = this.life;
+          this.generateSegments();
+        }
+
+        generateSegments() {
+          let currX = this.startX;
+          let currY = this.startY;
+          const steps = Math.floor(width / 35);
+          
+          for (let i = 0; i <= steps; i++) {
+            const progress = i / steps;
+            const targetX = progress * width;
+            const targetY = this.startY + progress * (this.endY - this.startY);
+            
+            const offsetMultiplier = (1 - Math.sin(progress * Math.PI)) * 40 + 15;
+            const x = targetX + (Math.random() - 0.5) * 15;
+            const y = targetY + (Math.random() - 0.5) * offsetMultiplier;
+            
+            this.segments.push({ x, y });
+          }
+        }
+
+        update() {
+          this.life--;
+          if (this.life <= 0) {
+            this.reset();
+          }
+        }
+
+        draw() {
+          const ratio = this.life / this.maxLife;
+          const currentAlpha = this.opacity * ratio;
+          
+          ctx.beginPath();
+          ctx.moveTo(this.segments[0].x, this.segments[0].y);
+          for (let i = 1; i < this.segments.length; i++) {
+            ctx.lineTo(this.segments[i].x, this.segments[i].y);
+          }
+          
+          ctx.strokeStyle = this.color + currentAlpha + ')';
+          ctx.lineWidth = Math.random() * 2.5 + 1.2;
+          ctx.shadowColor = this.color.includes('40') ? 'rgba(255, 40, 80, 0.9)' : 'rgba(255, 255, 255, 0.9)';
+          ctx.shadowBlur = 18;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        }
+      }
+
+      // Spark trail particles that fly across the screen
+      class SpeedParticle {
+        constructor() {
+          this.reset();
+        }
+
+        reset() {
+          this.x = Math.random() * width;
+          this.y = Math.random() * height;
+          this.vx = Math.random() * 20 + 25; // Left-to-right high speed
+          this.vy = (Math.random() - 0.5) * 1.5;
+          this.length = Math.random() * 80 + 40;
+          this.alpha = Math.random() * 0.5 + 0.2;
+          this.color = Math.random() > 0.4 ? 'rgba(255, 40, 80, ' : 'rgba(255, 200, 0, '; // Crimson or Gold sparks
+        }
+
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          if (this.x - this.length > width) {
+            this.reset();
+            this.x = -this.length;
+          }
+        }
+
+        draw() {
+          ctx.beginPath();
+          ctx.moveTo(this.x, this.y);
+          ctx.lineTo(this.x - this.length, this.y);
+          ctx.strokeStyle = this.color + this.alpha + ')';
+          ctx.lineWidth = Math.random() * 1.5 + 0.8;
+          ctx.stroke();
+        }
+      }
+
+      // Shockwave ring class
+      class Shockwave {
+        constructor(x, y) {
+          this.x = x;
+          this.y = y;
+          this.radius = 1;
+          this.maxRadius = Math.random() * 120 + 80;
+          this.speed = Math.random() * 4 + 4;
+          this.alpha = 0.8;
+        }
+
+        update() {
+          this.radius += this.speed;
+          this.alpha = 1 - (this.radius / this.maxRadius);
+        }
+
+        draw() {
+          if (this.alpha <= 0) return;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(255, 40, 80, ${this.alpha * 0.4})`;
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+        }
+      }
+
+      const bolts = Array.from({ length: 3 }, () => new LightningBolt());
+      const particles = Array.from({ length: 45 }, () => new SpeedParticle());
+      const shockwaves = [];
+
+      let lastMoveTime = 0;
+      window.addEventListener('mousemove', (e) => {
+        const now = Date.now();
+        if (now - lastMoveTime > 120 && Math.random() > 0.5) {
+          shockwaves.push(new Shockwave(e.clientX, e.clientY));
+          lastMoveTime = now;
+        }
+      });
+
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+
+        for (let i = shockwaves.length - 1; i >= 0; i--) {
+          shockwaves[i].update();
+          shockwaves[i].draw();
+          if (shockwaves[i].alpha <= 0) {
+            shockwaves.splice(i, 1);
+          }
+        }
+
+        particles.forEach(p => {
+          p.update();
+          p.draw();
+        });
+
+        bolts.forEach(b => {
+          b.update();
+          b.draw();
+        });
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    })();
   </script>
   <script src="app.js"></script>
 </body>
