@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Ravi Teja Bitra — Hybrid Athlete & Explorer. Strength Training, Running, Cycling, Swimming, Badminton, Travel, Nutrition, and Mindset.">
-  <title>Ravi Teja Bitra | Fitness, Travel & Lifestyle</title>
+  <meta name="description" content="Ravi Teja Bitra — Hybrid Athlete & Explorer. Anime & Superhero Cinematic Universe.">
+  <title>Ravi Teja Bitra | Hybrid Athlete & Explorer</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,6 +12,9 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+  <!-- 60fps Live Animated Background Canvas -->
+  <canvas id="live-bg"></canvas>
 
   <!-- Ambient Lighting Aura -->
   <div id="ambient-aura"></div>
@@ -26,7 +29,7 @@
       </button>
 
       <ul class="nav-links" id="nav-links">
-        <li><a href="links.html" style="color: var(--accent-color);">🎟️ Registrations</a></li>
+        <li><a href="links.html" style="color: var(--theme-color);">🎟️ Registrations</a></li>
         <li><a href="#about">About</a></li>
         <li><a href="#activities">Activities</a></li>
         <li><a href="#lifestyle">Lifestyle</a></li>
@@ -40,8 +43,8 @@
     <!-- ── Hero / About Me ──────────────────────────────────── -->
     <section id="about" class="hero">
       <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px;">
-        <div class="hero-eyebrow" style="margin-bottom: 0;">IT Pro · Athlete in Progress · Explorer</div>
-        <a href="links.html" class="hero-eyebrow" style="margin-bottom: 0; background: rgba(226, 184, 87, 0.15); border-color: var(--accent-color);">🎟️ Active Registrations →</a>
+        <div class="hero-eyebrow" style="margin-bottom: 0;">⚡ IT PRO BY DAY · HYBRID HERO BY NIGHT</div>
+        <a href="links.html" class="hero-eyebrow" style="margin-bottom: 0; background: #000; color: var(--theme-color); border: 1px solid var(--theme-color);">🎟️ Active Registrations →</a>
       </div>
 
       <h1 class="hero-title">
@@ -66,7 +69,7 @@
     <!-- ── Physical Activities Section ──────────────────────── -->
     <section id="activities" class="card-section">
       <div class="section-header">
-        <h2>Physical Activities</h2>
+        <h2>Physical Disciplines</h2>
         <div class="section-header-line"></div>
       </div>
 
@@ -75,31 +78,31 @@
         <a href="strength.html" class="activity-card" data-theme="strength">
           <div class="card-icon">🏋️</div>
           <div class="card-name">Strength Training</div>
-          <div class="card-tag">Gym · Lifting · Conditioning</div>
+          <div class="card-tag">Super Saiyan · Gym · Power</div>
         </a>
 
         <a href="running.html" class="activity-card" data-theme="running">
           <div class="card-icon">🏃‍♂️</div>
           <div class="card-name">Running</div>
-          <div class="card-tag">Trail · Marathon · Intervals</div>
+          <div class="card-tag">Speed Force · Trail · Marathon</div>
         </a>
 
         <a href="#" class="activity-card" data-theme="cycling">
           <div class="card-icon">🚴‍♂️</div>
           <div class="card-name">Cycling</div>
-          <div class="card-tag">Road · Bikepacking · Endurance</div>
+          <div class="card-tag">Arc Reactor · Road · Endurance</div>
         </a>
 
         <a href="#" class="activity-card" data-theme="swimming">
           <div class="card-icon">🏊‍♂️</div>
           <div class="card-name">Swimming</div>
-          <div class="card-tag">Open Water · Pool · Drills</div>
+          <div class="card-tag">Hydro Wave · Pool · Open Water</div>
         </a>
 
         <a href="#" class="activity-card" data-theme="badminton">
           <div class="card-icon">🏸</div>
           <div class="card-name">Badminton</div>
-          <div class="card-tag">Court · Agility · Recreation</div>
+          <div class="card-tag">Anime Slash · Court · Agility</div>
         </a>
 
       </div>
@@ -108,7 +111,7 @@
     <!-- ── Exploration & Lifestyle Section ──────────────────── -->
     <section id="lifestyle" class="card-section">
       <div class="section-header">
-        <h2>Exploration & Lifestyle</h2>
+        <h2>Multiverse & Mindset</h2>
         <div class="section-header-line"></div>
       </div>
 
@@ -117,25 +120,25 @@
         <a href="#" class="activity-card" data-theme="travel">
           <div class="card-icon">✈️</div>
           <div class="card-name">Travelling</div>
-          <div class="card-tag">Adventures · Expeditions · Routes</div>
+          <div class="card-tag">Multiverse · Routes · Expeditions</div>
         </a>
 
         <a href="#" class="activity-card" data-theme="nutrition">
           <div class="card-icon">🥗</div>
           <div class="card-name">Nutrition</div>
-          <div class="card-tag">Organic · Fuel · Recovery</div>
+          <div class="card-tag">Sensus Bio · Fuel · Recovery</div>
         </a>
 
         <a href="#" class="activity-card" data-theme="mindset">
           <div class="card-icon">🧠</div>
           <div class="card-name">Mindset</div>
-          <div class="card-tag">Habits · Decisions · Clarity</div>
+          <div class="card-tag">Mind Stone · Habits · Clarity</div>
         </a>
 
         <a href="#" class="activity-card" data-theme="motivation">
           <div class="card-icon">🎙️</div>
           <div class="card-name">Motivation</div>
-          <div class="card-tag">Speaking · Talks · Community</div>
+          <div class="card-tag">All-Might · Talks · Community</div>
         </a>
 
       </div>
@@ -154,7 +157,7 @@
           <input type="email" class="form-input" id="email" placeholder="Your Email" required>
         </div>
         <textarea class="form-input" id="message" placeholder="Your Message" required></textarea>
-        <button type="submit" class="btn">Send Message →</button>
+        <button type="submit" class="btn">Send Message ⚡</button>
       </form>
     </section>
 

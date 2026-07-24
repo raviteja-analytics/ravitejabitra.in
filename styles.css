@@ -1,22 +1,22 @@
 /* 
-  ravitejabitra.in - Dynamic Ambient Vibe & High-End Athletic System
+  ravitejabitra.in - Anime & Marvel/DC Superhero Cinematic Universe Theme
 */
 
 :root {
-  --bg-primary: #0b0c0e;
-  --bg-secondary: #121418;
-  --bg-card: #15181e;
+  --bg-primary: #07080a;
+  --bg-secondary: #0f1117;
+  --bg-card: #141722;
   --text-primary: #ffffff;
-  --text-secondary: #a0a6b2;
-  --text-muted: #5a606e;
+  --text-secondary: #a3b1c6;
+  --text-muted: #57657a;
   
-  /* Titanium Gold Theme Palette */
-  --theme-color: #e2b857;
-  --theme-glow: rgba(226, 184, 87, 0.16);
-  --theme-hover: #f0cc6b;
+  /* Anime Superhero Primary Accent */
+  --theme-color: #ffc800; /* Saiyan Energy Gold */
+  --theme-glow: rgba(255, 200, 0, 0.25);
+  --theme-hover: #ffe066;
   
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(226, 184, 87, 0.35);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-hover: rgba(255, 200, 0, 0.4);
   
   --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --max-width: 960px;
@@ -47,6 +47,17 @@ a { color: inherit; text-decoration: none; transition: var(--transition); }
 
 img { display: block; max-width: 100%; }
 
+/* ── 60fps Live Canvas Background ──────────────────────────────── */
+#live-bg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.85;
+}
+
 /* ── Smooth Page Entrance & Exit ──────────────────────────────── */
 body {
   opacity: 0;
@@ -76,7 +87,7 @@ body.page-exit {
   height: 900px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: radial-gradient(circle, var(--aura-color, rgba(217, 249, 93, 0.05)) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--aura-color, rgba(255, 200, 0, 0.08)) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
   opacity: 0;
@@ -86,13 +97,6 @@ body.page-exit {
 
 body.aura-active #ambient-aura {
   opacity: 1;
-}
-
-/* ── Typography ───────────────────────────────────────────────── */
-h1, h2, h3, h4 {
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.025em;
 }
 
 /* ── Layout ───────────────────────────────────────────────────── */
@@ -110,7 +114,7 @@ header {
   top: 0; left: 0;
   width: 100%;
   height: var(--nav-height);
-  background: rgba(10, 10, 10, 0.85);
+  background: rgba(7, 8, 10, 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border-color);
@@ -127,13 +131,16 @@ header {
 }
 
 .logo {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 900;
   letter-spacing: -0.02em;
   text-transform: uppercase;
+  background: linear-gradient(135deg, #ffffff 0%, var(--theme-color) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.logo span { color: var(--theme-color); }
+.logo span { -webkit-text-fill-color: var(--theme-color); }
 
 .nav-links {
   display: flex;
@@ -143,8 +150,8 @@ header {
 
 .nav-links a {
   font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-weight: 800;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-secondary);
 }
@@ -178,7 +185,7 @@ main {
   padding-bottom: 120px;
 }
 
-/* ── Hero ─────────────────────────────────────────────────────── */
+/* ── Superhero Hero Intro ─────────────────────────────────────── */
 .hero {
   margin-bottom: 100px;
 }
@@ -188,51 +195,43 @@ main {
   align-items: center;
   gap: 8px;
   font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-weight: 900;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--theme-color);
-  background: rgba(226, 184, 87, 0.08);
-  border: 1px solid rgba(226, 184, 87, 0.22);
-  padding: 6px 14px;
-  border-radius: 100px;
-  margin-bottom: 24px;
-}
-
-.hero-eyebrow::before {
-  content: '';
-  width: 6px; height: 6px;
-  border-radius: 50%;
+  color: #000;
   background: var(--theme-color);
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.8); }
+  padding: 6px 16px;
+  border-radius: 4px;
+  clip-path: polygon(0 0, 100% 0, 96% 100%, 0 100%);
+  margin-bottom: 24px;
+  box-shadow: 0 0 20px var(--theme-glow);
 }
 
 .hero-title {
-  font-size: clamp(2.8rem, 6vw, 5rem);
+  font-size: clamp(3rem, 6vw, 5.2rem);
   font-weight: 900;
   letter-spacing: -0.04em;
   margin-bottom: 24px;
   line-height: 1.05;
 }
 
-.hero-title .accent { color: var(--theme-color); }
+.hero-title .accent {
+  background: linear-gradient(135deg, var(--theme-color) 0%, #ff5500 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 
 .hero-bio {
-  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
   color: var(--text-secondary);
-  max-width: 620px;
+  max-width: 640px;
   line-height: 1.65;
   margin-bottom: 16px;
 }
 
 .hero-bio strong {
   color: var(--text-primary);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* ── Section Header ───────────────────────────────────────────── */
@@ -244,9 +243,9 @@ main {
 }
 
 .section-header h2 {
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-size: 0.85rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--text-muted);
   white-space: nowrap;
@@ -255,7 +254,7 @@ main {
 .section-header-line {
   flex: 1;
   height: 1px;
-  background: var(--border-color);
+  background: linear-gradient(90deg, var(--border-color), transparent);
 }
 
 /* ── Card Sections ────────────────────────────────────────────── */
@@ -266,10 +265,10 @@ main {
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
+  gap: 18px;
 }
 
-/* ── Interactive Spotlight Activity Card ───────────────────────── */
+/* ── Anime Superhero Activity Card ────────────────────────────── */
 .activity-card {
   display: flex;
   flex-direction: column;
@@ -291,8 +290,8 @@ main {
   position: absolute;
   inset: 0;
   background: radial-gradient(
-    300px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    var(--card-spotlight, rgba(255, 255, 255, 0.06)),
+    320px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    var(--card-spotlight, rgba(255, 255, 255, 0.08)),
     transparent 80%
   );
   opacity: 0;
@@ -302,7 +301,7 @@ main {
 
 /* Arrow indicator */
 .activity-card::after {
-  content: '→';
+  content: '⚡';
   position: absolute;
   bottom: 24px;
   right: 24px;
@@ -314,9 +313,9 @@ main {
 }
 
 .activity-card:hover {
-  transform: translateY(-5px) scale(1.015);
+  transform: translateY(-6px) scale(1.02) skewX(-0.5deg);
   border-color: var(--card-accent, var(--theme-color));
-  box-shadow: 0 16px 40px -10px var(--card-glow, var(--theme-glow));
+  box-shadow: 0 20px 45px -10px var(--card-glow, var(--theme-glow));
 }
 
 .activity-card:hover::before {
@@ -329,18 +328,18 @@ main {
 }
 
 .card-icon {
-  font-size: 2.2rem;
+  font-size: 2.4rem;
   line-height: 1;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .activity-card:hover .card-icon {
-  transform: scale(1.12) rotate(-3deg);
+  transform: scale(1.15) rotate(-4deg);
 }
 
 .card-name {
-  font-size: 1.15rem;
-  font-weight: 800;
+  font-size: 1.2rem;
+  font-weight: 900;
   color: var(--text-primary);
   letter-spacing: -0.01em;
   transition: color 0.3s ease;
@@ -352,65 +351,65 @@ main {
 
 .card-tag {
   font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
 
-/* ── Activity Themes Definitions ──────────────────────────────── */
+/* Anime Superhero Mode Theme Profiles */
 .activity-card[data-theme="strength"] {
-  --card-accent: #f59e0b; /* Iron Amber Gold */
-  --card-glow: rgba(245, 158, 11, 0.3);
-  --card-spotlight: rgba(245, 158, 11, 0.12);
+  --card-accent: #ffb400; /* Super Saiyan Gold */
+  --card-glow: rgba(255, 180, 0, 0.35);
+  --card-spotlight: rgba(255, 180, 0, 0.14);
 }
 
 .activity-card[data-theme="running"] {
-  --card-accent: #e2b857; /* Titanium Gold */
-  --card-glow: rgba(226, 184, 87, 0.3);
-  --card-spotlight: rgba(226, 184, 87, 0.12);
+  --card-accent: #ff2850; /* Speed Force Crimson */
+  --card-glow: rgba(255, 40, 80, 0.35);
+  --card-spotlight: rgba(255, 40, 80, 0.14);
 }
 
 .activity-card[data-theme="cycling"] {
-  --card-accent: #06b6d4; /* Velocity Cyan */
-  --card-glow: rgba(6, 182, 212, 0.3);
-  --card-spotlight: rgba(6, 182, 212, 0.12);
+  --card-accent: #00e6ff; /* Arc Reactor Cyan */
+  --card-glow: rgba(0, 230, 255, 0.35);
+  --card-spotlight: rgba(0, 230, 255, 0.14);
 }
 
 .activity-card[data-theme="swimming"] {
-  --card-accent: #38bdf8; /* Hydro Ocean Blue */
-  --card-glow: rgba(56, 189, 248, 0.3);
-  --card-spotlight: rgba(56, 189, 248, 0.12);
+  --card-accent: #00a0ff; /* Hydro Ocean Blue */
+  --card-glow: rgba(0, 160, 255, 0.35);
+  --card-spotlight: rgba(0, 160, 255, 0.14);
 }
 
 .activity-card[data-theme="badminton"] {
-  --card-accent: #f43f5e; /* Smash Rose Crimson */
-  --card-glow: rgba(244, 63, 94, 0.3);
-  --card-spotlight: rgba(244, 63, 94, 0.12);
+  --card-accent: #ff0078; /* Anime Rose Slash */
+  --card-glow: rgba(255, 0, 120, 0.35);
+  --card-spotlight: rgba(255, 0, 120, 0.14);
 }
 
 .activity-card[data-theme="travel"] {
-  --card-accent: #a855f7; /* Aurora Violet */
-  --card-glow: rgba(168, 85, 247, 0.3);
-  --card-spotlight: rgba(168, 85, 247, 0.12);
+  --card-accent: #aa00ff; /* Multiverse Portal Violet */
+  --card-glow: rgba(170, 0, 255, 0.35);
+  --card-spotlight: rgba(170, 0, 255, 0.14);
 }
 
 .activity-card[data-theme="nutrition"] {
-  --card-accent: #10b981; /* Vitality Emerald */
-  --card-glow: rgba(16, 185, 129, 0.3);
-  --card-spotlight: rgba(16, 185, 129, 0.12);
+  --card-accent: #00e678; /* Sensus Emerald */
+  --card-glow: rgba(0, 230, 120, 0.35);
+  --card-spotlight: rgba(0, 230, 120, 0.14);
 }
 
 .activity-card[data-theme="mindset"] {
-  --card-accent: #8b5cf6; /* Cosmic Indigo */
-  --card-glow: rgba(139, 92, 246, 0.3);
-  --card-spotlight: rgba(139, 92, 246, 0.12);
+  --card-accent: #8c3cff; /* Mind Stone Purple */
+  --card-glow: rgba(140, 60, 255, 0.35);
+  --card-spotlight: rgba(140, 60, 255, 0.14);
 }
 
 .activity-card[data-theme="motivation"] {
-  --card-accent: #eab308; /* Solar Gold Spotlight */
-  --card-glow: rgba(234, 179, 8, 0.3);
-  --card-spotlight: rgba(234, 179, 8, 0.12);
+  --card-accent: #ffc800; /* All Might Gold */
+  --card-glow: rgba(255, 200, 0, 0.35);
+  --card-spotlight: rgba(255, 200, 0, 0.14);
 }
 
 /* ── Divider ──────────────────────────────────────────────────── */
@@ -422,7 +421,7 @@ main {
 
 /* ── Connect Section ──────────────────────────────────────────── */
 .connect-title {
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 900;
   letter-spacing: -0.03em;
   margin-bottom: 12px;
@@ -445,10 +444,10 @@ main {
 
 .form-input {
   width: 100%;
-  padding: 14px 18px;
+  padding: 16px 20px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 10px;
   color: var(--text-primary);
   font-size: 0.95rem;
   font-family: var(--font-family);
@@ -458,6 +457,7 @@ main {
 .form-input:focus {
   outline: none;
   border-color: var(--theme-color);
+  box-shadow: 0 0 20px var(--theme-glow);
   background: var(--bg-card);
 }
 
@@ -473,29 +473,32 @@ textarea.form-input {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 14px 32px;
+  padding: 16px 36px;
   background: var(--theme-color);
   color: #000;
-  font-weight: 800;
-  font-size: 0.9rem;
+  font-weight: 900;
+  font-size: 0.95rem;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   border-radius: 8px;
   border: none;
   cursor: pointer;
   transition: var(--transition);
+  box-shadow: 0 0 25px var(--theme-glow);
 }
 
 .btn:hover {
-  background: #bde038;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px var(--theme-glow);
+  background: var(--theme-hover);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 10px 35px var(--theme-glow);
 }
 
 /* ── Footer ───────────────────────────────────────────────────── */
 footer {
   border-top: 1px solid var(--border-color);
   padding: 40px 0;
+  position: relative;
+  z-index: 1;
 }
 
 .footer-inner {
@@ -513,7 +516,7 @@ footer {
 
 .social-link {
   font-size: 0.8rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -535,7 +538,7 @@ footer {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100vh;
-    background: rgba(10, 10, 10, 0.98);
+    background: rgba(7, 8, 10, 0.98);
     flex-direction: column;
     justify-content: center;
     align-items: center;
