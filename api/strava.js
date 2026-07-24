@@ -63,11 +63,13 @@ export default async function handler(req, res) {
 
     let runs = [];
     let rides = [];
+    let swims = [];
     let workouts = [];
     let allWorkouts = [];
     
     const runTypes = ['Run', 'TrailRun', 'VirtualRun'];
     const rideTypes = ['Ride', 'VirtualRide', 'EBikeRide', 'GravelRide', 'MountainBikeRide', 'Handcycle'];
+    const swimTypes = ['Swim'];
     const workoutTypes = ['WeightTraining', 'Workout', 'Crossfit', 'Elliptical'];
 
     runs = allActivities
@@ -83,6 +85,17 @@ export default async function handler(req, res) {
 
     rides = allActivities
       .filter(act => rideTypes.includes(act.type) || rideTypes.includes(act.sport_type))
+      .slice(0, 3)
+      .map(act => ({
+        name: act.name,
+        distance: act.distance,
+        moving_time: act.moving_time,
+        start_date: act.start_date,
+        total_elevation_gain: act.total_elevation_gain
+      }));
+
+    swims = allActivities
+      .filter(act => swimTypes.includes(act.type) || swimTypes.includes(act.sport_type))
       .slice(0, 3)
       .map(act => ({
         name: act.name,
@@ -111,10 +124,13 @@ export default async function handler(req, res) {
         all_run_totals: stats.all_run_totals || { count: 0, distance: 0, moving_time: 0 },
         ytd_run_totals: stats.ytd_run_totals || { count: 0, distance: 0, moving_time: 0 },
         all_ride_totals: stats.all_ride_totals || { count: 0, distance: 0, moving_time: 0 },
-        ytd_ride_totals: stats.ytd_ride_totals || { count: 0, distance: 0, moving_time: 0 }
+        ytd_ride_totals: stats.ytd_ride_totals || { count: 0, distance: 0, moving_time: 0 },
+        all_swim_totals: stats.all_swim_totals || { count: 0, distance: 0, moving_time: 0 },
+        ytd_swim_totals: stats.ytd_swim_totals || { count: 0, distance: 0, moving_time: 0 }
       },
       recent_runs: runs,
       recent_rides: rides,
+      recent_swims: swims,
       strength_stats: {
         total_sessions: allWorkouts.length,
         total_time_seconds: totalWorkoutTime

@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Ravi Teja Bitra - Swimming Log. Live swimming statistics, distances, and lap records directly synced from Strava.">
+  <title>Swimming Log | Ravi Teja Bitra</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  
+  <style>
+    :root {
+      --accent-color: #00d8ff; /* Atlantis Ocean Cyan */
+      --bg-primary: #020f17;   /* Deep Undersea Dark Blue */
+      --bg-secondary: #041824;
+      --bg-card: #082538;
+      --border-color: rgba(0, 216, 255, 0.15);
+      --border-hover: rgba(0, 216, 255, 0.5);
+      --text-secondary: #cdeeff;
+    }
+
+    body {
+      background: radial-gradient(circle at center, #021a2b 0%, #01080f 100%) !important;
+    }
+
+    .hero-eyebrow {
+      background: #00d8ff !important;
+      color: #000000 !important;
+      font-weight: 900 !important;
+      clip-path: polygon(0 0, 100% 0, 94% 100%, 0 100%);
+      box-shadow: 0 0 15px rgba(0, 216, 255, 0.4);
+    }
+    
+    .hero-title .accent {
+      color: #00d8ff !important;
+      text-shadow: 0 0 20px rgba(0, 216, 255, 0.5);
+    }
+
+    .stat-hero-card {
+      border: 1px solid rgba(0, 216, 255, 0.15);
+      background: linear-gradient(135deg, #082538 0%, #031018 100%) !important;
+      position: relative;
+    }
+
+    .stat-hero-card::before {
+      content: '🔱';
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      font-size: 1.2rem;
+      opacity: 0.35;
+    }
+
+    .stat-hero-card:hover {
+      border-color: rgba(0, 216, 255, 0.6);
+      box-shadow: 0 0 25px rgba(0, 216, 255, 0.15);
+    }
+
+    .feed-item {
+      border: 1px solid rgba(0, 216, 255, 0.1);
+      background: #041824 !important;
+    }
+
+    .feed-item:hover {
+      border-color: rgba(0, 216, 255, 0.4);
+      background: #082538 !important;
+      box-shadow: 0 0 15px rgba(0, 216, 255, 0.1);
+    }
+
+    .feed-dist {
+      color: #00d8ff !important;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+      transition: var(--transition);
+    }
+    .back-btn:hover {
+      color: var(--accent-color);
+      transform: translateX(-4px);
+    }
+    
+    .stats-dashboard {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: 48px;
+    }
+    
+    .stat-val {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 900;
+      color: var(--accent-color);
+      line-height: 1;
+      letter-spacing: -0.03em;
+      margin: 8px 0;
+    }
+    
+    .stat-lbl {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+    }
+    
+    .activity-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .feed-info h4 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      letter-spacing: -0.01em;
+    }
+    
+    .feed-info p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    
+    .feed-metrics {
+      text-align: right;
+    }
+    
+    .feed-dist {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    
+    .feed-meta {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    /* Loading / Error States */
+    .loading-pulse {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      animation: pulse 1.5s infinite;
+      margin-right: 8px;
+    }
+
+    .status-msg {
+      display: flex;
+      align-items: center;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 16px 20px;
+      border-radius: 8px;
+      margin-bottom: 32px;
+    }
+    
+    @media (max-width: 600px) {
+      .stats-dashboard {
+        grid-template-columns: 1fr;
+      }
+      .stat-hero-card.full-width {
+        grid-column: span 1;
+      }
+      .feed-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+      .feed-metrics {
+        text-align: left;
+        width: 100%;
+        border-top: 1px solid var(--border-color);
+        padding-top: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 60fps Live Animated Background Canvas -->
+  <canvas id="live-bg" data-custom-bg="swimming-water"></canvas>
+
+  <!-- Ambient Lighting Aura -->
+  <div id="ambient-aura"></div>
+
+  <!-- Navigation -->
+  <header id="header">
+    <div class="container nav-content">
+      <a href="index.html" class="logo">Ravi<span>.</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html#about">Profile</a></li>
+        <li><a href="index.html#activities">Activities</a></li>
+        <li><a href="index.html#connect">Connect</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="container">
+    
+    <!-- Back Button -->
+    <a href="index.html" class="back-btn">← Back to Journey</a>
+
+    <!-- Page Header -->
+    <div class="hero" style="margin-bottom: 48px;">
+      <div class="hero-eyebrow">👑 HYDRO DIVISION ACTIVE</div>
+      <h1 class="hero-title" style="margin-bottom: 16px;">King of the <span class="accent">Seven Seas.</span></h1>
+      <p class="hero-bio" style="font-size: 1.05rem;">
+        Harnessing the speed of Atlantis. This console retrieves swimming metrics directly from my Strava profile, logging lap sessions, speeds, and total distance in real-time.
+      </p>
+    </div>
+
+    <!-- Status Messages (Loading/Error) -->
+    <div id="status-container" class="status-msg">
+      <span class="loading-pulse"></span>
+      <span id="status-text">Synchronizing Trident console... fetching Strava metrics...</span>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-dashboard">
+      <div class="stat-hero-card full-width">
+        <span class="stat-lbl">All-Time Cumulative Swimming Distance</span>
+        <div id="stat-total-dist" class="stat-val">—</div>
+        <span class="stat-lbl" id="stat-total-swims" style="color: var(--text-muted);">— swim sessions logged in total</span>
+      </div>
+      
+      <div class="stat-hero-card">
+        <span class="stat-lbl">Distance (This Year)</span>
+        <div id="stat-ytd-dist" class="stat-val">—</div>
+        <span class="stat-lbl" id="stat-ytd-swims" style="color: var(--text-muted);">— swims this year</span>
+      </div>
+
+      <div class="stat-hero-card">
+        <span class="stat-lbl">Avg Distance / Swim</span>
+        <div id="stat-avg-dist" class="stat-val">—</div>
+        <span class="stat-lbl" style="color: var(--text-muted);">across all logged activities</span>
+      </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <section class="card-section">
+      <div class="section-header" style="margin-bottom: 24px;">
+        <h2>Recent Swimming Activities</h2>
+        <div class="section-header-line"></div>
+      </div>
+      
+      <div class="activity-feed" id="activity-feed">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-socials">
+        <a href="https://www.strava.com/athletes/ravitejabitra" target="_blank" rel="noopener noreferrer" class="social-link">Strava</a>
+        <a href="https://www.instagram.com/raviteja_bitra" target="_blank" rel="noopener noreferrer" class="social-link">Instagram</a>
+        <a href="https://www.youtube.com/@Raviteja_Bitra" target="_blank" rel="noopener noreferrer" class="social-link">YouTube</a>
+      </div>
+      <p class="copyright">&copy; 2026 Ravi Teja Bitra</p>
+    </div>
+  </footer>
+
+  <script>
+    // Format helpers
+    function formatMeters(meters) {
+      if (!meters) return '0 m';
+      return Math.round(meters) + ' m';
+    }
+
+    function formatDuration(seconds) {
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+      if (h > 0) {
+        return `${h}h ${m}m`;
+      }
+      return `${m}m ${s}s`;
+    }
+
+    function formatPace(meters, seconds) {
+      if (!meters || !seconds) return '—';
+      // Swimming pace is usually expressed in /100m
+      const paceInSeconds = (seconds / meters) * 100;
+      const m = Math.floor(paceInSeconds / 60);
+      const s = Math.floor(paceInSeconds % 60);
+      return `${m}:${s < 10 ? '0' : ''}${s} /100m`;
+    }
+
+    function formatDate(dateStr) {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    // Fetch live stats
+    async function loadStravaData() {
+      const statusContainer = document.getElementById('status-container');
+      const statusText = document.getElementById('status-text');
+
+      try {
+        const res = await fetch('/api/strava');
+        if (!res.ok) {
+          throw new Error(`Server returned ${res.status}`);
+        }
+        
+        const data = await res.json();
+        
+        statusContainer.style.display = 'none';
+
+        // Update stats elements
+        const allTotals = data.stats.all_swim_totals;
+        const ytdTotals = data.stats.ytd_swim_totals;
+
+        document.getElementById('stat-total-dist').innerText = formatMeters(allTotals.distance);
+        document.getElementById('stat-total-swims').innerText = `${allTotals.count} swims logged in total`;
+        
+        document.getElementById('stat-ytd-dist').innerText = formatMeters(ytdTotals.distance);
+        document.getElementById('stat-ytd-swims').innerText = `${ytdTotals.count} swims this year`;
+
+        const avgDistance = allTotals.count > 0 ? (allTotals.distance / allTotals.count) : 0;
+        document.getElementById('stat-avg-dist').innerText = formatMeters(avgDistance);
+
+        // Render recent activities
+        const feed = document.getElementById('activity-feed');
+        if (data.recent_swims && data.recent_swims.length > 0) {
+          feed.innerHTML = '';
+          data.recent_swims.forEach(swim => {
+            const item = document.createElement('div');
+            item.className = 'feed-item';
+            item.innerHTML = `
+              <div class="feed-info">
+                <h4>${swim.name}</h4>
+                <p>${formatDate(swim.start_date)}</p>
+              </div>
+              <div class="feed-metrics">
+                <div class="feed-dist">${formatMeters(swim.distance)}</div>
+                <div class="feed-meta">${formatDuration(swim.moving_time)} · Pace: ${formatPace(swim.distance, swim.moving_time)}</div>
+              </div>
+            `;
+            feed.appendChild(item);
+          });
+        } else {
+          feed.innerHTML = '<div style="color: var(--text-muted);">No swimming activities found in your recent feed. Make sure your swims are logged on Strava!</div>';
+        }
+
+      } catch (err) {
+        console.error(err);
+        statusContainer.style.background = 'rgba(0, 216, 255, 0.08)';
+        statusContainer.style.borderColor = 'rgba(0, 216, 255, 0.3)';
+        statusText.style.color = '#00d8ff';
+        statusText.innerHTML = `<strong>Trident console offline:</strong> ${err.message}. Please configure your Vercel Environment Variables.`;
+        const pulse = statusContainer.querySelector('.loading-pulse');
+        if (pulse) pulse.style.display = 'none';
+      }
+    }
+
+    loadStravaData();
+  </script>
+
+  <!-- Aquaman / Atlantis Swimmer Canvas Animation Engine -->
+  <script>
+    (function() {
+      const canvas = document.getElementById('live-bg');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let width = (canvas.width = window.innerWidth);
+      let height = (canvas.height = window.innerHeight);
+
+      window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      // ── Undersea Rising Oxygen Bubbles ───────────────────
+      class WaterBubble {
+        constructor(x, y, init = false) {
+          this.reset(x, y, init);
+        }
+
+        reset(x, y, init = false) {
+          this.x = x || Math.random() * width;
+          this.y = init ? Math.random() * height : height + 20;
+          this.radius = Math.random() * 5 + 1.5;
+          this.speed = Math.random() * 1.5 + 0.6;
+          // Side-to-side wobble phase
+          this.wobble = Math.random() * Math.PI * 2;
+          this.wobbleSpeed = Math.random() * 0.03 + 0.01;
+          this.wobbleRange = Math.random() * 1.2 + 0.4;
+          this.alpha = Math.random() * 0.3 + 0.15;
+        }
+
+        update() {
+          this.y -= this.speed;
+          this.wobble += this.wobbleSpeed;
+          this.x += Math.sin(this.wobble) * this.wobbleRange;
+          
+          if (this.y < -20) {
+            this.reset(Math.random() * width, height + 20, false);
+          }
+        }
+
+        draw() {
+          ctx.save();
+          ctx.globalAlpha = this.alpha;
+          ctx.strokeStyle = '#00d8ff';
+          ctx.lineWidth = 1.0;
+          
+          // Shimmering bubble border
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.stroke();
+
+          // Highlight dot
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(this.x - this.radius * 0.3, this.y - this.radius * 0.3, this.radius * 0.2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // ── Interactive Water Currents / Ripples ───────────────
+      class WaterCurrent {
+        constructor(x, y) {
+          this.x = x;
+          this.y = y;
+          this.radius = 1;
+          this.maxRadius = Math.random() * 90 + 70;
+          this.speed = 3.5;
+          this.alpha = 0.65;
+        }
+
+        update() {
+          this.radius += this.speed;
+          this.alpha = 0.65 * (1 - this.radius / this.maxRadius);
+        }
+
+        draw() {
+          if (this.alpha <= 0) return;
+          ctx.save();
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = '#00d8ff';
+          ctx.strokeStyle = `rgba(0, 216, 255, ${this.alpha})`;
+          ctx.lineWidth = 2.0;
+
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      // ── Procedural Anime Aquaman Swimmer ──────────────────
+      class AquamanSwimmer {
+        constructor() {
+          this.initPosition();
+          this.swimPhase = Math.random() * 100;
+        }
+
+        initPosition() {
+          this.scale = Math.random() * 0.35 + 0.45;
+          this.direction = Math.random() > 0.5 ? 1 : -1;
+          this.x = this.direction === 1 ? -250 : width + 250;
+          this.y = Math.random() * (height - 350) + 180;
+          
+          // Steady horizontal glide
+          this.vx = (Math.random() * 2.0 + 3.0) * this.direction;
+          this.vy = (Math.random() - 0.5) * 0.5;
+          this.active = true;
+          this.disappearTimer = 0;
+        }
+
+        update() {
+          if (!this.active) {
+            this.disappearTimer--;
+            if (this.disappearTimer <= 0) {
+              this.initPosition();
+            }
+            return;
+          }
+
+          this.x += this.vx;
+          this.y += this.vy;
+          this.swimPhase += 0.08;
+
+          // Exit boundary triggers reload
+          const isExit = (this.direction === 1 && this.x > width + 250) || (this.direction === -1 && this.x < -250);
+          if (isExit || (Math.random() < 0.003)) {
+            this.active = false;
+            this.disappearTimer = Math.floor(Math.random() * 100) + 50;
+          }
+        }
+
+        draw() {
+          if (!this.active) return;
+          this.drawAquaman(this.x, this.y, this.swimPhase, this.direction, this.scale);
+        }
+
+        drawAquaman(x, y, phase, dir, scale) {
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.scale(dir, 1);
+          
+          // Swimming horizontal orientation rotation (slight body roll/wobble)
+          const roll = Math.sin(phase * 1.5) * 0.08;
+          ctx.rotate(roll);
+
+          // Key joints & vectors
+          const shoulderX = 20 * scale, shoulderY = -12 * scale;
+          const hipX = -25 * scale, hipY = -10 * scale;
+          const neckX = 35 * scale, neckY = -12 * scale;
+          const headX = 46 * scale, headY = -12 * scale;
+
+          // Leg kicks (Sine oscillations)
+          const kick1 = Math.sin(phase * 4);
+          const kick2 = Math.sin(phase * 4 + Math.PI);
+
+          const lKneeX = hipX - 22 * scale;
+          const lKneeY = hipY + kick1 * 10 * scale;
+          const lFootX = lKneeX - 20 * scale;
+          const lFootY = lKneeY + kick1 * 14 * scale;
+
+          const rKneeX = hipX - 22 * scale;
+          const rKneeY = hipY + kick2 * 10 * scale;
+          const rFootX = rKneeX - 20 * scale;
+          const rFootY = rKneeY + kick2 * 14 * scale;
+
+          // Arm strokes (Freestyle windmill arm stroke cycle)
+          const armCycle1 = phase * 2;
+          const armCycle2 = phase * 2 + Math.PI;
+
+          // Left Arm (Back arm)
+          const lElbowX = shoulderX + Math.cos(armCycle1) * 20 * scale;
+          const lElbowY = shoulderY + Math.sin(armCycle1) * 16 * scale;
+          const lHandX = lElbowX + Math.cos(armCycle1 + 0.5) * 18 * scale;
+          const lHandY = lElbowY + Math.sin(armCycle1 + 0.5) * 14 * scale;
+
+          // Right Arm (Front arm carrying glowing gold Trident!)
+          const rElbowX = shoulderX + Math.cos(armCycle2) * 20 * scale;
+          const rElbowY = shoulderY + Math.sin(armCycle2) * 16 * scale;
+          const rHandX = rElbowX + Math.cos(armCycle2 + 0.5) * 18 * scale;
+          const rHandY = rElbowY + Math.sin(armCycle2 + 0.5) * 14 * scale;
+
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = '#00d8ff';
+
+          // 1. Draw Green Scale Trunks/Lower Body
+          ctx.fillStyle = '#0a7d5c'; // green/teal scale suit bottom
+          ctx.beginPath();
+          ctx.moveTo(hipX - 10 * scale, hipY);
+          ctx.lineTo(hipX + 15 * scale, hipY - 2 * scale);
+          ctx.lineTo(shoulderX - 15 * scale, shoulderY + 2 * scale);
+          ctx.lineTo(shoulderX - 25 * scale, shoulderY + 2 * scale);
+          ctx.closePath();
+          ctx.fill();
+
+          // 2. Draw Orange scale top/Chest Plate
+          ctx.fillStyle = '#ff761a'; // bright coral-orange scales
+          ctx.beginPath();
+          ctx.moveTo(shoulderX - 22 * scale, shoulderY + 2 * scale);
+          ctx.lineTo(shoulderX + 10 * scale, shoulderY - 2 * scale);
+          ctx.lineTo(neckX, neckY);
+          ctx.lineTo(hipX + 10 * scale, hipY);
+          ctx.closePath();
+          ctx.fill();
+
+          // 3. Draw Legs (Green scales, kicking)
+          ctx.strokeStyle = '#0a7d5c';
+          ctx.lineWidth = 7 * scale;
+          
+          // Back Leg
+          ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(lKneeX, lKneeY); ctx.lineTo(lFootX, lFootY); ctx.stroke();
+          // Front Leg
+          ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(rKneeX, rKneeY); ctx.lineTo(rFootX, rFootY); ctx.stroke();
+
+          // 4. Draw Arms (Gliding/Stroking)
+          ctx.strokeStyle = '#ff761a';
+          ctx.lineWidth = 5 * scale;
+          // Back Arm
+          ctx.beginPath(); ctx.moveTo(shoulderX, shoulderY); ctx.lineTo(lElbowX, lElbowY); ctx.lineTo(lHandX, lHandY); ctx.stroke();
+          // Front Arm
+          ctx.beginPath(); ctx.moveTo(shoulderX, shoulderY); ctx.lineTo(rElbowX, rElbowY); ctx.lineTo(rHandX, rHandY); ctx.stroke();
+
+          // 5. Draw Glowing Golden Trident in Aquaman's front hand
+          ctx.save();
+          ctx.shadowBlur = 18;
+          ctx.shadowColor = '#ffe066';
+          ctx.strokeStyle = '#ffe066';
+          ctx.lineWidth = 2.5 * scale;
+          
+          // Shaft of trident
+          const shaftLen = 45 * scale;
+          // Shaft extends along the arm line
+          ctx.beginPath();
+          ctx.moveTo(rHandX - shaftLen * 0.4, rHandY - shaftLen * 0.1);
+          ctx.lineTo(rHandX + shaftLen * 0.8, rHandY + shaftLen * 0.2);
+          ctx.stroke();
+
+          // Prongs of Trident (3 tips)
+          const tipX = rHandX + shaftLen * 0.8;
+          const tipY = rHandY + shaftLen * 0.2;
+          ctx.beginPath();
+          ctx.moveTo(tipX, tipY);
+          ctx.lineTo(tipX + 12 * scale, tipY + 3 * scale); // center prong
+          
+          ctx.moveTo(tipX - 2 * scale, tipY + 4 * scale);
+          ctx.lineTo(tipX + 8 * scale, tipY + 7 * scale); // bottom prong
+          
+          ctx.moveTo(tipX + 2 * scale, tipY - 4 * scale);
+          ctx.lineTo(tipX + 10 * scale, tipY - 1 * scale); // top prong
+          ctx.stroke();
+          ctx.restore();
+
+          // 6. Draw Head & Flowing Blonde/Brown Hair
+          ctx.fillStyle = '#e8c499'; // skin tone face
+          ctx.beginPath();
+          ctx.arc(headX, headY, 8 * scale, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Long flowing anime hair in water
+          ctx.fillStyle = '#ffe066'; // gold/blonde hair
+          ctx.beginPath();
+          ctx.moveTo(headX - 6 * scale, headY - 4 * scale);
+          ctx.lineTo(headX - 22 * scale, headY - 10 * scale); // strands floating back
+          ctx.lineTo(headX - 8 * scale, headY + 2 * scale);
+          ctx.lineTo(headX - 20 * scale, headY + 8 * scale);  // strands floating back-down
+          ctx.lineTo(headX - 4 * scale, headY + 5 * scale);
+          ctx.lineTo(headX + 4 * scale, headY - 8 * scale);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.restore();
+        }
+      }
+
+      // Pools
+      const bubbles = Array.from({ length: 40 }, () => new WaterBubble(null, null, true));
+      const currents = [];
+      const swimmer = new AquamanSwimmer();
+
+      // Mouse interactive water waves
+      let lastWaveTime = 0;
+      window.addEventListener('mousemove', (e) => {
+        const now = Date.now();
+        if (now - lastWaveTime > 150 && Math.random() > 0.4) {
+          currents.push(new WaterCurrent(e.clientX, e.clientY));
+          lastWaveTime = now;
+        }
+      });
+
+      // ── Main Render Loop ──────────────────────────────────
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+
+        // Undersea light shaft rendering (soft god rays)
+        const lightGrad = ctx.createLinearGradient(0, 0, width * 0.5, height);
+        lightGrad.addColorStop(0, 'rgba(0, 216, 255, 0.05)');
+        lightGrad.addColorStop(0.5, 'rgba(0, 216, 255, 0.02)');
+        lightGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = lightGrad;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(width * 0.4, 0);
+        ctx.lineTo(width * 0.7, height);
+        ctx.lineTo(0, height);
+        ctx.closePath();
+        ctx.fill();
+
+        // Update rising oxygen bubbles
+        bubbles.forEach(b => {
+          b.update();
+          b.draw();
+        });
+
+        // Update interactive water ripples
+        for (let i = currents.length - 1; i >= 0; i--) {
+          currents[i].update();
+          currents[i].draw();
+          if (currents[i].alpha <= 0) currents.splice(i, 1);
+        }
+
+        // Update & Draw Aquaman swimmer
+        swimmer.update();
+        swimmer.draw();
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    })();
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
