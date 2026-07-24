@@ -29,9 +29,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         if (AudioContext) audioCtx = new AudioContext();
       }
-      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => {});
+      }
       return audioCtx;
     }
+
+    // Direct User Gesture Unlock Listeners
+    window.addEventListener('click', () => { getAudioCtx(); });
+    window.addEventListener('touchstart', () => { getAudioCtx(); }, { passive: true });
 
     let lastSoundTime = 0;
     function playGlowwormSound(holdSecs) {
@@ -40,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
       lastSoundTime = now;
 
       const ctxAudio = getAudioCtx();
-      if (!ctxAudio) return;
+      if (!ctxAudio || ctxAudio.state !== 'running') return; // Only play if unlocked!
 
       try {
         const osc = ctxAudio.createOscillator();
