@@ -12,6 +12,16 @@
   <link rel="stylesheet" href="styles.css">
   
   <style>
+    #live-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 10;
+    }
+
     body {
       display: flex;
       flex-direction: column;
@@ -720,19 +730,12 @@
         }
 
         draw() {
-          const container = document.querySelector('.links-container');
-          let mainAlpha = 0.90;
-          if (container) {
-            const rect = container.getBoundingClientRect();
-            if (this.x >= rect.left && this.x <= rect.right && this.y >= rect.top && this.y <= rect.bottom) {
-              mainAlpha = 0.25; // Soft translucent when behind the main glass card container
-            }
-          }
+          let mainAlpha = 0.92;
 
           // Trail
           this.trail.forEach(t => {
             ctx.save();
-            ctx.globalAlpha = t.alpha * mainAlpha * 0.35;
+            ctx.globalAlpha = t.alpha * mainAlpha * 0.4;
             ctx.shadowBlur = 10;
             ctx.shadowColor = this.hero.glowColor;
             ctx.fillStyle = this.hero.mainColor;
