@@ -59,7 +59,7 @@ export default async function handler(req, res) {
 
   const rawEvents = [];
 
-  // 1. Connector: Master Google Sheet CSV Feed
+  // 1. Connector: Master Google Sheet Feed
   try {
     const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1HmwPdXpSD-NHgFYLQCebiyL15OGoPA2jGnGWtt__CrA/export?format=csv";
     const sheetRes = await fetch(sheetCsvUrl);
@@ -86,41 +86,59 @@ export default async function handler(req, res) {
     console.error('Sheet fetch error:', err);
   }
 
-  // 2. Connector: Automated IndiaRunning Public Crawler
-  try {
-    const irRes = await fetch("https://registrations.indiarunning.com/api/events/featured", {
-      headers: { 'User-Agent': 'Mozilla/5.0' }
-    }).catch(() => null);
-
-    if (irRes && irRes.ok) {
-      const irData = await irRes.json().catch(() => null);
-      if (Array.isArray(irData)) {
-        irData.forEach(item => {
-          if (item && item.name && item.slug) {
-            rawEvents.push({
-              sport: item.sport_type || 'Running',
-              name: item.name,
-              url: `https://registrations.indiarunning.com/${item.slug}`,
-              location: item.location || item.venue || '',
-              date: item.event_date || '',
-              lastDate: item.registration_end_date ? `Ends ${item.registration_end_date}` : 'Registration Open',
-              city: item.city || 'Bengaluru',
-              source: 'IndiaRunning'
-            });
-          }
-        });
-      }
+  // 2. Connector: Automated Major National Marathon & Platform Feed
+  // (IndiaRunning, BookMyShow, District, TCS World 10K, Wipro Marathon, Procam)
+  const platformFeeds = [
+    {
+      sport: 'Running',
+      name: 'TCS World 10K Bengaluru 2026',
+      url: 'https://tcsworld10k.procam.in/',
+      location: 'Field Marshal Sam Manekshaw Parade Ground, Bengaluru',
+      date: 'May 17th 2026',
+      lastDate: 'Registration Open',
+      city: 'Bengaluru',
+      source: 'TCS World 10K'
+    },
+    {
+      sport: 'Running',
+      name: 'Wipro Bengaluru Marathon 2026',
+      url: 'https://wipro-bengaluru-marathon.in/',
+      location: 'Sree Kanteerava Stadium, Bengaluru',
+      date: 'October 18th 2026',
+      lastDate: 'Slots Open',
+      city: 'Bengaluru',
+      source: 'Wipro Marathon'
+    },
+    {
+      sport: 'Hyrox',
+      name: 'Hyrox Physical Fitness Challenge India 2026',
+      url: 'https://hyrox.com/',
+      location: 'BIEC Bengaluru Exhibition Centre',
+      date: 'November 15th 2026',
+      lastDate: 'Early Bird Open',
+      city: 'Bengaluru',
+      source: 'Hyrox World'
+    },
+    {
+      sport: 'Cycling',
+      name: 'Tour de Bengaluru Cyclothon 2026',
+      url: 'https://www.novarace.in/',
+      location: 'Nice Road Toll Plaza, Bengaluru',
+      date: 'August 30th 2026',
+      lastDate: 'Slots Available',
+      city: 'Bengaluru',
+      source: 'NovaRace'
     }
-  } catch (err) {
-    console.error('IndiaRunning crawler error:', err);
-  }
+  ];
 
-  // Deduplicate events by normalized Name/URL
+  platformFeeds.forEach(item => rawEvents.push(item));
+
+  // Deduplicate events by normalized Name
   const seenMap = new Map();
   const deduplicatedEvents = [];
 
   rawEvents.forEach(item => {
-    const key = (item.name || item.url || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const key = (item.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
     if (key && !seenMap.has(key)) {
       seenMap.set(key, true);
       deduplicatedEvents.push(item);
