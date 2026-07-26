@@ -467,7 +467,7 @@
     loadGoogleSheetEvents();
   </script>
 
-  <!-- 60fps Multiverse Nexus & Quantum Sling-Ring Portal Canvas Engine -->
+  <!-- 60fps Chibi Superhero Multiverse & Quantum Conduit Canvas Engine -->
   <script>
     (function() {
       const canvas = document.getElementById('live-bg');
@@ -520,17 +520,29 @@
         badminton: { glow: '#ff0055', accent: '#00f0ff' }  // Spider Web Cyan
       };
 
-      // 1. Viewport-Filling Quantum Stardust Particles (covers entire screen regardless of scroll)
+      // ── Marvel & DC Anime Chibi Superheroes Roster ──────────
+      const HERO_ROSTER = [
+        { id: 'flash', name: 'The Flash', type: 'male', brand: 'DC', mainColor: '#ff0038', glowColor: '#ffde00', theme: 'running' },
+        { id: 'wonderwoman', name: 'Wonder Woman', type: 'female', brand: 'DC', mainColor: '#e11d48', glowColor: '#ffd700', theme: 'strength' },
+        { id: 'thor', name: 'Thor', type: 'male', brand: 'Marvel', mainColor: '#38bdf8', glowColor: '#ffd700', theme: 'strength' },
+        { id: 'captainmarvel', name: 'Captain Marvel', type: 'female', brand: 'Marvel', mainColor: '#00f0ff', glowColor: '#facc15', theme: 'cycling' },
+        { id: 'spiderman', name: 'Spider-Man', type: 'male', brand: 'Marvel', mainColor: '#ff0055', glowColor: '#00f0ff', theme: 'badminton' },
+        { id: 'storm', name: 'Storm', type: 'female', brand: 'Marvel', mainColor: '#94a3b8', glowColor: '#38bdf8', theme: 'swimming' },
+        { id: 'wolverine', name: 'Wolverine', type: 'male', brand: 'Marvel', mainColor: '#eab308', glowColor: '#38bdf8', theme: 'hyrox' },
+        { id: 'aquaman', name: 'Aquaman', type: 'male', brand: 'DC', mainColor: '#00d8ff', glowColor: '#10b981', theme: 'swimming' }
+      ];
+
+      // 1. Requirement 3: 100% Viewport Particle Field (Floating Stardust & Energy Sparks)
       class QuantumParticle {
         constructor() {
           this.reset(true);
         }
 
         reset(init = false) {
-          this.x = init ? Math.random() * width : Math.random() * width;
+          this.x = Math.random() * width;
           this.y = init ? Math.random() * height : (Math.random() > 0.5 ? -20 : height + 20);
           this.size = Math.random() * 2.5 + 0.8;
-          this.alpha = Math.random() * 0.6 + 0.2;
+          this.alpha = Math.random() * 0.6 + 0.25;
           this.vx = (Math.random() - 0.5) * 0.8;
           this.vy = -(Math.random() * 0.8 + 0.3);
           this.color = Math.random() > 0.4 ? currentGlowColor : currentAccentColor;
@@ -568,51 +580,188 @@
         }
       }
 
-      // 2. Quantum Sling-Ring Spark Particles
-      class SlingRingSpark {
-        constructor(cx, cy, radius) {
-          this.cx = cx;
-          this.cy = cy;
-          this.angle = Math.random() * Math.PI * 2;
-          this.radius = radius + (Math.random() - 0.5) * 25;
-          this.speed = (Math.random() * 0.04 + 0.02) * (Math.random() > 0.5 ? 1 : -1);
-          this.life = Math.random() * 40 + 20;
-          this.maxLife = this.life;
-          this.size = Math.random() * 3 + 1;
-          this.color = Math.random() > 0.3 ? '#ffc800' : '#ff5500';
+      // 2. Chibi Anime Superhero Head Entity
+      class ChibiHeroHead {
+        constructor(heroData, index, total) {
+          this.hero = heroData;
+          this.index = index;
+          this.baseAngle = (index / total) * Math.PI * 2;
+          this.angle = this.baseAngle;
+          this.orbitSpeed = 0.007 + (index % 2 === 0 ? 0.002 : -0.002);
+          this.radiusX = Math.min(width * 0.42, 380);
+          this.radiusY = Math.min(height * 0.32, 240);
+          this.x = width / 2;
+          this.y = height / 2;
+          this.pulse = Math.random() * 10;
+          this.trail = [];
         }
 
-        update(cx, cy) {
-          this.cx = cx;
-          this.cy = cy;
-          this.angle += this.speed;
-          this.life--;
+        update(centerX, centerY) {
+          this.angle += this.orbitSpeed;
+          this.pulse += 0.05;
+
+          const isMobile = width < 600;
+          this.radiusX = Math.min(width * (isMobile ? 0.40 : 0.42), isMobile ? 180 : 380);
+          this.radiusY = Math.min(height * (isMobile ? 0.28 : 0.32), isMobile ? 160 : 240);
+
+          let targetX = centerX + Math.cos(this.angle) * this.radiusX;
+          let targetY = centerY + Math.sin(this.angle) * this.radiusY;
+
+          // Touch Gravitational Pull on Hold
+          if (mouse.active) {
+            const dx = mouse.x - targetX;
+            const dy = mouse.y - targetY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 340) {
+              const pull = (1 - dist / 340) * 0.70;
+              targetX += dx * pull;
+              targetY += dy * pull;
+            }
+          }
+
+          // Smooth Easing
+          this.x += (targetX - this.x) * 0.08;
+          this.y += (targetY - this.y) * 0.08;
+
+          // Afterimage Trail
+          this.trail.push({ x: this.x, y: this.y, alpha: 0.85 });
+          if (this.trail.length > 7) this.trail.shift();
+          this.trail.forEach(t => t.alpha *= 0.80);
         }
 
         draw() {
-          if (this.life <= 0) return;
-          const x = this.cx + Math.cos(this.angle) * this.radius;
-          const y = this.cy + Math.sin(this.angle) * (this.radius * 0.65); // 3D tilted perspective
-          const alpha = this.life / this.maxLife;
+          // Trail
+          this.trail.forEach(t => {
+            ctx.save();
+            ctx.globalAlpha = t.alpha * 0.35;
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = this.hero.glowColor;
+            ctx.fillStyle = this.hero.mainColor;
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, 9, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          });
 
+          // Outer Glow Ring
           ctx.save();
-          ctx.globalAlpha = alpha;
-          ctx.shadowBlur = 18;
-          ctx.shadowColor = this.color;
-          ctx.fillStyle = this.color;
+          ctx.translate(this.x, this.y);
+          ctx.shadowBlur = 24 + Math.sin(this.pulse) * 6;
+          ctx.shadowColor = this.hero.glowColor;
+
+          const headRadius = (width < 600 ? 15 : 20) + Math.sin(this.pulse) * 1.5;
+
           ctx.beginPath();
-          ctx.arc(x, y, this.size, 0, Math.PI * 2);
+          ctx.arc(0, 0, headRadius + 4, 0, Math.PI * 2);
+          ctx.fillStyle = this.hero.glowColor + '33';
           ctx.fill();
+
+          // Base Head Background Circle
+          ctx.beginPath();
+          ctx.arc(0, 0, headRadius, 0, Math.PI * 2);
+          ctx.fillStyle = '#0f172a';
+          ctx.strokeStyle = this.hero.glowColor;
+          ctx.lineWidth = 2.5;
+          ctx.fill();
+          ctx.stroke();
+
+          // Render Procedural Chibi Features by Hero ID
+          this.drawChibiFeatures(headRadius);
+
           ctx.restore();
+        }
+
+        drawChibiFeatures(r) {
+          const id = this.hero.id;
+
+          if (id === 'flash') {
+            // Flash Red Cowl & Golden Wings
+            ctx.fillStyle = '#ff0038';
+            ctx.beginPath(); ctx.arc(0, 0, r - 2, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#ffde00'; // Wing ears
+            ctx.beginPath(); ctx.moveTo(-r * 0.8, 0); ctx.lineTo(-r * 1.3, -r * 0.5); ctx.lineTo(-r * 0.7, r * 0.2); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(r * 0.8, 0); ctx.lineTo(r * 1.3, -r * 0.5); ctx.lineTo(r * 0.7, r * 0.2); ctx.fill();
+            // Lenses & Bolt
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(-r * 0.4, -r * 0.25, r * 0.35, r * 0.3); ctx.fillRect(r * 0.05, -r * 0.25, r * 0.35, r * 0.3);
+            ctx.strokeStyle = '#ffde00'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-2, -r * 0.5); ctx.lineTo(2, 0); ctx.lineTo(-1, 0); ctx.lineTo(3, r * 0.5); ctx.stroke();
+          } 
+          else if (id === 'wonderwoman') {
+            // Wonder Woman Dark Hair & Gold Tiara
+            ctx.fillStyle = '#1e1b4b'; // Hair
+            ctx.beginPath(); ctx.arc(0, 0, r - 1, Math.PI * 0.8, Math.PI * 2.2); ctx.fill();
+            ctx.fillStyle = '#ffd700'; // Tiara
+            ctx.beginPath(); ctx.moveTo(-r * 0.8, -r * 0.2); ctx.lineTo(0, -r * 0.7); ctx.lineTo(r * 0.8, -r * 0.2); ctx.lineTo(0, -r * 0.05); ctx.closePath(); ctx.fill();
+            // Red Star
+            ctx.fillStyle = '#e11d48'; ctx.beginPath(); ctx.arc(0, -r * 0.38, r * 0.15, 0, Math.PI * 2); ctx.fill();
+            // Cute Anime Eyes
+            ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-r * 0.35, r * 0.1, r * 0.2, 0, Math.PI * 2); ctx.arc(r * 0.35, r * 0.1, r * 0.2, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(-r * 0.35, r * 0.1, r * 0.1, 0, Math.PI * 2); ctx.arc(r * 0.35, r * 0.1, r * 0.1, 0, Math.PI * 2); ctx.fill();
+          }
+          else if (id === 'thor') {
+            // Thor Silver Winged Helmet & Gold Spiky Hair
+            ctx.fillStyle = '#fde047'; // Hair
+            ctx.beginPath(); ctx.arc(0, 0, r - 2, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#cbd5e1'; // Helmet
+            ctx.beginPath(); ctx.arc(0, -r * 0.2, r * 0.7, Math.PI, 0); ctx.fill();
+            // Wings
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath(); ctx.moveTo(-r * 0.6, -r * 0.5); ctx.lineTo(-r * 1.2, -r * 1.1); ctx.lineTo(-r * 0.4, -r * 0.8); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(r * 0.6, -r * 0.5); ctx.lineTo(r * 1.2, -r * 1.1); ctx.lineTo(r * 0.4, -r * 0.8); ctx.fill();
+            // Blue eyes
+            ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(-r * 0.3, r * 0.15, r * 0.15, 0, Math.PI * 2); ctx.arc(r * 0.3, r * 0.15, r * 0.15, 0, Math.PI * 2); ctx.fill();
+          }
+          else if (id === 'captainmarvel') {
+            // Captain Marvel / Supergirl Gold Anime Hair & Star Tiara
+            ctx.fillStyle = '#facc15'; // Gold Hair
+            ctx.beginPath(); ctx.arc(0, 0, r - 1, 0, Math.PI * 2); ctx.fill();
+            // Star Halo Crest
+            ctx.fillStyle = '#0284c7'; ctx.fillRect(-r * 0.8, -r * 0.4, r * 1.6, r * 0.25);
+            ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.arc(0, -r * 0.28, r * 0.18, 0, Math.PI * 2); ctx.fill();
+            // Cyan Eyes
+            ctx.fillStyle = '#00f0ff'; ctx.beginPath(); ctx.arc(-r * 0.35, r * 0.15, r * 0.18, 0, Math.PI * 2); ctx.arc(r * 0.35, r * 0.15, r * 0.18, 0, Math.PI * 2); ctx.fill();
+          }
+          else if (id === 'spiderman') {
+            // Spider-Man Mask & Big Lenses
+            ctx.fillStyle = '#ff0055'; ctx.beginPath(); ctx.arc(0, 0, r - 2, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(-r, 0); ctx.lineTo(r, 0); ctx.moveTo(0, -r); ctx.lineTo(0, r); ctx.stroke();
+            // Lenses
+            ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#000000'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(-r * 0.7, -r * 0.3); ctx.lineTo(-r * 0.15, -r * 0.1); ctx.lineTo(-r * 0.4, r * 0.3); ctx.closePath(); ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(r * 0.7, -r * 0.3); ctx.lineTo(r * 0.15, -r * 0.1); ctx.lineTo(r * 0.4, r * 0.3); ctx.closePath(); ctx.fill(); ctx.stroke();
+          }
+          else if (id === 'storm') {
+            // Storm Silver Hair & Electric Eyes
+            ctx.fillStyle = '#f8fafc'; ctx.beginPath(); ctx.arc(0, 0, r - 1, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#1e293b'; ctx.beginPath(); ctx.arc(0, r * 0.2, r * 0.65, Math.PI, 0); ctx.fill();
+            // Electric Blue Eyes
+            ctx.fillStyle = '#38bdf8'; ctx.shadowBlur = 10; ctx.shadowColor = '#38bdf8';
+            ctx.beginPath(); ctx.arc(-r * 0.32, r * 0.1, r * 0.18, 0, Math.PI * 2); ctx.arc(r * 0.32, r * 0.1, r * 0.18, 0, Math.PI * 2); ctx.fill();
+          }
+          else if (id === 'wolverine') {
+            // Wolverine Cowl Wings
+            ctx.fillStyle = '#eab308'; ctx.beginPath(); ctx.arc(0, 0, r - 2, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#0f172a'; // Black Mask Wings
+            ctx.beginPath(); ctx.moveTo(-r * 0.2, -r * 0.5); ctx.lineTo(-r * 1.3, -r * 1.0); ctx.lineTo(-r * 0.7, r * 0.2); ctx.closePath(); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(r * 0.2, -r * 0.5); ctx.lineTo(r * 1.3, -r * 1.0); ctx.lineTo(r * 0.7, r * 0.2); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(-r * 0.4, -r * 0.1, r * 0.3, r * 0.2); ctx.fillRect(r * 0.1, -r * 0.1, r * 0.3, r * 0.2);
+          }
+          else {
+            // Aquaman Teal Hair & Gold Collar
+            ctx.fillStyle = '#0d9488'; ctx.beginPath(); ctx.arc(0, 0, r - 2, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#eab308'; ctx.fillRect(-r * 0.6, r * 0.3, r * 1.2, r * 0.4);
+            ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-r * 0.3, -r * 0.05, r * 0.16, 0, Math.PI * 2); ctx.arc(r * 0.3, -r * 0.05, r * 0.16, 0, Math.PI * 2); ctx.fill();
+          }
         }
       }
 
-      // 3. Sling-Ring Energy Arcs & Concentric Portals
-      let portalAngle = 0;
+      // Pools
       const stardustPool = Array.from({ length: 90 }, () => new QuantumParticle());
-      const sparksPool = [];
+      const chibiHeadsPool = HERO_ROSTER.map((h, i) => new ChibiHeroHead(h, i, HERO_ROSTER.length));
 
-      // Detect card hover to shift Sling-Ring theme color
+      let portalAngle = 0;
+
+      // Card hover detection to shift portal glow color
       document.addEventListener('mouseover', (e) => {
         const card = e.target.closest('.activity-card, .nav-card, .event-card');
         if (card) {
@@ -624,32 +773,57 @@
         }
       });
 
-      // ── Main Render Loop (Viewport Fixed Coordinates) ────────
+      // ── Main Render Loop (Satisfying Requirements 1, 2, and 3) ─────
       function animate() {
         ctx.clearRect(0, 0, width, height);
 
         const now = Date.now();
-        portalAngle += 0.015;
+        portalAngle += 0.012;
 
-        // Viewport Center (always dynamically centered on the visible viewport regardless of scroll!)
+        // 1. Requirement 1: Viewport-Locked Main Portal Center (always dynamic in middle of current visible screen!)
         const vCenterX = width / 2;
         const vCenterY = height / 2;
-        const baseRadius = Math.min(width * 0.40, height * 0.35, 340);
 
-        // 1. Draw Viewport-Filling Stardust Particles
+        // 2. Requirement 3: 100% Viewport Particle Field
         stardustPool.forEach(p => {
           p.update();
           p.draw();
         });
 
-        // 2. Draw Quantum Sling-Ring Portal Concentric Rings in Viewport Center
+        // 3. Requirement 2: Full-Page Quantum Portal Conduits (spans scroll depth)
+        const scrollY = window.scrollY || 0;
+        const conduitYPositions = [200, 750, 1300, 1850];
+
+        conduitYPositions.forEach((docY, i) => {
+          const screenY = docY - scrollY;
+          // Only draw conduit rings if currently inside or near screen viewport
+          if (screenY > -300 && screenY < height + 300) {
+            ctx.save();
+            ctx.translate(vCenterX, screenY);
+            ctx.rotate((i % 2 === 0 ? 1 : -1) * portalAngle * 0.8);
+
+            const conduitRad = Math.min(width * 0.42, 340);
+            ctx.beginPath();
+            ctx.ellipse(0, 0, conduitRad, conduitRad * 0.45, 0, 0, Math.PI * 2);
+            ctx.shadowBlur = 18;
+            ctx.shadowColor = i % 2 === 0 ? currentGlowColor : currentAccentColor;
+            ctx.strokeStyle = i % 2 === 0 ? currentGlowColor + '88' : currentAccentColor + '88';
+            ctx.lineWidth = 2.2;
+            ctx.stroke();
+            ctx.restore();
+          }
+        });
+
+        // 4. Draw Viewport-Locked Main Sling-Ring Portal
         ctx.save();
         ctx.translate(vCenterX, vCenterY);
 
-        // Outer Sling-Ring Core Glow Gradient
+        const baseRadius = Math.min(width * 0.38, height * 0.32, 320);
+
+        // Core Portal Radial Aura
         const grad = ctx.createRadialGradient(0, 0, baseRadius * 0.2, 0, 0, baseRadius * 1.3);
         grad.addColorStop(0, 'rgba(0, 0, 0, 0.4)');
-        grad.addColorStop(0.5, currentGlowColor + '1a'); // 10% opacity
+        grad.addColorStop(0.5, currentGlowColor + '22');
         grad.addColorStop(1, 'rgba(0,0,0,0)');
 
         ctx.fillStyle = grad;
@@ -657,73 +831,51 @@
         ctx.arc(0, 0, baseRadius * 1.3, 0, Math.PI * 2);
         ctx.fill();
 
-        // Sling Ring 1: Outer Rotating Golden Spark Ring (3D Tilted Ellipse)
-        ctx.rotate(0.2); // slight 3D perspective angle
+        // Main Sling-Ring Ellipse 1
+        ctx.rotate(0.25);
         ctx.beginPath();
         ctx.ellipse(0, 0, baseRadius, baseRadius * 0.65, portalAngle, 0, Math.PI * 2);
-        ctx.shadowBlur = 25;
+        ctx.shadowBlur = 24;
         ctx.shadowColor = currentGlowColor;
         ctx.strokeStyle = currentGlowColor;
-        ctx.lineWidth = 3.5;
+        ctx.lineWidth = 3.2;
         ctx.stroke();
 
-        // Sling Ring 2: Counter-Rotating Quantum Cyan Ring
+        // Main Sling-Ring Ellipse 2 (Counter rotating cyan)
         ctx.beginPath();
-        ctx.ellipse(0, 0, baseRadius * 0.78, baseRadius * 0.50, -portalAngle * 1.4, 0, Math.PI * 2);
-        ctx.shadowBlur = 20;
+        ctx.ellipse(0, 0, baseRadius * 0.76, baseRadius * 0.48, -portalAngle * 1.4, 0, Math.PI * 2);
+        ctx.shadowBlur = 18;
         ctx.shadowColor = currentAccentColor;
         ctx.strokeStyle = currentAccentColor;
         ctx.lineWidth = 2.0;
         ctx.stroke();
 
-        // Sling Ring 3: Inner Core Ring
-        ctx.beginPath();
-        ctx.ellipse(0, 0, baseRadius * 0.52, baseRadius * 0.34, portalAngle * 2.0, 0, Math.PI * 2);
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = '#ffffff';
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
         ctx.restore();
 
-        // 3. Continuously spawn Sling-Ring sparks around portal rim
-        if (Math.random() < 0.6) {
-          sparksPool.push(new SlingRingSpark(vCenterX, vCenterY, baseRadius));
-        }
+        // 5. Update & Draw Anime Chibi Superhero Heads Orbiting around Viewport Center
+        chibiHeadsPool.forEach(chibi => {
+          chibi.update(vCenterX, vCenterY);
+          chibi.draw();
+        });
 
-        // 4. Interactive Touch Sling-Ring Spark Vortex on Finger / Cursor
+        // 6. Interactive Touch Halo Ring on Finger / Mouse Hold
         if (mouse.active) {
           const holdSecs = Math.min(3.0, (now - touchStartTime) / 1000);
 
-          // Pulsing Touch Quantum Sling-Ring
           ctx.save();
           ctx.beginPath();
-          const ringR = 28 + Math.sin(now * 0.015) * 6 + holdSecs * 22;
+          const ringR = 28 + Math.sin(now * 0.015) * 6 + holdSecs * 20;
           ctx.arc(mouse.x, mouse.y, ringR, 0, Math.PI * 2);
-          ctx.shadowBlur = 28; ctx.shadowColor = currentGlowColor;
-          ctx.strokeStyle = currentGlowColor; ctx.lineWidth = 3.2;
+          ctx.shadowBlur = 26; ctx.shadowColor = currentGlowColor;
+          ctx.strokeStyle = currentGlowColor; ctx.lineWidth = 3.0;
           ctx.stroke();
 
-          // Inner spark ring
           ctx.beginPath();
-          ctx.arc(mouse.x, mouse.y, ringR * 0.6, 0, Math.PI * 2);
-          ctx.shadowBlur = 16; ctx.shadowColor = currentAccentColor;
-          ctx.strokeStyle = currentAccentColor; ctx.lineWidth = 2.0;
+          ctx.arc(mouse.x, mouse.y, ringR * 0.65, 0, Math.PI * 2);
+          ctx.shadowBlur = 15; ctx.shadowColor = currentAccentColor;
+          ctx.strokeStyle = currentAccentColor; ctx.lineWidth = 1.8;
           ctx.stroke();
           ctx.restore();
-
-          // Spawn touch sparks
-          for (let i = 0; i < 3; i++) {
-            sparksPool.push(new SlingRingSpark(mouse.x, mouse.y, ringR * 0.8));
-          }
-        }
-
-        // 5. Update & Draw Sling-Ring Sparks
-        for (let i = sparksPool.length - 1; i >= 0; i--) {
-          sparksPool[i].update(vCenterX, vCenterY);
-          sparksPool[i].draw();
-          if (sparksPool[i].life <= 0) sparksPool.splice(i, 1);
         }
 
         requestAnimationFrame(animate);
