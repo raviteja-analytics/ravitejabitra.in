@@ -324,6 +324,96 @@
       }
     }
 
+    /* Sport Tabs Navigation */
+    .sport-tabs-bar {
+      display: flex;
+      gap: 6px;
+      width: 100%;
+      margin: 12px 0 20px 0;
+      background: rgba(16, 20, 32, 0.6);
+      padding: 6px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .sport-tab-btn {
+      flex: 1;
+      padding: 10px 8px;
+      border-radius: 12px;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .sport-tab-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .sport-tab-btn.active {
+      background: linear-gradient(135deg, #ff0038 0%, #ffde00 100%);
+      color: #090b10;
+      font-weight: 900;
+      box-shadow: 0 4px 18px rgba(255, 0, 56, 0.4);
+    }
+
+    /* City Group Section Header */
+    .city-group-wrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .city-group-wrapper:last-child {
+      margin-bottom: 0;
+    }
+
+    .city-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 6px 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 12px;
+      border-left: 3px solid #ffde00;
+      margin-bottom: 4px;
+    }
+
+    .city-title-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #f8fafc;
+    }
+
+    .city-badge-count {
+      font-size: 0.72rem;
+      font-weight: 800;
+      background: rgba(255, 222, 0, 0.15);
+      color: #ffde00;
+      padding: 3px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 222, 0, 0.3);
+    }
+
     .loading-events {
       padding: 30px;
       color: var(--text-secondary);
@@ -361,6 +451,13 @@
     <div class="links-group">
 
       <div class="section-label">🎟️ Official Event Registrations</div>
+
+      <!-- Sport Filter Tabs (Running | Cycling | Hyrox) -->
+      <div class="sport-tabs-bar" id="sport-tabs-bar">
+        <button class="sport-tab-btn active" data-sport="running" onclick="switchSportTab('running')">🏃‍♂️ Running</button>
+        <button class="sport-tab-btn" data-sport="cycling" onclick="switchSportTab('cycling')">🚴‍♂️ Cycling</button>
+        <button class="sport-tab-btn" data-sport="hyrox" onclick="switchSportTab('hyrox')">🏋️‍♂️ Hyrox</button>
+      </div>
 
       <!-- Events Container (Populated dynamically from Google Sheet with instant cache) -->
       <div id="events-feed" style="display: flex; flex-direction: column; gap: 14px; width: 100%;">
@@ -466,43 +563,157 @@
       return { theme: 'running', icon: '🎟️' };
     }
 
-    // Render event objects into the container
+    let allEventsData = [];
+    let currentActiveSport = 'running';
+
+    // Switch Sport Tab UI
+    function switchSportTab(sport) {
+      currentActiveSport = sport;
+      const btns = document.querySelectorAll('.sport-tab-btn');
+      btns.forEach(btn => {
+        if (btn.getAttribute('data-sport') === sport) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+      renderEventsUI(allEventsData);
+    }
+
+    // Date Parser handling ordinal suffixes like "August 9th 2026", "23rd", "1st"
+    function parseEventDate(dateStr) {
+      if (!dateStr) return null;
+      // Clean ordinal numbers (9th -> 9, 23rd -> 23)
+      const cleaned = dateStr.replace(/(\d+)(st|nd|rd|th)/gi, '$1').trim();
+      const parsed = new Date(cleaned);
+      if (!isNaN(parsed.getTime())) {
+        parsed.setHours(23, 59, 59, 999);
+        return parsed;
+      }
+      return null;
+    }
+
+    // Render Events with Date Filter, Chronological Sorting & Dynamic City Grouping
     function renderEventsUI(events) {
+      allEventsData = events || [];
       const container = document.getElementById('events-feed');
-      if (!events || events.length === 0) {
+      if (!allEventsData || allEventsData.length === 0) {
         container.innerHTML = `<div style="color: var(--text-muted); padding: 20px;">No active events found.</div>`;
         return;
       }
 
-      container.innerHTML = '';
-      events.forEach(item => {
-        const meta = getSportTheme(item.sport);
-        const card = document.createElement('a');
-        card.href = item.url;
-        card.target = '_blank';
-        card.rel = 'noopener noreferrer';
-        card.className = 'event-card activity-card';
-        card.setAttribute('data-theme', meta.theme);
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-        card.innerHTML = `
-          <div class="event-card-header">
-            <div class="event-title-box">
-              <span class="event-icon">${meta.icon}</span>
-              <span class="event-name">${item.name}</span>
-            </div>
-          </div>
+      // 1. Requirement 3: Filter out expired events (Event Date < Today)
+      const validUpcomingEvents = allEventsData.filter(item => {
+        const d = parseEventDate(item.date);
+        if (!d) return true; // Keep if date is unparseable
+        return d >= todayStart;
+      });
 
-          <div class="event-details">
-            ${item.location ? `<div class="event-detail-item"><span>📍</span> ${item.location}</div>` : ''}
-            ${item.date ? `<div class="event-detail-item"><span>📅</span> ${item.date}</div>` : ''}
-          </div>
+      // 2. Requirement 4: Sort events from earlier to later date (ascending)
+      validUpcomingEvents.sort((a, b) => {
+        const dateA = parseEventDate(a.date);
+        const dateB = parseEventDate(b.date);
+        if (!dateA && !dateB) return 0;
+        if (!dateA) return 1;
+        if (!dateB) return -1;
+        return dateA.getTime() - dateB.getTime();
+      });
 
-          <div class="event-card-footer">
-            <span class="event-deadline">${item.lastDate ? '⏳ ' + item.lastDate : 'Registration Open'}</span>
-            <span class="event-action-btn">Register Official Site →</span>
+      // 3. Requirement 1: Filter by currently active Sport Tab (Running / Cycling / Hyrox)
+      const activeSportEvents = validUpcomingEvents.filter(item => {
+        const s = (item.sport || '').toLowerCase();
+        if (currentActiveSport === 'running') return s.includes('run');
+        if (currentActiveSport === 'cycling') return s.includes('cycl') || s.includes('bike');
+        if (currentActiveSport === 'hyrox') return s.includes('hyrox') || s.includes('strength') || s.includes('triathlon');
+        return true;
+      });
+
+      if (activeSportEvents.length === 0) {
+        container.innerHTML = `
+          <div style="color: #94a3b8; font-size: 0.9rem; padding: 24px 16px; background: rgba(255,255,255,0.03); border-radius: 16px; border: 1px dashed rgba(255,255,255,0.1); width: 100%;">
+            No active <strong>${currentActiveSport.toUpperCase()}</strong> registration links currently open. Check back soon!
           </div>
         `;
-        container.appendChild(card);
+        return;
+      }
+
+      // 4. Requirement 2: Dynamic City Grouping (Bengaluru, Delhi, Goa, Chennai, Mumbai, etc.)
+      const cityGroups = {};
+      activeSportEvents.forEach(item => {
+        let city = (item.city || '').trim();
+        if (!city) {
+          const loc = (item.location || '').toLowerCase();
+          if (loc.includes('bengaluru') || loc.includes('bangalore')) city = 'Bengaluru';
+          else if (loc.includes('delhi')) city = 'Delhi';
+          else if (loc.includes('goa')) city = 'Goa';
+          else if (loc.includes('chennai')) city = 'Chennai';
+          else if (loc.includes('mumbai')) city = 'Mumbai';
+          else city = 'Other';
+        }
+        if (!cityGroups[city]) {
+          cityGroups[city] = [];
+        }
+        cityGroups[city].push(item);
+      });
+
+      container.innerHTML = '';
+
+      // Render each dynamic City Group section!
+      Object.keys(cityGroups).forEach(cityName => {
+        const cityEvents = cityGroups[cityName];
+        
+        const groupWrapper = document.createElement('div');
+        groupWrapper.className = 'city-group-wrapper';
+
+        // City Section Header
+        groupWrapper.innerHTML = `
+          <div class="city-section-header">
+            <div class="city-title-box">
+              <span>📍</span>
+              <span>${cityName}</span>
+            </div>
+            <span class="city-badge-count">${cityEvents.length} ${cityEvents.length === 1 ? 'Event' : 'Events'}</span>
+          </div>
+        `;
+
+        const eventsGrid = document.createElement('div');
+        eventsGrid.style.cssText = 'display: flex; flex-direction: column; gap: 12px; width: 100%;';
+
+        cityEvents.forEach(item => {
+          const meta = getSportTheme(item.sport);
+          const card = document.createElement('a');
+          card.href = item.url;
+          card.target = '_blank';
+          card.rel = 'noopener noreferrer';
+          card.className = 'event-card activity-card';
+          card.setAttribute('data-theme', meta.theme);
+
+          card.innerHTML = `
+            <div class="event-card-header">
+              <div class="event-title-box">
+                <span class="event-icon">${meta.icon}</span>
+                <span class="event-name">${item.name}</span>
+              </div>
+            </div>
+
+            <div class="event-details">
+              ${item.location ? `<div class="event-detail-item"><span>📍</span> ${item.location}</div>` : ''}
+              ${item.date ? `<div class="event-detail-item"><span>📅</span> ${item.date}</div>` : ''}
+            </div>
+
+            <div class="event-card-footer">
+              <span class="event-deadline">${item.lastDate ? '⏳ ' + item.lastDate : 'Registration Open'}</span>
+              <span class="event-action-btn">Register Official Site →</span>
+            </div>
+          `;
+          eventsGrid.appendChild(card);
+        });
+
+        groupWrapper.appendChild(eventsGrid);
+        container.appendChild(groupWrapper);
       });
     }
 
@@ -539,7 +750,8 @@
               url: row[2],
               location: row[3] || '',
               date: row[4] || '',
-              lastDate: row[5] || ''
+              lastDate: row[5] || '',
+              city: row[6] || ''
             });
           }
         }
