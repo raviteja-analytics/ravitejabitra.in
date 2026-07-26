@@ -81,6 +81,16 @@
   },
   {
     "sport": "Running",
+    "name": "Palm Beach 10K Run",
+    "url": "https://registrations.indiarunning.com/palmbeach10krun-23964",
+    "location": "Palm Beach Road, Navi Mumbai",
+    "date": "September 27th 2026",
+    "lastDate": "Slots Open",
+    "city": "Mumbai",
+    "source": "IndiaRunning"
+  },
+  {
+    "sport": "Running",
     "name": "WORLD MENTAL HEALTH DAY RUN 2026",
     "url": "https://registrations.indiarunning.com/world_mental_health_day_run_2026_85710",
     "location": "Atal Bihari Vajpayee Stadium,HSR Layout, Bengaluru",
@@ -128,6 +138,16 @@
     "lastDate": "Slots Open",
     "city": "Bengaluru",
     "source": "Wipro Marathon"
+  },
+  {
+    "sport": "Running",
+    "name": "New Balance City Series Delhi",
+    "url": "https://registrations.indiarunning.com/newbalancecityseries-18112",
+    "location": "JLN Stadium, Delhi",
+    "date": "October 25th 2026",
+    "lastDate": "Registration Open",
+    "city": "Delhi",
+    "source": "IndiaRunning"
   },
   {
     "sport": "Cycling",
