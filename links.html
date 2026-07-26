@@ -560,7 +560,7 @@
   </div>
 
   <script>
-    const CACHE_KEY = 'cached_events_data';
+    const CACHE_KEY = 'cached_events_data_v3';
 
     // CSV Parser that handles quotes
     function parseCSV(text) {
@@ -831,7 +831,7 @@
 
       // 2. Fetch live Vercel Multi-Platform Crawler API (/api/events)
       try {
-        const apiRes = await fetch('/api/events');
+        const apiRes = await fetch('/api/events?v=' + Date.now());
         if (apiRes.ok) {
           const apiData = await apiRes.json();
           if (apiData && Array.isArray(apiData.events) && apiData.events.length > 0) {
