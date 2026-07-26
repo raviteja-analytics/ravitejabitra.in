@@ -467,7 +467,7 @@
     loadGoogleSheetEvents();
   </script>
 
-  <!-- 60fps Superhero Assembly Orbit Canvas Engine -->
+  <!-- 60fps Multiverse Nexus & Quantum Sling-Ring Portal Canvas Engine -->
   <script>
     (function() {
       const canvas = document.getElementById('live-bg');
@@ -507,249 +507,224 @@
       window.addEventListener('touchend', () => { mouse.active = false; });
       window.addEventListener('touchcancel', () => { mouse.active = false; });
 
-      // 6 Superhero Core Profiles
-      const HEROES = [
-        { name: 'The Flash', symbol: '⚡', color: '#ff0038', glow: '#ffde00', theme: 'running' },
-        { name: 'Wolverine', symbol: '🐺', color: '#ffc800', glow: '#38bdf8', theme: 'hyrox' },
-        { name: 'Thor', symbol: '🔨', color: '#ffd700', glow: '#00d8ff', theme: 'strength' },
-        { name: 'Aquaman', symbol: '🔱', color: '#00d8ff', glow: '#00ffaa', theme: 'swimming' },
-        { name: 'Spider-Man', symbol: '🕷️', color: '#ff0055', glow: '#00f0ff', theme: 'badminton' },
-        { name: 'Super Saiyan', symbol: '🔥', color: '#ffb400', glow: '#ff3300', theme: 'cycling' }
-      ];
+      // Active Portal Theme Colors (shifts on card hover)
+      let currentGlowColor = '#ffde00';
+      let currentAccentColor = '#00d8ff';
 
-      // Cosmic Stardust Particles
-      class StarParticle {
+      const THEME_COLORS = {
+        running:   { glow: '#ff0038', accent: '#ffde00' }, // Flash Scarlet & Gold
+        cycling:   { glow: '#ffb400', accent: '#ff3300' }, // Saiyan Gold
+        swimming:  { glow: '#00d8ff', accent: '#00ffaa' }, // Aquaman Cyan
+        strength:  { glow: '#ffd700', accent: '#00d8ff' }, // Thor Gold & Blue
+        hyrox:     { glow: '#ffc800', accent: '#38bdf8' }, // Wolverine Gold
+        badminton: { glow: '#ff0055', accent: '#00f0ff' }  // Spider Web Cyan
+      };
+
+      // 1. Viewport-Filling Quantum Stardust Particles (covers entire screen regardless of scroll)
+      class QuantumParticle {
         constructor() {
-          this.reset();
+          this.reset(true);
         }
-        reset() {
-          this.x = Math.random() * width;
-          this.y = Math.random() * height;
-          this.size = Math.random() * 2.2 + 0.6;
-          this.alpha = Math.random() * 0.5 + 0.25;
-          this.speedY = -(Math.random() * 0.5 + 0.2);
-          this.speedX = (Math.random() - 0.5) * 0.3;
-          this.color = Math.random() > 0.4 ? 'rgba(255, 200, 0, ' : 'rgba(0, 216, 255, ';
+
+        reset(init = false) {
+          this.x = init ? Math.random() * width : Math.random() * width;
+          this.y = init ? Math.random() * height : (Math.random() > 0.5 ? -20 : height + 20);
+          this.size = Math.random() * 2.5 + 0.8;
+          this.alpha = Math.random() * 0.6 + 0.2;
+          this.vx = (Math.random() - 0.5) * 0.8;
+          this.vy = -(Math.random() * 0.8 + 0.3);
+          this.color = Math.random() > 0.4 ? currentGlowColor : currentAccentColor;
         }
+
         update() {
-          this.y += this.speedY;
-          this.x += this.speedX;
-          if (this.y < 0 || this.x < 0 || this.x > width) this.reset();
-        }
-        draw() {
-          ctx.beginPath();
-          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-          ctx.fillStyle = this.color + this.alpha + ')';
-          ctx.fill();
-        }
-      }
+          this.x += this.vx;
+          this.y += this.vy;
 
-      // Orbiting Superhero Core Node
-      class HeroOrb {
-        constructor(hero, index, total) {
-          this.hero = hero;
-          this.index = index;
-          this.baseAngle = (index / total) * Math.PI * 2;
-          this.angle = this.baseAngle;
-          this.orbitSpeed = 0.008 + (index % 2 === 0 ? 0.003 : -0.003);
-          this.radiusX = Math.min(width * 0.42, 380);
-          this.radiusY = Math.min(height * 0.32, 240);
-          this.x = width / 2;
-          this.y = height / 2;
-          this.pulse = Math.random() * 10;
-          this.trail = [];
-        }
-
-        update(centerX, centerY) {
-          this.angle += this.orbitSpeed;
-          this.pulse += 0.04;
-
-          this.radiusX = Math.min(width * 0.42, 380);
-          this.radiusY = Math.min(height * 0.32, 240);
-
-          let targetX = centerX + Math.cos(this.angle) * this.radiusX;
-          let targetY = centerY + Math.sin(this.angle) * this.radiusY;
-
-          // Touch Gravitational Pull into center ring
           if (mouse.active) {
-            const dx = mouse.x - targetX;
-            const dy = mouse.y - targetY;
+            const dx = mouse.x - this.x;
+            const dy = mouse.y - this.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < 340) {
-              const pull = (1 - dist / 340) * 0.65;
-              targetX += dx * pull;
-              targetY += dy * pull;
+            if (dist < 280) {
+              this.x += (dx / dist) * 2.5;
+              this.y += (dy / dist) * 2.5;
             }
           }
 
-          // Smooth easing
-          this.x += (targetX - this.x) * 0.08;
-          this.y += (targetY - this.y) * 0.08;
-
-          // Trail afterimages
-          this.trail.push({ x: this.x, y: this.y, alpha: 0.8 });
-          if (this.trail.length > 8) this.trail.shift();
-          this.trail.forEach(t => t.alpha *= 0.82);
+          if (this.y < -30 || this.x < -30 || this.x > width + 30) {
+            this.reset(false);
+          }
         }
 
         draw() {
-          // Trail
-          this.trail.forEach(t => {
-            ctx.save();
-            ctx.globalAlpha = t.alpha * 0.4;
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = this.hero.glow;
-            ctx.fillStyle = this.hero.color;
-            ctx.beginPath();
-            ctx.arc(t.x, t.y, 10, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
-          });
-
-          // Outer Pulsing Aura Halo
           ctx.save();
-          ctx.shadowBlur = 30 + Math.sin(this.pulse) * 8;
-          ctx.shadowColor = this.hero.glow;
-
-          const rad = 24 + Math.sin(this.pulse) * 3;
-          const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, rad * 2.2);
-          grad.addColorStop(0, this.hero.color);
-          grad.addColorStop(0.5, this.hero.glow);
-          grad.addColorStop(1, 'rgba(0,0,0,0)');
-
-          ctx.beginPath();
-          ctx.arc(this.x, this.y, rad * 2.2, 0, Math.PI * 2);
-          ctx.fillStyle = grad;
-          ctx.fill();
-
-          // Solid Core
-          ctx.beginPath();
-          ctx.arc(this.x, this.y, rad, 0, Math.PI * 2);
-          ctx.fillStyle = '#10121a';
-          ctx.strokeStyle = this.hero.glow;
-          ctx.lineWidth = 3;
-          ctx.fill();
-          ctx.stroke();
-
-          // Symbol
-          ctx.font = '700 16px "Inter", sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillStyle = '#ffffff';
-          ctx.fillText(this.hero.symbol, this.x, this.y + 1);
-
-          ctx.restore();
-        }
-      }
-
-      // Energy Shockwave Burst
-      class EnergyBurst {
-        constructor(x, y, color) {
-          this.x = x;
-          this.y = y;
-          this.radius = 5;
-          this.maxRadius = Math.random() * 90 + 70;
-          this.color = color;
-          this.alpha = 1.0;
-        }
-        update() {
-          this.radius += 5;
-          this.alpha = 1 - (this.radius / this.maxRadius);
-        }
-        draw() {
-          if (this.alpha <= 0) return;
-          ctx.save();
-          ctx.shadowBlur = 22;
+          ctx.globalAlpha = this.alpha;
+          ctx.shadowBlur = 12;
           ctx.shadowColor = this.color;
-          ctx.strokeStyle = this.color;
-          ctx.lineWidth = 3 * this.alpha;
-          ctx.globalAlpha = Math.max(0, this.alpha);
+          ctx.fillStyle = this.color;
           ctx.beginPath();
-          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-          ctx.stroke();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
           ctx.restore();
         }
       }
 
-      // Pools
-      const stardust = Array.from({ length: 60 }, () => new StarParticle());
-      const heroOrbs = HEROES.map((h, i) => new HeroOrb(h, i, HEROES.length));
-      const bursts = [];
+      // 2. Quantum Sling-Ring Spark Particles
+      class SlingRingSpark {
+        constructor(cx, cy, radius) {
+          this.cx = cx;
+          this.cy = cy;
+          this.angle = Math.random() * Math.PI * 2;
+          this.radius = radius + (Math.random() - 0.5) * 25;
+          this.speed = (Math.random() * 0.04 + 0.02) * (Math.random() > 0.5 ? 1 : -1);
+          this.life = Math.random() * 40 + 20;
+          this.maxLife = this.life;
+          this.size = Math.random() * 3 + 1;
+          this.color = Math.random() > 0.3 ? '#ffc800' : '#ff5500';
+        }
 
-      let lastBurstTime = 0;
+        update(cx, cy) {
+          this.cx = cx;
+          this.cy = cy;
+          this.angle += this.speed;
+          this.life--;
+        }
 
-      // Card hover detection to trigger superhero energy burst
+        draw() {
+          if (this.life <= 0) return;
+          const x = this.cx + Math.cos(this.angle) * this.radius;
+          const y = this.cy + Math.sin(this.angle) * (this.radius * 0.65); // 3D tilted perspective
+          const alpha = this.life / this.maxLife;
+
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.shadowBlur = 18;
+          ctx.shadowColor = this.color;
+          ctx.fillStyle = this.color;
+          ctx.beginPath();
+          ctx.arc(x, y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // 3. Sling-Ring Energy Arcs & Concentric Portals
+      let portalAngle = 0;
+      const stardustPool = Array.from({ length: 90 }, () => new QuantumParticle());
+      const sparksPool = [];
+
+      // Detect card hover to shift Sling-Ring theme color
       document.addEventListener('mouseover', (e) => {
         const card = e.target.closest('.activity-card, .nav-card, .event-card');
         if (card) {
           const theme = card.getAttribute('data-theme') || 'running';
-          const match = HEROES.find(h => h.theme === theme) || HEROES[0];
-          const rect = card.getBoundingClientRect();
-          const cx = rect.left + rect.width / 2;
-          const cy = rect.top + rect.height / 2;
-          bursts.push(new EnergyBurst(cx, cy, match.glow));
+          if (THEME_COLORS[theme]) {
+            currentGlowColor = THEME_COLORS[theme].glow;
+            currentAccentColor = THEME_COLORS[theme].accent;
+          }
         }
       });
 
-      // ── Main Render Loop ──────────────────────────────────
+      // ── Main Render Loop (Viewport Fixed Coordinates) ────────
       function animate() {
         ctx.clearRect(0, 0, width, height);
 
         const now = Date.now();
+        portalAngle += 0.015;
 
-        // 1. Draw Stardust
-        stardust.forEach(s => {
-          s.update();
-          s.draw();
+        // Viewport Center (always dynamically centered on the visible viewport regardless of scroll!)
+        const vCenterX = width / 2;
+        const vCenterY = height / 2;
+        const baseRadius = Math.min(width * 0.40, height * 0.35, 340);
+
+        // 1. Draw Viewport-Filling Stardust Particles
+        stardustPool.forEach(p => {
+          p.update();
+          p.draw();
         });
 
-        // 2. Center Assembly Pulse Halo when touched/held
+        // 2. Draw Quantum Sling-Ring Portal Concentric Rings in Viewport Center
+        ctx.save();
+        ctx.translate(vCenterX, vCenterY);
+
+        // Outer Sling-Ring Core Glow Gradient
+        const grad = ctx.createRadialGradient(0, 0, baseRadius * 0.2, 0, 0, baseRadius * 1.3);
+        grad.addColorStop(0, 'rgba(0, 0, 0, 0.4)');
+        grad.addColorStop(0.5, currentGlowColor + '1a'); // 10% opacity
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(0, 0, baseRadius * 1.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Sling Ring 1: Outer Rotating Golden Spark Ring (3D Tilted Ellipse)
+        ctx.rotate(0.2); // slight 3D perspective angle
+        ctx.beginPath();
+        ctx.ellipse(0, 0, baseRadius, baseRadius * 0.65, portalAngle, 0, Math.PI * 2);
+        ctx.shadowBlur = 25;
+        ctx.shadowColor = currentGlowColor;
+        ctx.strokeStyle = currentGlowColor;
+        ctx.lineWidth = 3.5;
+        ctx.stroke();
+
+        // Sling Ring 2: Counter-Rotating Quantum Cyan Ring
+        ctx.beginPath();
+        ctx.ellipse(0, 0, baseRadius * 0.78, baseRadius * 0.50, -portalAngle * 1.4, 0, Math.PI * 2);
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = currentAccentColor;
+        ctx.strokeStyle = currentAccentColor;
+        ctx.lineWidth = 2.0;
+        ctx.stroke();
+
+        // Sling Ring 3: Inner Core Ring
+        ctx.beginPath();
+        ctx.ellipse(0, 0, baseRadius * 0.52, baseRadius * 0.34, portalAngle * 2.0, 0, Math.PI * 2);
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#ffffff';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.restore();
+
+        // 3. Continuously spawn Sling-Ring sparks around portal rim
+        if (Math.random() < 0.6) {
+          sparksPool.push(new SlingRingSpark(vCenterX, vCenterY, baseRadius));
+        }
+
+        // 4. Interactive Touch Sling-Ring Spark Vortex on Finger / Cursor
         if (mouse.active) {
           const holdSecs = Math.min(3.0, (now - touchStartTime) / 1000);
+
+          // Pulsing Touch Quantum Sling-Ring
           ctx.save();
           ctx.beginPath();
-          const ringR = 30 + Math.sin(now * 0.012) * 6 + holdSecs * 20;
+          const ringR = 28 + Math.sin(now * 0.015) * 6 + holdSecs * 22;
           ctx.arc(mouse.x, mouse.y, ringR, 0, Math.PI * 2);
-          ctx.shadowBlur = 25; ctx.shadowColor = '#ffde00';
-          ctx.strokeStyle = 'rgba(255, 222, 0, 0.88)'; ctx.lineWidth = 3;
+          ctx.shadowBlur = 28; ctx.shadowColor = currentGlowColor;
+          ctx.strokeStyle = currentGlowColor; ctx.lineWidth = 3.2;
           ctx.stroke();
 
-          // Secondary inner cyan ring
+          // Inner spark ring
           ctx.beginPath();
-          ctx.arc(mouse.x, mouse.y, ringR * 0.65, 0, Math.PI * 2);
-          ctx.shadowBlur = 15; ctx.shadowColor = '#00d8ff';
-          ctx.strokeStyle = 'rgba(0, 216, 255, 0.75)'; ctx.lineWidth = 1.5;
+          ctx.arc(mouse.x, mouse.y, ringR * 0.6, 0, Math.PI * 2);
+          ctx.shadowBlur = 16; ctx.shadowColor = currentAccentColor;
+          ctx.strokeStyle = currentAccentColor; ctx.lineWidth = 2.0;
           ctx.stroke();
           ctx.restore();
 
-          if (now - lastBurstTime > 120) {
-            const randomHero = HEROES[Math.floor(Math.random() * HEROES.length)];
-            bursts.push(new EnergyBurst(mouse.x, mouse.y, randomHero.glow));
-            lastBurstTime = now;
+          // Spawn touch sparks
+          for (let i = 0; i < 3; i++) {
+            sparksPool.push(new SlingRingSpark(mouse.x, mouse.y, ringR * 0.8));
           }
         }
 
-        // 3. Draw Bursts
-        for (let i = bursts.length - 1; i >= 0; i--) {
-          bursts[i].update();
-          bursts[i].draw();
-          if (bursts[i].alpha <= 0) bursts.splice(i, 1);
+        // 5. Update & Draw Sling-Ring Sparks
+        for (let i = sparksPool.length - 1; i >= 0; i--) {
+          sparksPool[i].update(vCenterX, vCenterY);
+          sparksPool[i].draw();
+          if (sparksPool[i].life <= 0) sparksPool.splice(i, 1);
         }
-
-        // 4. Update & Draw Hero Orbs
-        const container = document.querySelector('.links-container');
-        let centerX = width / 2;
-        let centerY = height / 2;
-        if (container) {
-          const rect = container.getBoundingClientRect();
-          centerX = rect.left + rect.width / 2;
-          centerY = rect.top + rect.height / 2;
-        }
-
-        heroOrbs.forEach(orb => {
-          orb.update(centerX, centerY);
-          orb.draw();
-        });
 
         requestAnimationFrame(animate);
       }
