@@ -368,6 +368,47 @@
       box-shadow: 0 4px 18px rgba(255, 0, 56, 0.4);
     }
 
+    /* City Filter Pill Bar */
+    .city-filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      width: 100%;
+      margin: -6px 0 18px 0;
+      justify-content: flex-start;
+    }
+
+    .city-pill-btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(18, 22, 34, 0.6);
+      color: #94a3b8;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .city-pill-btn:hover {
+      color: #ffffff;
+      border-color: rgba(255, 222, 0, 0.5);
+      background: rgba(30, 38, 58, 0.85);
+    }
+
+    .city-pill-btn.active {
+      background: rgba(255, 222, 0, 0.18);
+      color: #ffde00;
+      border-color: #ffde00;
+      font-weight: 800;
+      box-shadow: 0 0 15px rgba(255, 222, 0, 0.25);
+    }
+
     /* City Group Section Header */
     .city-group-wrapper {
       width: 100%;
@@ -386,11 +427,18 @@
       align-items: center;
       justify-content: space-between;
       width: 100%;
-      padding: 6px 10px;
-      background: rgba(255, 255, 255, 0.04);
-      border-radius: 12px;
-      border-left: 3px solid #ffde00;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      border-left: 4px solid #ffde00;
       margin-bottom: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .city-section-header:hover {
+      background: rgba(255, 255, 255, 0.09);
+      transform: translateX(2px);
     }
 
     .city-title-box {
@@ -458,6 +506,9 @@
         <button class="sport-tab-btn" data-sport="cycling" onclick="switchSportTab('cycling')">🚴‍♂️ Cycling</button>
         <button class="sport-tab-btn" data-sport="hyrox" onclick="switchSportTab('hyrox')">🏋️‍♂️ Hyrox</button>
       </div>
+
+      <!-- City Filter Bar (Populated dynamically per active sport) -->
+      <div class="city-filter-bar" id="city-filter-bar"></div>
 
       <!-- Events Container (Populated dynamically from Google Sheet with instant cache) -->
       <div id="events-feed" style="display: flex; flex-direction: column; gap: 14px; width: 100%;">
@@ -565,10 +616,12 @@
 
     let allEventsData = [];
     let currentActiveSport = 'running';
+    let currentActiveCity = 'all';
 
     // Switch Sport Tab UI
     function switchSportTab(sport) {
       currentActiveSport = sport;
+      currentActiveCity = 'all'; // Reset city filter on sport tab change
       const btns = document.querySelectorAll('.sport-tab-btn');
       btns.forEach(btn => {
         if (btn.getAttribute('data-sport') === sport) {
@@ -577,6 +630,12 @@
           btn.classList.remove('active');
         }
       });
+      renderEventsUI(allEventsData);
+    }
+
+    // Switch City Filter UI
+    function switchCityFilter(cityName) {
+      currentActiveCity = cityName;
       renderEventsUI(allEventsData);
     }
 
@@ -597,8 +656,11 @@
     function renderEventsUI(events) {
       allEventsData = events || [];
       const container = document.getElementById('events-feed');
+      const cityBarContainer = document.getElementById('city-filter-bar');
+
       if (!allEventsData || allEventsData.length === 0) {
-        container.innerHTML = `<div style="color: var(--text-muted); padding: 20px;">No active events found.</div>`;
+        if (container) container.innerHTML = `<div style="color: var(--text-muted); padding: 20px;">No active events found.</div>`;
+        if (cityBarContainer) cityBarContainer.innerHTML = '';
         return;
       }
 
@@ -632,6 +694,7 @@
       });
 
       if (activeSportEvents.length === 0) {
+        if (cityBarContainer) cityBarContainer.innerHTML = '';
         container.innerHTML = `
           <div style="color: #94a3b8; font-size: 0.9rem; padding: 24px 16px; background: rgba(255,255,255,0.03); border-radius: 16px; border: 1px dashed rgba(255,255,255,0.1); width: 100%;">
             No active <strong>${currentActiveSport.toUpperCase()}</strong> registration links currently open. Check back soon!
@@ -640,7 +703,7 @@
         return;
       }
 
-      // 4. Requirement 2: Dynamic City Grouping (Bengaluru, Delhi, Goa, Chennai, Mumbai, etc.)
+      // 4. Requirement 2: Dynamic City Grouping & Automatic City Pills
       const cityGroups = {};
       activeSportEvents.forEach(item => {
         let city = (item.city || '').trim();
@@ -659,18 +722,54 @@
         cityGroups[city].push(item);
       });
 
+      // Render Dynamic City Filter Pills (All Cities + Each Unique City)
+      if (cityBarContainer) {
+        cityBarContainer.innerHTML = '';
+        
+        // "All Cities" Pill
+        const allPill = document.createElement('button');
+        allPill.className = `city-pill-btn ${currentActiveCity === 'all' ? 'active' : ''}`;
+        allPill.innerHTML = `<span>🌆 All Cities</span> <span style="opacity: 0.7; font-size: 0.72rem;">(${activeSportEvents.length})</span>`;
+        allPill.onclick = () => switchCityFilter('all');
+        cityBarContainer.appendChild(allPill);
+
+        // Individual City Pills (e.g. Bengaluru, Delhi, Goa, Chennai, etc.)
+        Object.keys(cityGroups).forEach(cityName => {
+          const pill = document.createElement('button');
+          const isSelected = currentActiveCity.toLowerCase() === cityName.toLowerCase();
+          pill.className = `city-pill-btn ${isSelected ? 'active' : ''}`;
+          pill.innerHTML = `<span>📍 ${cityName}</span> <span style="opacity: 0.75; font-size: 0.72rem;">(${cityGroups[cityName].length})</span>`;
+          pill.onclick = () => switchCityFilter(cityName);
+          cityBarContainer.appendChild(pill);
+        });
+      }
+
       container.innerHTML = '';
 
-      // Render each dynamic City Group section!
-      Object.keys(cityGroups).forEach(cityName => {
+      // Render Dynamic City Sections (Filter by currentActiveCity if selected)
+      const citiesToRender = Object.keys(cityGroups).filter(cityName => {
+        if (currentActiveCity === 'all') return true;
+        return cityName.toLowerCase() === currentActiveCity.toLowerCase();
+      });
+
+      if (citiesToRender.length === 0) {
+        container.innerHTML = `
+          <div style="color: #94a3b8; font-size: 0.9rem; padding: 20px; text-align: center; width: 100%;">
+            No active events found for <strong>${currentActiveCity}</strong> under ${currentActiveSport.toUpperCase()}.
+          </div>
+        `;
+        return;
+      }
+
+      citiesToRender.forEach(cityName => {
         const cityEvents = cityGroups[cityName];
         
         const groupWrapper = document.createElement('div');
         groupWrapper.className = 'city-group-wrapper';
 
-        // City Section Header
+        // Interactive City Section Header (clicking isolates or selects city!)
         groupWrapper.innerHTML = `
-          <div class="city-section-header">
+          <div class="city-section-header" onclick="switchCityFilter('${cityName}')" title="Click to view only ${cityName} registrations">
             <div class="city-title-box">
               <span>📍</span>
               <span>${cityName}</span>
