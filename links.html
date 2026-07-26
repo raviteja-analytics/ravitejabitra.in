@@ -859,11 +859,11 @@
               let city = row[6] || '';
               if (!city) {
                 const lower = (cleanName + ' ' + url + ' ' + (row[3] || '')).toLowerCase();
-                if (lower.includes('delhi')) city = 'Delhi';
-                else if (lower.includes('goa')) city = 'Goa';
-                else if (lower.includes('chennai')) city = 'Chennai';
-                else if (lower.includes('hyderabad')) city = 'Hyderabad';
-                else if (lower.includes('mumbai') || lower.includes('palmbeach')) city = 'Mumbai';
+                if (lower.includes('delhi') || lower.includes('noida') || lower.includes('gurugram') || lower.includes('jawaharlal') || lower.includes('jn stadium')) city = 'Delhi';
+                else if (lower.includes('mumbai') || lower.includes('palmbeach') || lower.includes('navi mumbai') || lower.includes('bandra')) city = 'Mumbai';
+                else if (lower.includes('goa') || lower.includes('vasco') || lower.includes('panjim')) city = 'Goa';
+                else if (lower.includes('chennai') || lower.includes('ecr')) city = 'Chennai';
+                else if (lower.includes('hyderabad') || lower.includes('gachibowli')) city = 'Hyderabad';
                 else city = 'Bengaluru';
               }
 
@@ -871,8 +871,8 @@
                 sport: sport || 'Running',
                 name: cleanName,
                 url: url,
-                location: row[3] || city,
-                date: row[4] || 'September 27th 2026',
+                location: row[3] || (city === 'Delhi' ? 'New Delhi' : (city === 'Mumbai' ? 'Navi Mumbai' : city)),
+                date: row[4] || 'Date TBD',
                 lastDate: row[5] || 'Registration Open',
                 city: city
               });

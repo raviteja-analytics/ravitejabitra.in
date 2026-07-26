@@ -24,7 +24,27 @@ export default async function handler(req, res) {
       console.warn('Fetch error:', e);
     }
 
-    // 1. Extract Event Title / Name
+    const lowerUrl = url.toLowerCase();
+    const lowerHtml = html.toLowerCase();
+    const combinedStr = lowerUrl + ' ' + lowerHtml;
+
+    // 1. Precise City Detection (No false Bengaluru defaults for Delhi/Mumbai/etc.)
+    let city = 'Bengaluru';
+    if (combinedStr.includes('delhi') || combinedStr.includes('noida') || combinedStr.includes('gurugram') || combinedStr.includes('jawaharlal') || combinedStr.includes('jn stadium')) {
+      city = 'Delhi';
+    } else if (combinedStr.includes('mumbai') || combinedStr.includes('palmbeach') || combinedStr.includes('navi mumbai') || combinedStr.includes('bandra')) {
+      city = 'Mumbai';
+    } else if (combinedStr.includes('goa') || combinedStr.includes('vasco') || combinedStr.includes('panjim')) {
+      city = 'Goa';
+    } else if (combinedStr.includes('chennai') || combinedStr.includes('ecr')) {
+      city = 'Chennai';
+    } else if (combinedStr.includes('hyderabad') || combinedStr.includes('gachibowli')) {
+      city = 'Hyderabad';
+    } else if (combinedStr.includes('bengaluru') || combinedStr.includes('bangalore') || combinedStr.includes('cubbon') || combinedStr.includes('kanteerava') || combinedStr.includes('nandi')) {
+      city = 'Bengaluru';
+    }
+
+    // 2. Extract Event Title / Name
     let eventName = '';
     if (html) {
       const ogTitleMatch = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i) ||
@@ -39,47 +59,55 @@ export default async function handler(req, res) {
       }
     }
 
-    // Slug fallback if title is empty or generic
     eventName = (eventName || '').replace(/India\s*Running|BookMyShow|District|NovaRace/gi, '').trim();
-    if (!eventName || eventName.toLowerCase() === 'india running') {
+    if (!eventName || eventName.toLowerCase() === 'india running' || eventName.toLowerCase() === 'home') {
       const parts = url.split('/').filter(Boolean);
       const slug = parts[parts.length - 1] || '';
       const cleanSlug = slug.replace(/[-_]/g, ' ').replace(/\d{4,}/g, '').trim();
       eventName = cleanSlug.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     }
-    if (!eventName) eventName = 'New Event Registration';
-
-    // 2. Extract City
-    let city = 'Bengaluru';
-    const combinedStr = (html + ' ' + url + ' ' + eventName).toLowerCase();
-    if (combinedStr.includes('bengaluru') || combinedStr.includes('bangalore')) city = 'Bengaluru';
-    else if (combinedStr.includes('delhi') || combinedStr.includes('noida') || combinedStr.includes('gurugram')) city = 'Delhi';
-    else if (combinedStr.includes('goa')) city = 'Goa';
-    else if (combinedStr.includes('chennai')) city = 'Chennai';
-    else if (combinedStr.includes('hyderabad')) city = 'Hyderabad';
-    else if (combinedStr.includes('mumbai') || combinedStr.includes('palmbeach')) city = 'Mumbai';
+    if (!eventName) eventName = 'Event Registration';
 
     // 3. Extract Sport Category
     let sport = 'Running';
-    if (combinedStr.includes('cycl') || combinedStr.includes('bike')) sport = 'Cycling';
-    else if (combinedStr.includes('hyrox') || combinedStr.includes('fitness challenge') || combinedStr.includes('crossfit')) sport = 'Hyrox';
+    if (combinedStr.includes('cycl') || combinedStr.includes('bike') || combinedStr.includes('ride')) {
+      sport = 'Cycling';
+    } else if (combinedStr.includes('hyrox') || combinedStr.includes('fitness challenge') || combinedStr.includes('crossfit') || combinedStr.includes('gym')) {
+      sport = 'Hyrox';
+    }
 
-    // 4. Extract Location
+    // 4. Extract Location / Venue
     let location = city;
     if (html) {
-      const locMatch = html.match(/(stadium|park|ground|road|plaza|complex|centre|center|ecr|hospitals|school|college)[^,<.]{2,30}/i);
+      const locMatch = html.match(/(stadium|park|ground|road|plaza|complex|centre|center|ecr|hospitals|school|college|st\s+\w+)[^,<.]{2,35}/i);
       if (locMatch) {
         location = locMatch[0].trim();
       }
     }
+    if (!location || location === city) {
+      if (city === 'Delhi') location = 'Jawaharlal Nehru Stadium, New Delhi';
+      else if (city === 'Mumbai') location = 'Palm Beach Road, Navi Mumbai';
+      else location = city;
+    }
 
-    // 5. Extract Event Date
-    let date = 'September 27th 2026';
+    // 5. Extract Exact Event Date (Regex matching all standard Indian race date formats)
+    let eventDate = '';
     if (html) {
-      const dateMatch = html.match(/(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}(st|nd|rd|th)?,\s*20\d{2}/i) ||
-                        html.match(/\d{1,2}(st|nd|rd|th)?\s+(january|february|march|april|may|june|july|august|september|october|november|december)\s+20\d{2}/i);
+      const dateMatch = html.match(/(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}(st|nd|rd|th)?,?\s*20\d{2}/i) ||
+                        html.match(/\d{1,2}(st|nd|rd|th)?\s+(january|february|march|april|may|june|july|august|september|october|november|december),?\s*20\d{2}/i) ||
+                        html.match(/(aug|sep|oct|nov|dec|jan|feb|mar|apr|jun|jul)\s+\d{1,2}(st|nd|rd|th)?,?\s*20\d{2}/i);
       if (dateMatch) {
-        date = dateMatch[0].trim();
+        eventDate = dateMatch[0].trim();
+      }
+    }
+
+    // If date still missing, parse month/day from slug or title
+    if (!eventDate) {
+      const slugDateMatch = combinedStr.match(/(aug|august|sep|september|oct|october|nov|november|dec|december)\s*(\d{1,2})/i);
+      if (slugDateMatch) {
+        eventDate = slugDateMatch[1].charAt(0).toUpperCase() + slugDateMatch[1].slice(1) + ' ' + slugDateMatch[2] + 'th 2026';
+      } else {
+        eventDate = 'Date TBD';
       }
     }
 
@@ -90,7 +118,7 @@ export default async function handler(req, res) {
         name: eventName,
         url,
         location,
-        date,
+        date: eventDate,
         lastDate: 'Registration Open',
         city
       }
