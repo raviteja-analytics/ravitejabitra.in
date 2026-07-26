@@ -816,72 +816,93 @@
       });
     }
 
-    // Load Events: Instant 0ms Render from Master Database + Live Auto Sync
+    // Load Events: Combine Database Feed + Live Google Sheet Sync
     async function loadGoogleSheetEvents() {
-      // 1. Fetch static master event feed (/data/events.json)
+      let masterEvents = [];
+
+      // 1. Fetch Master JSON Feed (/data/events.json)
       try {
         const jsonRes = await fetch('data/events.json?v=' + Date.now());
         if (jsonRes.ok) {
-          const eventsData = await jsonRes.json();
-          if (Array.isArray(eventsData) && eventsData.length > 0) {
-            localStorage.setItem(CACHE_KEY, JSON.stringify(eventsData));
-            renderEventsUI(eventsData);
-            return;
-          }
+          const jsonEvents = await jsonRes.json();
+          if (Array.isArray(jsonEvents)) masterEvents.push(...jsonEvents);
         }
-      } catch (jsonErr) {
-        console.warn('JSON feed fetch error:', jsonErr);
+      } catch (e) {
+        console.warn('JSON feed load failed:', e);
       }
 
-      // 2. Instant 0ms Render from Local Cache
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        try {
-          const parsedCache = JSON.parse(cached);
-          renderEventsUI(parsedCache);
-        } catch (e) {
-          console.error(e);
-        }
-      }
-
-      // 3. Fallback: Direct Google Sheet CSV Sync
+      // 2. Fetch Live Google Sheet CSV & Auto-Parse unformatted URL rows
       const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1HmwPdXpSD-NHgFYLQCebiyL15OGoPA2jGnGWtt__CrA/export?format=csv";
 
       try {
-        const res = await fetch(sheetCsvUrl);
-        if (!res.ok) throw new Error("Could not access Google Sheet.");
+        const res = await fetch(sheetCsvUrl + '&v=' + Date.now());
+        if (res.ok) {
+          const text = await res.text();
+          const rows = parseCSV(text);
 
-        const text = await res.text();
-        const rows = parseCSV(text);
+          for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const sport = row[0] || '';
+            const name = row[1] || '';
+            const url = row[2] || '';
 
-        const events = [];
-        for (let i = 1; i < rows.length; i++) {
-          const row = rows[i];
-          if (row.length >= 3 && row[1]) {
-            events.push({
-              sport: row[0] || 'Running',
-              name: row[1],
-              url: row[2],
-              location: row[3] || '',
-              date: row[4] || '',
-              lastDate: row[5] || '',
-              city: row[6] || ''
-            });
+            if (url && url.startsWith('http')) {
+              let cleanName = name;
+              if (!cleanName) {
+                // Auto-extract event name from URL slug
+                const parts = url.split('/').filter(Boolean);
+                const lastPart = parts[parts.length - 1] || '';
+                cleanName = lastPart.replace(/[-_]/g, ' ').replace(/\d{4,}/g, '').trim();
+                cleanName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+              }
+
+              let city = row[6] || '';
+              if (!city) {
+                const lower = (cleanName + ' ' + url + ' ' + (row[3] || '')).toLowerCase();
+                if (lower.includes('delhi')) city = 'Delhi';
+                else if (lower.includes('goa')) city = 'Goa';
+                else if (lower.includes('chennai')) city = 'Chennai';
+                else if (lower.includes('hyderabad')) city = 'Hyderabad';
+                else if (lower.includes('mumbai') || lower.includes('palmbeach')) city = 'Mumbai';
+                else city = 'Bengaluru';
+              }
+
+              masterEvents.push({
+                sport: sport || 'Running',
+                name: cleanName,
+                url: url,
+                location: row[3] || city,
+                date: row[4] || 'September 27th 2026',
+                lastDate: row[5] || 'Registration Open',
+                city: city
+              });
+            }
           }
         }
-
-        // Save fresh data to local cache & update UI seamlessly
-        localStorage.setItem(CACHE_KEY, JSON.stringify(events));
-        renderEventsUI(events);
-
       } catch (err) {
-        console.error(err);
-        if (!cached) {
-          document.getElementById('events-feed').innerHTML = `
-            <div style="color: var(--text-muted); font-size: 0.85rem; padding: 20px;">
-              Unable to load live event registrations. Please check network connection.
-            </div>
-          `;
+        console.error('Sheet CSV fetch error:', err);
+      }
+
+      // Deduplicate events by URL or Name
+      const seen = new Map();
+      const uniqueEvents = [];
+      masterEvents.forEach(item => {
+        const key = (item.url || item.name || '').toLowerCase().trim();
+        if (key && !seen.has(key)) {
+          seen.set(key, true);
+          uniqueEvents.push(item);
+        }
+      });
+
+      if (uniqueEvents.length > 0) {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(uniqueEvents));
+        renderEventsUI(uniqueEvents);
+      } else {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          try {
+            renderEventsUI(JSON.parse(cached));
+          } catch (e) {}
         }
       }
     }
