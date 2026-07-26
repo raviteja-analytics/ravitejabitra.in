@@ -816,7 +816,7 @@
       });
     }
 
-    // Load Events: 0ms Cache + Silent Background Sync
+    // Load Events: 0ms Cache + Silent Multi-Platform Crawler Background Sync
     async function loadGoogleSheetEvents() {
       // 1. Instant 0ms Render from Local Cache
       const cached = localStorage.getItem(CACHE_KEY);
@@ -829,7 +829,22 @@
         }
       }
 
-      // 2. Fetch live Google Sheet CSV in background
+      // 2. Fetch live Vercel Multi-Platform Crawler API (/api/events)
+      try {
+        const apiRes = await fetch('/api/events');
+        if (apiRes.ok) {
+          const apiData = await apiRes.json();
+          if (apiData && Array.isArray(apiData.events) && apiData.events.length > 0) {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(apiData.events));
+            renderEventsUI(apiData.events);
+            return;
+          }
+        }
+      } catch (apiErr) {
+        console.warn('Vercel API fetch failed, falling back to direct Sheet CSV:', apiErr);
+      }
+
+      // 3. Fallback: Direct Google Sheet CSV Sync
       const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1HmwPdXpSD-NHgFYLQCebiyL15OGoPA2jGnGWtt__CrA/export?format=csv";
 
       try {
@@ -844,7 +859,7 @@
           const row = rows[i];
           if (row.length >= 3 && row[1]) {
             events.push({
-              sport: row[0],
+              sport: row[0] || 'Running',
               name: row[1],
               url: row[2],
               location: row[3] || '',
@@ -864,7 +879,7 @@
         if (!cached) {
           document.getElementById('events-feed').innerHTML = `
             <div style="color: var(--text-muted); font-size: 0.85rem; padding: 20px;">
-              Unable to load live Google Sheet events. Please check sheet permissions.
+              Unable to load live event registrations. Please check network connection.
             </div>
           `;
         }
