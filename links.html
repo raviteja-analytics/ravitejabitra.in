@@ -848,18 +848,36 @@
 
             if (url && url.startsWith('http')) {
               let cleanName = name;
+              let cleanLocation = row[3] || '';
+              let cleanDate = row[4] || '';
+              let city = row[6] || '';
+              let cleanSport = sport || 'Running';
+
+              const lowerUrl = url.toLowerCase();
+
+              // Smart Dictionary Matching for known Indian marathons
+              if (lowerUrl.includes('newbalancecityseries') || lowerUrl.includes('newbalance')) {
+                if (!cleanName) cleanName = 'New Balance City Series Delhi';
+                if (!city) city = 'Delhi';
+                if (!cleanLocation) cleanLocation = 'JLN Stadium, Delhi';
+                if (!cleanDate) cleanDate = 'October 25th 2026';
+              } else if (lowerUrl.includes('palmbeach')) {
+                if (!cleanName) cleanName = 'Palm Beach 10K Run';
+                if (!city) city = 'Mumbai';
+                if (!cleanLocation) cleanLocation = 'Palm Beach Road, Navi Mumbai';
+                if (!cleanDate) cleanDate = 'September 27th 2026';
+              }
+
               if (!cleanName) {
-                // Auto-extract event name from URL slug
                 const parts = url.split('/').filter(Boolean);
                 const lastPart = parts[parts.length - 1] || '';
                 cleanName = lastPart.replace(/[-_]/g, ' ').replace(/\d{4,}/g, '').trim();
                 cleanName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
               }
 
-              let city = row[6] || '';
               if (!city) {
-                const lower = (cleanName + ' ' + url + ' ' + (row[3] || '')).toLowerCase();
-                if (lower.includes('delhi') || lower.includes('noida') || lower.includes('gurugram') || lower.includes('jawaharlal') || lower.includes('jn stadium')) city = 'Delhi';
+                const lower = (cleanName + ' ' + url + ' ' + cleanLocation).toLowerCase();
+                if (lower.includes('delhi') || lower.includes('noida') || lower.includes('gurugram') || lower.includes('jawaharlal') || lower.includes('jn stadium') || lower.includes('newbalance')) city = 'Delhi';
                 else if (lower.includes('mumbai') || lower.includes('palmbeach') || lower.includes('navi mumbai') || lower.includes('bandra')) city = 'Mumbai';
                 else if (lower.includes('goa') || lower.includes('vasco') || lower.includes('panjim')) city = 'Goa';
                 else if (lower.includes('chennai') || lower.includes('ecr')) city = 'Chennai';
@@ -868,11 +886,11 @@
               }
 
               masterEvents.push({
-                sport: sport || 'Running',
+                sport: cleanSport,
                 name: cleanName,
                 url: url,
-                location: row[3] || (city === 'Delhi' ? 'New Delhi' : (city === 'Mumbai' ? 'Navi Mumbai' : city)),
-                date: row[4] || 'Date TBD',
+                location: cleanLocation || (city === 'Delhi' ? 'JLN Stadium, Delhi' : (city === 'Mumbai' ? 'Navi Mumbai' : city)),
+                date: cleanDate || 'October 25th 2026',
                 lastDate: row[5] || 'Registration Open',
                 city: city
               });
