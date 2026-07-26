@@ -125,6 +125,15 @@
       letter-spacing: -0.03em;
       margin: 8px 0;
     }
+
+    .stat-val.tag-text {
+      font-size: clamp(1.05rem, 2.2vw, 1.35rem) !important;
+      font-weight: 800;
+      color: #ffde00;
+      line-height: 1.45;
+      margin: 12px 0;
+      letter-spacing: 0.01em;
+    }
     
     .stat-lbl {
       font-size: 0.8rem;
@@ -132,6 +141,13 @@
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--text-secondary);
+    }
+
+    .pr-dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 48px;
     }
     
     .activity-feed {
@@ -272,9 +288,9 @@
     <!-- Stats Grid -->
     <div class="stats-dashboard">
       <div class="stat-hero-card full-width">
-        <span class="stat-lbl">All-Time Cumulative Run Distance</span>
+        <span class="stat-lbl">Total Asphalt Conquered 🏃‍♂️⚡</span>
         <div id="stat-total-dist" class="stat-val">—</div>
-        <span class="stat-lbl" id="stat-total-runs" style="color: var(--text-muted);">— runs logged in total</span>
+        <span class="stat-lbl" id="stat-total-runs" style="color: var(--text-muted);">— runs logged in total · Outrunning my problems ⚡</span>
       </div>
       
       <div class="stat-hero-card">
@@ -288,7 +304,53 @@
         <div id="stat-avg-dist" class="stat-val">—</div>
         <span class="stat-lbl" style="color: var(--text-muted);">across all logged activities</span>
       </div>
+
+      <div class="stat-hero-card full-width">
+        <span class="stat-lbl">Total Time Pounding Pavement ⏱️⚡</span>
+        <div id="stat-total-hours" class="stat-val">—</div>
+        <span class="stat-lbl" style="color: var(--text-muted);">total flight time spent inside the Speed Force</span>
+      </div>
     </div>
+
+    <!-- Personal Records & Distance Milestones -->
+    <section class="card-section">
+      <div class="section-header" style="margin-bottom: 24px;">
+        <h2>Personal Records & Speed Milestones 🏆⚡</h2>
+        <div class="section-header-line"></div>
+      </div>
+
+      <div class="pr-dashboard">
+        <div class="stat-hero-card">
+          <span class="stat-lbl">Longest Time Ran ⏱️</span>
+          <div id="pr-longest-time" class="stat-val">—</div>
+          <span class="stat-lbl" style="color: var(--text-muted);">longest continuous single dash</span>
+        </div>
+
+        <div class="stat-hero-card">
+          <span class="stat-lbl">5KM Speed Sprint ⚡</span>
+          <div id="pr-5k-time" class="stat-val">—</div>
+          <span class="stat-lbl" style="color: var(--text-muted);">5.0 km personal record</span>
+        </div>
+
+        <div class="stat-hero-card">
+          <span class="stat-lbl">10KM Endurance Dash ⚡</span>
+          <div id="pr-10k-time" class="stat-val">—</div>
+          <span class="stat-lbl" style="color: var(--text-muted);">10.0 km personal record</span>
+        </div>
+
+        <div class="stat-hero-card">
+          <span class="stat-lbl">Half Marathon (21.1K) 🏆</span>
+          <div id="pr-half-time" class="stat-val">—</div>
+          <span class="stat-lbl" style="color: var(--text-muted);">21.1 km endurance benchmark</span>
+        </div>
+
+        <div class="stat-hero-card">
+          <span class="stat-lbl">Full Marathon (42.2K) 👑</span>
+          <div id="pr-marathon-time" class="stat-val">—</div>
+          <span class="stat-lbl" style="color: var(--text-muted);">42.2 km ultimate boss level</span>
+        </div>
+      </div>
+    </section>
 
     <!-- Recent Activities -->
     <section class="card-section">
@@ -323,12 +385,29 @@
       return (meters / 1000).toFixed(2) + ' km';
     }
 
+    function formatHours(seconds) {
+      if (!seconds) return '0.0 hrs';
+      const h = (seconds / 3600).toFixed(1);
+      return `${h} hrs`;
+    }
+
+    function formatMins(seconds) {
+      if (!seconds) return '—';
+      const m = Math.floor(seconds / 60);
+      if (m >= 60) {
+        const h = Math.floor(m / 60);
+        const remM = m % 60;
+        return `${h}h ${remM}m (${m} mins)`;
+      }
+      return `${m} mins`;
+    }
+
     function formatDuration(seconds) {
       const h = Math.floor(seconds / 3600);
       const m = Math.floor((seconds % 3600) / 60);
       const s = seconds % 60;
       if (h > 0) {
-        return `${h}h ${m}m`;
+        return `${h}h ${m}m ${s}s`;
       }
       return `${m}m ${s}s`;
     }
@@ -363,12 +442,12 @@
         // Hide loading bar
         statusContainer.style.display = 'none';
 
-        // 1. Update stats elements
+        // 1. Overview Stats
         const allTotals = data.stats.all_run_totals;
         const ytdTotals = data.stats.ytd_run_totals;
 
         document.getElementById('stat-total-dist').innerText = formatKm(allTotals.distance);
-        document.getElementById('stat-total-runs').innerText = `${allTotals.count} runs logged in total`;
+        document.getElementById('stat-total-runs').innerText = `${allTotals.count} runs logged in total · Outrunning my problems ⚡`;
         
         document.getElementById('stat-ytd-dist').innerText = formatKm(ytdTotals.distance);
         document.getElementById('stat-ytd-runs').innerText = `${ytdTotals.count} runs this year`;
@@ -376,7 +455,67 @@
         const avgDistance = allTotals.count > 0 ? (allTotals.distance / allTotals.count) : 0;
         document.getElementById('stat-avg-dist').innerText = formatKm(avgDistance);
 
-        // 2. Render recent activities
+        document.getElementById('stat-total-hours').innerText = formatHours(allTotals.moving_time);
+
+        // 2. Personal Records & Milestones
+        const records = data.run_records || {};
+
+        // Longest run time
+        let longestSecs = records.longest_run_seconds || 0;
+        if (!longestSecs && data.recent_runs && data.recent_runs.length > 0) {
+          longestSecs = Math.max(...data.recent_runs.map(r => r.moving_time || 0));
+        }
+
+        const longestEl = document.getElementById('pr-longest-time');
+        if (longestSecs > 0) {
+          longestEl.className = 'stat-val';
+          longestEl.innerText = formatMins(longestSecs);
+        } else {
+          longestEl.className = 'stat-val tag-text';
+          longestEl.innerText = 'Yet to come... ⏳';
+        }
+
+        // 5KM Best Time
+        const pr5kEl = document.getElementById('pr-5k-time');
+        if (records.best_5k_seconds) {
+          pr5kEl.className = 'stat-val';
+          pr5kEl.innerText = formatDuration(records.best_5k_seconds);
+        } else {
+          pr5kEl.className = 'stat-val tag-text';
+          pr5kEl.innerText = 'Yet to come... Speed Force is charging! ⚡';
+        }
+
+        // 10KM Best Time
+        const pr10kEl = document.getElementById('pr-10k-time');
+        if (records.best_10k_seconds) {
+          pr10kEl.className = 'stat-val';
+          pr10kEl.innerText = formatDuration(records.best_10k_seconds);
+        } else {
+          pr10kEl.className = 'stat-val tag-text';
+          pr10kEl.innerText = 'Yet to come... Speed Force loading ⏳🏃‍♂️';
+        }
+
+        // Half Marathon
+        const prHalfEl = document.getElementById('pr-half-time');
+        if (records.best_half_seconds) {
+          prHalfEl.className = 'stat-val';
+          prHalfEl.innerText = formatDuration(records.best_half_seconds);
+        } else {
+          prHalfEl.className = 'stat-val tag-text';
+          prHalfEl.innerText = 'Yet to come... Prepping for the Big Dash! 🎯⚡';
+        }
+
+        // Marathon
+        const prMarathonEl = document.getElementById('pr-marathon-time');
+        if (records.best_marathon_seconds) {
+          prMarathonEl.className = 'stat-val';
+          prMarathonEl.innerText = formatDuration(records.best_marathon_seconds);
+        } else {
+          prMarathonEl.className = 'stat-val tag-text';
+          prMarathonEl.innerText = 'Yet to come... Final Boss Unlocked Soon! 👑⚡';
+        }
+
+        // 3. Render recent activities
         const feed = document.getElementById('activity-feed');
         if (data.recent_runs && data.recent_runs.length > 0) {
           feed.innerHTML = '';

@@ -119,6 +119,42 @@ export default async function handler(req, res) {
 
     const totalWorkoutTime = allWorkouts.reduce((acc, curr) => acc + (curr.moving_time || 0), 0);
 
+    // Compute Running Personal Records (PRs)
+    const allRuns = allActivities.filter(act => runTypes.includes(act.type) || runTypes.includes(act.sport_type));
+    let longestRunSecs = 0;
+    let longestRunDist = 0;
+    let best5kSecs = null;
+    let best10kSecs = null;
+    let bestHalfSecs = null;
+    let bestMarathonSecs = null;
+
+    allRuns.forEach(act => {
+      const dist = act.distance || 0;
+      const time = act.moving_time || 0;
+
+      if (time > longestRunSecs) {
+        longestRunSecs = time;
+        longestRunDist = dist;
+      }
+
+      if (dist >= 4900) {
+        const time5k = Math.round(time * (5000 / dist));
+        if (best5kSecs === null || time5k < best5kSecs) best5kSecs = time5k;
+      }
+      if (dist >= 9800) {
+        const time10k = Math.round(time * (10000 / dist));
+        if (best10kSecs === null || time10k < best10kSecs) best10kSecs = time10k;
+      }
+      if (dist >= 20900) {
+        const timeHalf = Math.round(time * (21097.5 / dist));
+        if (bestHalfSecs === null || timeHalf < bestHalfSecs) bestHalfSecs = timeHalf;
+      }
+      if (dist >= 42000) {
+        const timeMarathon = Math.round(time * (42195 / dist));
+        if (bestMarathonSecs === null || timeMarathon < bestMarathonSecs) bestMarathonSecs = timeMarathon;
+      }
+    });
+
     return res.status(200).json({
       stats: {
         all_run_totals: stats.all_run_totals || { count: 0, distance: 0, moving_time: 0 },
@@ -127,6 +163,14 @@ export default async function handler(req, res) {
         ytd_ride_totals: stats.ytd_ride_totals || { count: 0, distance: 0, moving_time: 0 },
         all_swim_totals: stats.all_swim_totals || { count: 0, distance: 0, moving_time: 0 },
         ytd_swim_totals: stats.ytd_swim_totals || { count: 0, distance: 0, moving_time: 0 }
+      },
+      run_records: {
+        longest_run_seconds: longestRunSecs,
+        longest_run_distance: longestRunDist,
+        best_5k_seconds: best5kSecs,
+        best_10k_seconds: best10kSecs,
+        best_half_seconds: bestHalfSecs,
+        best_marathon_seconds: bestMarathonSecs
       },
       recent_runs: runs,
       recent_rides: rides,
