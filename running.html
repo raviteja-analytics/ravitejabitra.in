@@ -292,12 +292,6 @@
         <div id="stat-total-dist" class="stat-val">—</div>
         <span class="stat-lbl" id="stat-total-runs" style="color: var(--text-muted);">— runs logged in total · Outrunning my problems ⚡</span>
       </div>
-      
-      <div class="stat-hero-card">
-        <span class="stat-lbl">Distance (This Year)</span>
-        <div id="stat-ytd-dist" class="stat-val">—</div>
-        <span class="stat-lbl" id="stat-ytd-runs" style="color: var(--text-muted);">— runs this year</span>
-      </div>
 
       <div class="stat-hero-card">
         <span class="stat-lbl">Avg Distance / Run</span>
@@ -305,10 +299,10 @@
         <span class="stat-lbl" style="color: var(--text-muted);">across all logged activities</span>
       </div>
 
-      <div class="stat-hero-card full-width">
+      <div class="stat-hero-card">
         <span class="stat-lbl">Total Time Pounding Pavement ⏱️⚡</span>
         <div id="stat-total-hours" class="stat-val">—</div>
-        <span class="stat-lbl" style="color: var(--text-muted);">total flight time spent inside the Speed Force</span>
+        <span class="stat-lbl" style="color: var(--text-muted);">total flight time inside the Speed Force</span>
       </div>
     </div>
 
@@ -385,30 +379,23 @@
       return (meters / 1000).toFixed(2) + ' km';
     }
 
-    function formatHours(seconds) {
-      if (!seconds) return '0.0 hrs';
-      const h = (seconds / 3600).toFixed(1);
-      return `${h} hrs`;
-    }
-
-    function formatMins(seconds) {
-      if (!seconds) return '—';
+    function formatTotalMins(seconds) {
+      if (!seconds) return '0 mins';
       const m = Math.floor(seconds / 60);
-      if (m >= 60) {
-        const h = Math.floor(m / 60);
-        const remM = m % 60;
-        return `${h}h ${remM}m (${m} mins)`;
-      }
       return `${m} mins`;
     }
 
-    function formatDuration(seconds) {
-      const h = Math.floor(seconds / 3600);
-      const m = Math.floor((seconds % 3600) / 60);
-      const s = seconds % 60;
-      if (h > 0) {
-        return `${h}h ${m}m ${s}s`;
-      }
+    function formatOnlyMins(seconds) {
+      if (!seconds) return '—';
+      const m = Math.floor(seconds / 60);
+      return `${m} mins`;
+    }
+
+    function formatMinsAndSecs(seconds) {
+      if (!seconds) return '—';
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      if (s === 0) return `${m} mins`;
       return `${m}m ${s}s`;
     }
 
@@ -444,23 +431,19 @@
 
         // 1. Overview Stats
         const allTotals = data.stats.all_run_totals;
-        const ytdTotals = data.stats.ytd_run_totals;
 
         document.getElementById('stat-total-dist').innerText = formatKm(allTotals.distance);
         document.getElementById('stat-total-runs').innerText = `${allTotals.count} runs logged in total · Outrunning my problems ⚡`;
-        
-        document.getElementById('stat-ytd-dist').innerText = formatKm(ytdTotals.distance);
-        document.getElementById('stat-ytd-runs').innerText = `${ytdTotals.count} runs this year`;
 
         const avgDistance = allTotals.count > 0 ? (allTotals.distance / allTotals.count) : 0;
         document.getElementById('stat-avg-dist').innerText = formatKm(avgDistance);
 
-        document.getElementById('stat-total-hours').innerText = formatHours(allTotals.moving_time);
+        document.getElementById('stat-total-hours').innerText = formatTotalMins(allTotals.moving_time);
 
         // 2. Personal Records & Milestones
         const records = data.run_records || {};
 
-        // Longest run time
+        // Longest run time (strictly in mins)
         let longestSecs = records.longest_run_seconds || 0;
         if (!longestSecs && data.recent_runs && data.recent_runs.length > 0) {
           longestSecs = Math.max(...data.recent_runs.map(r => r.moving_time || 0));
@@ -469,27 +452,27 @@
         const longestEl = document.getElementById('pr-longest-time');
         if (longestSecs > 0) {
           longestEl.className = 'stat-val';
-          longestEl.innerText = formatMins(longestSecs);
+          longestEl.innerText = formatOnlyMins(longestSecs);
         } else {
           longestEl.className = 'stat-val tag-text';
           longestEl.innerText = 'Yet to come... ⏳';
         }
 
-        // 5KM Best Time
+        // 5KM Best Time (mins & secs)
         const pr5kEl = document.getElementById('pr-5k-time');
         if (records.best_5k_seconds) {
           pr5kEl.className = 'stat-val';
-          pr5kEl.innerText = formatDuration(records.best_5k_seconds);
+          pr5kEl.innerText = formatMinsAndSecs(records.best_5k_seconds);
         } else {
           pr5kEl.className = 'stat-val tag-text';
           pr5kEl.innerText = 'Yet to come... Speed Force is charging! ⚡';
         }
 
-        // 10KM Best Time
+        // 10KM Best Time (mins & secs, e.g. 87m 10s)
         const pr10kEl = document.getElementById('pr-10k-time');
         if (records.best_10k_seconds) {
           pr10kEl.className = 'stat-val';
-          pr10kEl.innerText = formatDuration(records.best_10k_seconds);
+          pr10kEl.innerText = formatMinsAndSecs(records.best_10k_seconds);
         } else {
           pr10kEl.className = 'stat-val tag-text';
           pr10kEl.innerText = 'Yet to come... Speed Force loading ⏳🏃‍♂️';
@@ -499,7 +482,7 @@
         const prHalfEl = document.getElementById('pr-half-time');
         if (records.best_half_seconds) {
           prHalfEl.className = 'stat-val';
-          prHalfEl.innerText = formatDuration(records.best_half_seconds);
+          prHalfEl.innerText = formatMinsAndSecs(records.best_half_seconds);
         } else {
           prHalfEl.className = 'stat-val tag-text';
           prHalfEl.innerText = 'Yet to come... Prepping for the Big Dash! 🎯⚡';
@@ -509,7 +492,7 @@
         const prMarathonEl = document.getElementById('pr-marathon-time');
         if (records.best_marathon_seconds) {
           prMarathonEl.className = 'stat-val';
-          prMarathonEl.innerText = formatDuration(records.best_marathon_seconds);
+          prMarathonEl.innerText = formatMinsAndSecs(records.best_marathon_seconds);
         } else {
           prMarathonEl.className = 'stat-val tag-text';
           prMarathonEl.innerText = 'Yet to come... Final Boss Unlocked Soon! 👑⚡';
