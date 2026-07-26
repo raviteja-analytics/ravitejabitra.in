@@ -559,7 +559,7 @@
     loadGoogleSheetEvents();
   </script>
 
-  <!-- 60fps Chibi Superhero Multiverse & Quantum Conduit Canvas Engine -->
+  <!-- The Flash Speed Force Lightning Storm Canvas Engine (Identical to running.html) -->
   <script>
     (function() {
       const canvas = document.getElementById('live-bg');
@@ -599,320 +599,466 @@
       window.addEventListener('touchend', () => { mouse.active = false; });
       window.addEventListener('touchcancel', () => { mouse.active = false; });
 
-      // Active Portal Theme Colors (shifts on card hover)
-      let currentGlowColor = '#ffde00';
-      let currentAccentColor = '#00d8ff';
+      // ── Speed Force Vortex / Teleportation Portal ────────
+      class SpeedForceVortex {
+        constructor(x, y) {
+          this.x = x;
+          this.y = y;
+          this.radius = 5;
+          this.maxRadius = Math.random() * 80 + 70;
+          this.speed = 6;
+          this.alpha = 1.0;
+          this.color = Math.random() > 0.3 ? '#ffde00' : '#ff0038'; // Gold or Crimson
+        }
 
-      const THEME_COLORS = {
-        running:   { glow: '#ff0038', accent: '#ffde00' }, // Flash Scarlet & Gold
-        cycling:   { glow: '#ffb400', accent: '#ff3300' }, // Saiyan Gold
-        swimming:  { glow: '#00d8ff', accent: '#00ffaa' }, // Aquaman Cyan
-        strength:  { glow: '#ffd700', accent: '#00d8ff' }, // Thor Gold & Blue
-        hyrox:     { glow: '#ffc800', accent: '#38bdf8' }, // Wolverine Gold
-        badminton: { glow: '#ff0055', accent: '#00f0ff' }  // Spider Web Cyan
-      };
+        update() {
+          this.radius += this.speed;
+          this.alpha = 1 - (this.radius / this.maxRadius);
+        }
 
-      // ── Marvel & DC Anime Chibi Superheroes Roster ──────────
-      const HERO_ROSTER = [
-        { id: 'flash', name: 'The Flash', type: 'male', brand: 'DC', mainColor: '#ff0038', glowColor: '#ffde00', theme: 'running' },
-        { id: 'wonderwoman', name: 'Wonder Woman', type: 'female', brand: 'DC', mainColor: '#e11d48', glowColor: '#ffd700', theme: 'strength' },
-        { id: 'thor', name: 'Thor', type: 'male', brand: 'Marvel', mainColor: '#38bdf8', glowColor: '#ffd700', theme: 'strength' },
-        { id: 'captainmarvel', name: 'Captain Marvel', type: 'female', brand: 'Marvel', mainColor: '#00f0ff', glowColor: '#facc15', theme: 'cycling' },
-        { id: 'spiderman', name: 'Spider-Man', type: 'male', brand: 'Marvel', mainColor: '#ff0055', glowColor: '#00f0ff', theme: 'badminton' },
-        { id: 'storm', name: 'Storm', type: 'female', brand: 'Marvel', mainColor: '#94a3b8', glowColor: '#38bdf8', theme: 'swimming' },
-        { id: 'wolverine', name: 'Wolverine', type: 'male', brand: 'Marvel', mainColor: '#eab308', glowColor: '#38bdf8', theme: 'hyrox' },
-        { id: 'aquaman', name: 'Aquaman', type: 'male', brand: 'DC', mainColor: '#00d8ff', glowColor: '#10b981', theme: 'swimming' }
-      ];
+        draw() {
+          if (this.alpha <= 0) return;
+          ctx.save();
+          ctx.shadowBlur = 25;
+          ctx.shadowColor = this.color;
+          ctx.strokeStyle = this.color;
+          ctx.globalAlpha = Math.max(0, this.alpha);
+          
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.lineWidth = 4 * this.alpha;
+          ctx.stroke();
 
-      // 1. Requirement 3: 100% Viewport Particle Field (Floating Stardust & Energy Sparks)
-      class QuantumParticle {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius * 0.6, 0, Math.PI * 2);
+          ctx.lineWidth = 2 * this.alpha;
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      // ── Speed Force Lightning Bolt ────────────────────────
+      class LightningBolt {
+        constructor() {
+          this.reset();
+        }
+
+        reset() {
+          this.startX = Math.random() > 0.5 ? 0 : Math.random() * width;
+          this.startY = this.startX === 0 ? Math.random() * height : 0;
+          this.endX = width;
+          this.endY = Math.random() * height;
+          this.life = Math.floor(Math.random() * 8) + 4;
+          this.maxLife = this.life;
+          this.color = Math.random() > 0.3 ? '#ffde00' : '#ffffff';
+          this.lineWidth = Math.random() * 2 + 1;
+          this.path = [];
+          this.generatePath();
+        }
+
+        generatePath() {
+          const dx = this.endX - this.startX;
+          const dy = this.endY - this.startY;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          const steps = Math.floor(distance / 25);
+          
+          let currentX = this.startX;
+          let currentY = this.startY;
+          this.path.push({ x: currentX, y: currentY });
+
+          for (let i = 1; i < steps; i++) {
+            const t = i / steps;
+            let targetX = this.startX + dx * t;
+            let targetY = this.startY + dy * t;
+
+            const offset = (Math.random() - 0.5) * 35;
+            const nx = -dy / distance;
+            const ny = dx / distance;
+
+            currentX = targetX + nx * offset;
+            currentY = targetY + ny * offset;
+            this.path.push({ x: currentX, y: currentY });
+          }
+          this.path.push({ x: this.endX, y: this.endY });
+        }
+
+        update() {
+          this.life--;
+        }
+
+        draw() {
+          if (this.life <= 0) return;
+          const alpha = this.life / this.maxLife;
+
+          ctx.save();
+          ctx.shadowBlur = 20;
+          ctx.shadowColor = this.color;
+          ctx.strokeStyle = this.color;
+          ctx.lineWidth = this.lineWidth;
+          ctx.globalAlpha = alpha;
+
+          ctx.beginPath();
+          ctx.moveTo(this.path[0].x, this.path[0].y);
+          for (let i = 1; i < this.path.length; i++) {
+            ctx.lineTo(this.path[i].x, this.path[i].y);
+          }
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      // ── Speed Force Fast Blur Lines ───────────────────────
+      class SpeedLine {
         constructor() {
           this.reset(true);
         }
 
         reset(init = false) {
-          this.x = Math.random() * width;
-          this.y = init ? Math.random() * height : (Math.random() > 0.5 ? -20 : height + 20);
-          this.size = Math.random() * 2.5 + 0.8;
-          this.alpha = Math.random() * 0.6 + 0.25;
-          this.vx = (Math.random() - 0.5) * 0.8;
-          this.vy = -(Math.random() * 0.8 + 0.3);
-          this.color = Math.random() > 0.4 ? currentGlowColor : currentAccentColor;
+          this.x = init ? Math.random() * width : -200;
+          this.y = Math.random() * height;
+          this.length = Math.random() * 200 + 100;
+          this.speed = Math.random() * 10 + 10;
+          this.alpha = Math.random() * 0.4 + 0.2;
+          this.color = Math.random() > 0.3 ? 'rgba(255, 222, 0, ' : 'rgba(255, 0, 56, ';
         }
 
         update() {
-          this.x += this.vx;
-          this.y += this.vy;
-
-          if (mouse.active) {
-            const dx = mouse.x - this.x;
-            const dy = mouse.y - this.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < 280) {
-              this.x += (dx / dist) * 2.5;
-              this.y += (dy / dist) * 2.5;
-            }
-          }
-
-          if (this.y < -30 || this.x < -30 || this.x > width + 30) {
+          this.x += this.speed;
+          if (this.x > width) {
             this.reset(false);
           }
         }
 
         draw() {
-          ctx.save();
-          ctx.globalAlpha = this.alpha;
-          ctx.shadowBlur = 12;
-          ctx.shadowColor = this.color;
-          ctx.fillStyle = this.color;
           ctx.beginPath();
-          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.moveTo(this.x, this.y);
+          ctx.lineTo(this.x + this.length, this.y);
+          ctx.strokeStyle = this.color + this.alpha + ')';
+          ctx.lineWidth = Math.random() * 2.0 + 0.8;
+          ctx.stroke();
+        }
+      }
+
+      // ── Cursor Discharge Electric Arcs ───────────────────
+      class ElectricArc {
+        constructor(startX, startY, endX, endY) {
+          this.startX = startX;
+          this.startY = startY;
+          this.endX = endX;
+          this.endY = endY;
+          this.life = 7;
+          this.maxLife = this.life;
+          this.color = Math.random() > 0.5 ? '#ffde00' : '#ff0038';
+          this.path = [];
+          this.generatePath();
+        }
+
+        generatePath() {
+          const dx = this.endX - this.startX;
+          const dy = this.endY - this.startY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const steps = Math.floor(dist / 15);
+          
+          let cx = this.startX;
+          let cy = this.startY;
+          this.path.push({ x: cx, y: cy });
+
+          for (let i = 1; i < steps; i++) {
+            const t = i / steps;
+            const tx = this.startX + dx * t;
+            const ty = this.startY + dy * t;
+            
+            const offset = (Math.random() - 0.5) * 14;
+            const nx = -dy / dist;
+            const ny = dx / dist;
+
+            cx = tx + nx * offset;
+            cy = ty + ny * offset;
+            this.path.push({ x: cx, y: cy });
+          }
+          this.path.push({ x: this.endX, y: this.endY });
+        }
+
+        update() {
+          this.life--;
+        }
+
+        draw() {
+          if (this.life <= 0) return;
+          ctx.save();
+          ctx.shadowBlur = 15;
+          ctx.shadowColor = this.color;
+          ctx.strokeStyle = this.color;
+          ctx.lineWidth = Math.random() * 2.0 + 1.0;
+          ctx.globalAlpha = this.life / this.maxLife;
+
+          ctx.beginPath();
+          ctx.moveTo(this.path[0].x, this.path[0].y);
+          for (let i = 1; i < this.path.length; i++) {
+            ctx.lineTo(this.path[i].x, this.path[i].y);
+          }
+          ctx.stroke();
           ctx.restore();
         }
       }
 
-      // 2. Chibi Anime Superhero Head Entity (Free Screen Roaming)
-      class ChibiHeroHead {
-        constructor(heroData, index, total) {
-          this.hero = heroData;
-          this.index = index;
-          this.x = Math.random() * (width - 100) + 50;
-          this.y = Math.random() * (height - 100) + 50;
-          
-          // Random 2D drift velocity across full screen
-          const angle = Math.random() * Math.PI * 2;
-          const speed = Math.random() * 0.8 + 0.6;
-          this.vx = Math.cos(angle) * speed;
-          this.vy = Math.sin(angle) * speed;
+      // ── Procedural Barry Allen Runner (The Flash) ───
+      class FlashRunner {
+        constructor() {
+          this.initPosition();
+        }
 
-          this.pulse = Math.random() * 10;
+        initPosition() {
+          const isMobile = width < 600;
+          this.scale = (Math.random() * 0.35 + 0.58) * (isMobile ? 0.78 : 1.0);
+          this.direction = Math.random() > 0.5 ? 1 : -1;
+          this.x = this.direction === 1 ? -150 : width + 150;
+          this.y = Math.random() * (height * 0.6) + height * 0.2;
+          
+          this.vx = (Math.random() * 6 + 11) * this.direction;
+          this.vy = (Math.random() - 0.5) * 1.2;
+          this.runCycle = Math.random() * 100;
           this.trail = [];
+          this.active = true;
+          this.disappearTimer = 0;
+          this.distanceRun = 0;
+          this.targetDistance = Math.random() * (width * 0.7) + (width * 0.3);
+
+          vortices.push(new SpeedForceVortex(this.x, this.y - 45 * this.scale));
         }
 
         update() {
-          this.pulse += 0.05;
+          if (!this.active) {
+            this.disappearTimer--;
+            if (this.disappearTimer <= 0) {
+              this.initPosition();
+            }
+            return;
+          }
 
-          // Free Screen Movement
           this.x += this.vx;
           this.y += this.vy;
+          this.distanceRun += Math.abs(this.vx);
+          this.runCycle += 0.30;
 
-          // Soft boundary bounce across full screen viewport
-          const margin = 30;
-          if (this.x < margin) { this.x = margin; this.vx *= -1; }
-          if (this.x > width - margin) { this.x = width - margin; this.vx *= -1; }
-          if (this.y < margin) { this.y = margin; this.vy *= -1; }
-          if (this.y > height - margin) { this.y = height - margin; this.vy *= -1; }
-
-          // Gentle mouse avoidance/reactivity without spawning rings
-          if (mouse.active) {
-            const dx = this.x - mouse.x;
-            const dy = this.y - mouse.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < 180 && dist > 0) {
-              const push = (1 - dist / 180) * 1.8;
-              this.vx += (dx / dist) * push * 0.15;
-              this.vy += (dy / dist) * push * 0.15;
-            }
+          this.trail.push({ x: this.x, y: this.y, cycle: this.runCycle, direction: this.direction, scale: this.scale });
+          if (this.trail.length > 12) {
+            this.trail.shift();
           }
 
-          // Cap max speed
-          const curSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-          if (curSpeed > 2.5) {
-            this.vx = (this.vx / curSpeed) * 2.5;
-            this.vy = (this.vy / curSpeed) * 2.5;
-          }
+          const isOffscreen = (this.direction === 1 && this.x > width + 200) || (this.direction === -1 && this.x < -200);
+          const reachedTarget = this.distanceRun >= this.targetDistance;
 
-          // Afterimage Trail
-          this.trail.push({ x: this.x, y: this.y, alpha: 0.80 });
-          if (this.trail.length > 6) this.trail.shift();
-          this.trail.forEach(t => t.alpha *= 0.78);
+          if (isOffscreen || reachedTarget) {
+            vortices.push(new SpeedForceVortex(this.x, this.y - 45 * this.scale));
+            this.active = false;
+            this.disappearTimer = Math.floor(Math.random() * 40) + 25;
+            this.trail = [];
+          }
         }
 
         draw() {
-          const container = document.querySelector('.links-container');
-          let mainAlpha = 0.90;
-          if (container) {
-            const rect = container.getBoundingClientRect();
-            if (this.x >= rect.left && this.x <= rect.right && this.y >= rect.top && this.y <= rect.bottom) {
-              mainAlpha = 0.40; // Soft translucent ambient glow behind the main glass card container
-            }
-          }
+          if (!this.active) return;
 
-          // Trail
-          this.trail.forEach(t => {
-            ctx.save();
-            ctx.globalAlpha = t.alpha * mainAlpha * 0.4;
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = this.hero.glowColor;
-            ctx.fillStyle = this.hero.mainColor;
-            ctx.beginPath();
-            ctx.arc(t.x, t.y, 8, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
+          this.trail.forEach((t, index) => {
+            const alpha = (index / this.trail.length) * 0.45;
+            this.drawBarryAllen(t.x, t.y, t.cycle, t.direction, t.scale, alpha, '#ff0038', '#ffde00');
           });
 
-          // Outer Glow Ring
-          ctx.save();
-          ctx.globalAlpha = mainAlpha;
-          ctx.translate(this.x, this.y);
-          ctx.shadowBlur = 20 + Math.sin(this.pulse) * 5;
-          ctx.shadowColor = this.hero.glowColor;
+          this.drawBarryAllen(this.x, this.y, this.runCycle, this.direction, this.scale, 1.0, '#ff0038', '#ffde00');
 
-          const headRadius = (width < 600 ? 16 : 22) + Math.sin(this.pulse) * 1.5;
-
-          ctx.beginPath();
-          ctx.arc(0, 0, headRadius + 4, 0, Math.PI * 2);
-          ctx.fillStyle = this.hero.glowColor + '26';
-          ctx.fill();
-
-          // Base Head Background Circle
-          ctx.beginPath();
-          ctx.arc(0, 0, headRadius, 0, Math.PI * 2);
-          ctx.fillStyle = '#0f172a';
-          ctx.strokeStyle = this.hero.glowColor;
-          ctx.lineWidth = 2.5;
-          ctx.fill();
-          ctx.stroke();
-
-          // Render Procedural Chibi Features by Hero ID
-          this.drawChibiFeatures(headRadius);
-
-          ctx.restore();
+          if (Math.random() < 0.6) {
+            const angle = Math.random() * Math.PI * 2;
+            const rx = this.x + Math.cos(angle) * (70 * this.scale);
+            const ry = this.y - (50 * this.scale) + Math.sin(angle) * (70 * this.scale);
+            arcs.push(new ElectricArc(this.x, this.y - 45 * this.scale, rx, ry));
+          }
         }
 
-        drawChibiFeatures(r) {
-          const id = this.hero.id;
+        drawBarryAllen(x, y, cycle, dir, scale, alpha, suitColor, goldColor) {
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.translate(x, y);
+          ctx.scale(dir, 1);
+          ctx.rotate(0.38);
 
-          if (id === 'flash') {
-            // Flash Red Cowl & Golden Wings
-            ctx.fillStyle = '#ff0038';
-            ctx.beginPath(); ctx.arc(0, 0, r - 2, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = '#ffde00'; // Wing ears
-            ctx.beginPath(); ctx.moveTo(-r * 0.8, 0); ctx.lineTo(-r * 1.3, -r * 0.5); ctx.lineTo(-r * 0.7, r * 0.2); ctx.fill();
-            ctx.beginPath(); ctx.moveTo(r * 0.8, 0); ctx.lineTo(r * 1.3, -r * 0.5); ctx.lineTo(r * 0.7, r * 0.2); ctx.fill();
-            // Lenses & Bolt
-            ctx.fillStyle = '#ffffff'; ctx.fillRect(-r * 0.4, -r * 0.25, r * 0.35, r * 0.3); ctx.fillRect(r * 0.05, -r * 0.25, r * 0.35, r * 0.3);
-            ctx.strokeStyle = '#ffde00'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-2, -r * 0.5); ctx.lineTo(2, 0); ctx.lineTo(-1, 0); ctx.lineTo(3, r * 0.5); ctx.stroke();
-          } 
-          else if (id === 'wonderwoman') {
-            // Wonder Woman Dark Hair & Gold Tiara
-            ctx.fillStyle = '#1e1b4b'; // Hair
-            ctx.beginPath(); ctx.arc(0, 0, r - 1, Math.PI * 0.8, Math.PI * 2.2); ctx.fill();
-            ctx.fillStyle = '#ffd700'; // Tiara
-            ctx.beginPath(); ctx.moveTo(-r * 0.8, -r * 0.2); ctx.lineTo(0, -r * 0.7); ctx.lineTo(r * 0.8, -r * 0.2); ctx.lineTo(0, -r * 0.05); ctx.closePath(); ctx.fill();
-            // Red Star
-            ctx.fillStyle = '#e11d48'; ctx.beginPath(); ctx.arc(0, -r * 0.38, r * 0.15, 0, Math.PI * 2); ctx.fill();
-            // Cute Anime Eyes
-            ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-r * 0.35, r * 0.1, r * 0.2, 0, Math.PI * 2); ctx.arc(r * 0.35, r * 0.1, r * 0.2, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(-r * 0.35, r * 0.1, r * 0.1, 0, Math.PI * 2); ctx.arc(r * 0.35, r * 0.1, r * 0.1, 0, Math.PI * 2); ctx.fill();
-          }
-          else if (id === 'thor') {
-            // Thor Silver Winged Helmet & Gold Spiky Hair
-            ctx.fillStyle = '#fde047'; // Hair
-            ctx.beginPath(); ctx.arc(0, 0, r - 2, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = '#cbd5e1'; // Helmet
-            ctx.beginPath(); ctx.arc(0, -r * 0.2, r * 0.7, Math.PI, 0); ctx.fill();
-            // Wings
-            ctx.fillStyle = '#ffffff';
-            ctx.beginPath(); ctx.moveTo(-r * 0.6, -r * 0.5); ctx.lineTo(-r * 1.2, -r * 1.1); ctx.lineTo(-r * 0.4, -r * 0.8); ctx.fill();
-            ctx.beginPath(); ctx.moveTo(r * 0.6, -r * 0.5); ctx.lineTo(r * 1.2, -r * 1.1); ctx.lineTo(r * 0.4, -r * 0.8); ctx.fill();
-            // Blue eyes
-            ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(-r * 0.3, r * 0.15, r * 0.15, 0, Math.PI * 2); ctx.arc(r * 0.3, r * 0.15, r * 0.15, 0, Math.PI * 2); ctx.fill();
-          }
-          else if (id === 'captainmarvel') {
-            // Captain Marvel / Supergirl Gold Anime Hair & Star Tiara
-            ctx.fillStyle = '#facc15'; // Gold Hair
-            ctx.beginPath(); ctx.arc(0, 0, r - 1, 0, Math.PI * 2); ctx.fill();
-            // Star Halo Crest
-            ctx.fillStyle = '#0284c7'; ctx.fillRect(-r * 0.8, -r * 0.4, r * 1.6, r * 0.25);
-            ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.arc(0, -r * 0.28, r * 0.18, 0, Math.PI * 2); ctx.fill();
-            // Cyan Eyes
-            ctx.fillStyle = '#00f0ff'; ctx.beginPath(); ctx.arc(-r * 0.35, r * 0.15, r * 0.18, 0, Math.PI * 2); ctx.arc(r * 0.35, r * 0.15, r * 0.18, 0, Math.PI * 2); ctx.fill();
-          }
-          else if (id === 'spiderman') {
-            // Spider-Man Mask & Big Lenses
-            ctx.fillStyle = '#ff0055'; ctx.beginPath(); ctx.arc(0, 0, r - 2, 0, Math.PI * 2); ctx.fill();
-            ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 1.5;
-            ctx.beginPath(); ctx.moveTo(-r, 0); ctx.lineTo(r, 0); ctx.moveTo(0, -r); ctx.lineTo(0, r); ctx.stroke();
-            // Lenses
-            ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#000000'; ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.moveTo(-r * 0.7, -r * 0.3); ctx.lineTo(-r * 0.15, -r * 0.1); ctx.lineTo(-r * 0.4, r * 0.3); ctx.closePath(); ctx.fill(); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(r * 0.7, -r * 0.3); ctx.lineTo(r * 0.15, -r * 0.1); ctx.lineTo(r * 0.4, r * 0.3); ctx.closePath(); ctx.fill(); ctx.stroke();
-          }
-          else if (id === 'storm') {
-            // Storm Silver Hair & Electric Eyes
-            ctx.fillStyle = '#f8fafc'; ctx.beginPath(); ctx.arc(0, 0, r - 1, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = '#1e293b'; ctx.beginPath(); ctx.arc(0, r * 0.2, r * 0.65, Math.PI, 0); ctx.fill();
-            // Electric Blue Eyes
-            ctx.fillStyle = '#38bdf8'; ctx.shadowBlur = 10; ctx.shadowColor = '#38bdf8';
-            ctx.beginPath(); ctx.arc(-r * 0.32, r * 0.1, r * 0.18, 0, Math.PI * 2); ctx.arc(r * 0.32, r * 0.1, r * 0.18, 0, Math.PI * 2); ctx.fill();
-          }
-          else if (id === 'wolverine') {
-            // Wolverine Cowl Wings
-            ctx.fillStyle = '#eab308'; ctx.beginPath(); ctx.arc(0, 0, r - 2, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = '#0f172a'; // Black Mask Wings
-            ctx.beginPath(); ctx.moveTo(-r * 0.2, -r * 0.5); ctx.lineTo(-r * 1.3, -r * 1.0); ctx.lineTo(-r * 0.7, r * 0.2); ctx.closePath(); ctx.fill();
-            ctx.beginPath(); ctx.moveTo(r * 0.2, -r * 0.5); ctx.lineTo(r * 1.3, -r * 1.0); ctx.lineTo(r * 0.7, r * 0.2); ctx.closePath(); ctx.fill();
-            ctx.fillStyle = '#ffffff'; ctx.fillRect(-r * 0.4, -r * 0.1, r * 0.3, r * 0.2); ctx.fillRect(r * 0.1, -r * 0.1, r * 0.3, r * 0.2);
-          }
-          else {
-            // Aquaman Teal Hair & Gold Collar
-            ctx.fillStyle = '#0d9488'; ctx.beginPath(); ctx.arc(0, 0, r - 2, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = '#eab308'; ctx.fillRect(-r * 0.6, r * 0.3, r * 1.2, r * 0.4);
-            ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-r * 0.3, -r * 0.05, r * 0.16, 0, Math.PI * 2); ctx.arc(r * 0.3, -r * 0.05, r * 0.16, 0, Math.PI * 2); ctx.fill();
-          }
+          const hipX = 0, hipY = -45 * scale;
+          const chestX = 10 * scale, chestY = -75 * scale;
+          const neckX = 16 * scale, neckY = -95 * scale;
+          const headX = 22 * scale, headY = -110 * scale;
+
+          const angle1 = Math.sin(cycle);
+          const angle2 = Math.sin(cycle + Math.PI);
+
+          const lThighX = hipX + Math.sin(angle1) * 24 * scale;
+          const lThighY = hipY + Math.cos(angle1) * 18 * scale + 10 * scale;
+          const lFootX = lThighX + Math.sin(angle1 - 0.8) * 26 * scale - 5 * scale;
+          const lFootY = lThighY + Math.cos(angle1 - 0.8) * 22 * scale;
+
+          const rThighX = hipX + Math.sin(angle2) * 24 * scale;
+          const rThighY = hipY + Math.cos(angle2) * 18 * scale + 10 * scale;
+          const rFootX = rThighX + Math.sin(angle2 - 0.8) * 26 * scale - 5 * scale;
+          const rFootY = rThighY + Math.cos(angle2 - 0.8) * 22 * scale;
+
+          const lElbowX = chestX + Math.sin(angle2) * 20 * scale - 5 * scale;
+          const lElbowY = chestY + Math.cos(angle2) * 20 * scale;
+          const lHandX = lElbowX + Math.sin(angle2 + 1.0) * 20 * scale;
+          const lHandY = lElbowY + Math.cos(angle2 + 1.0) * 14 * scale;
+
+          const rElbowX = chestX + Math.sin(angle1) * 20 * scale - 5 * scale;
+          const rElbowY = chestY + Math.cos(angle1) * 20 * scale;
+          const rHandX = rElbowX + Math.sin(angle1 + 1.0) * 20 * scale;
+          const rHandY = rElbowY + Math.cos(angle1 + 1.0) * 14 * scale;
+
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.shadowBlur = 22;
+          ctx.shadowColor = goldColor;
+
+          ctx.fillStyle = suitColor;
+          ctx.beginPath();
+          ctx.moveTo(hipX - 7 * scale, hipY);
+          ctx.lineTo(hipX + 7 * scale, hipY);
+          ctx.lineTo(chestX + 14 * scale, chestY);
+          ctx.lineTo(chestX - 14 * scale, chestY);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.strokeStyle = suitColor;
+          ctx.lineWidth = 7 * scale;
+          ctx.beginPath();
+          ctx.moveTo(chestX, chestY);
+          ctx.lineTo(neckX, neckY);
+          ctx.stroke();
+
+          ctx.strokeStyle = suitColor;
+          ctx.lineWidth = 11 * scale;
+          ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(lThighX, lThighY); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(rThighX, rThighY); ctx.stroke();
+
+          ctx.lineWidth = 7 * scale;
+          ctx.beginPath(); ctx.moveTo(lThighX, lThighY); ctx.lineTo(lFootX, lFootY); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(rThighX, rThighY); ctx.lineTo(rFootX, rFootY); ctx.stroke();
+
+          ctx.strokeStyle = goldColor;
+          ctx.lineWidth = 4 * scale;
+          ctx.beginPath(); ctx.moveTo(lFootX - 4 * scale, lFootY); ctx.lineTo(lFootX + 10 * scale, lFootY); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(rFootX - 4 * scale, rFootY); ctx.lineTo(rFootX + 10 * scale, rFootY); ctx.stroke();
+
+          ctx.strokeStyle = suitColor;
+          ctx.lineWidth = 8 * scale;
+          ctx.beginPath(); ctx.moveTo(chestX, chestY); ctx.lineTo(lElbowX, lElbowY); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(chestX, chestY); ctx.lineTo(rElbowX, rElbowY); ctx.stroke();
+
+          ctx.lineWidth = 6 * scale;
+          ctx.beginPath(); ctx.moveTo(lElbowX, lElbowY); ctx.lineTo(lHandX, lHandY); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(rElbowX, rElbowY); ctx.lineTo(rHandX, rHandY); ctx.stroke();
+
+          ctx.fillStyle = suitColor;
+          ctx.beginPath();
+          ctx.arc(headX, headY, 14 * scale, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = goldColor;
+          ctx.beginPath();
+          ctx.moveTo(headX - 10 * scale, headY - 2 * scale);
+          ctx.lineTo(headX - 18 * scale, headY - 10 * scale);
+          ctx.lineTo(headX - 8 * scale, headY + 3 * scale);
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(chestX + 2 * scale, chestY - 2 * scale, 7 * scale, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = suitColor;
+          ctx.lineWidth = 2.5 * scale;
+          ctx.beginPath();
+          ctx.moveTo(chestX, chestY - 6 * scale);
+          ctx.lineTo(chestX + 4 * scale, chestY - 1 * scale);
+          ctx.lineTo(chestX - 1 * scale, chestY - 1 * scale);
+          ctx.lineTo(chestX + 3 * scale, chestY + 4 * scale);
+          ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.ellipse(headX + 5 * scale, headY - 2 * scale, 5 * scale, 2.5 * scale, -0.2, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.restore();
         }
       }
 
       // Pools
-      const stardustPool = Array.from({ length: 90 }, () => new QuantumParticle());
-      const chibiHeadsPool = HERO_ROSTER.map((h, i) => new ChibiHeroHead(h, i, HERO_ROSTER.length));
+      const bolts = [];
+      const lines = Array.from({ length: 25 }, () => new SpeedLine());
+      const arcs = [];
+      const vortices = [];
+      const runners = Array.from({ length: 2 }, () => new FlashRunner());
 
-      // Card hover detection to shift portal glow color
-      document.addEventListener('mouseover', (e) => {
-        const card = e.target.closest('.activity-card, .nav-card, .event-card');
-        if (card) {
-          const theme = card.getAttribute('data-theme') || 'running';
-          if (THEME_COLORS[theme]) {
-            currentGlowColor = THEME_COLORS[theme].glow;
-            currentAccentColor = THEME_COLORS[theme].accent;
-          }
-        }
-      });
+      let lastBoltTime = 0;
 
-      // ── Main Render Loop (Clean Roaming Marvel & DC Chibi Heads + Ambient Glow) ─────
       function animate() {
         ctx.clearRect(0, 0, width, height);
 
-        const vCenterX = width / 2;
-        const vCenterY = height / 2;
+        const now = Date.now();
 
-        // 1. Draw Viewport-Filling Stardust Particles
-        stardustPool.forEach(p => {
-          p.update();
-          p.draw();
+        lines.forEach(line => {
+          line.update();
+          line.draw();
         });
 
-        // 2. Draw Soft Ambient Background Glow (No wireframe elliptical lines!)
-        ctx.save();
-        ctx.translate(vCenterX, vCenterY);
-        const baseRadius = Math.min(width * 0.45, height * 0.35, 360);
-        const grad = ctx.createRadialGradient(0, 0, baseRadius * 0.1, 0, 0, baseRadius * 1.4);
-        grad.addColorStop(0, 'rgba(0, 0, 0, 0.4)');
-        grad.addColorStop(0.5, currentGlowColor + '18');
-        grad.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(0, 0, baseRadius * 1.4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
+        if (now - lastBoltTime > Math.random() * 2000 + 1200) {
+          bolts.push(new LightningBolt());
+          lastBoltTime = now;
+        }
 
-        // 3. Update & Draw Marvel & DC Chibi Superhero Fun Heads (Roaming Entire Screen Viewport)
-        chibiHeadsPool.forEach(chibi => {
-          chibi.update();
-          chibi.draw();
+        for (let i = bolts.length - 1; i >= 0; i--) {
+          bolts[i].update();
+          bolts[i].draw();
+          if (bolts[i].life <= 0) bolts.splice(i, 1);
+        }
+
+        for (let i = vortices.length - 1; i >= 0; i--) {
+          vortices[i].update();
+          vortices[i].draw();
+          if (vortices[i].alpha <= 0) vortices.splice(i, 1);
+        }
+
+        for (let i = arcs.length - 1; i >= 0; i--) {
+          arcs[i].update();
+          arcs[i].draw();
+          if (arcs[i].life <= 0) arcs.splice(i, 1);
+        }
+
+        runners.forEach(runner => {
+          runner.update();
+          runner.draw();
         });
+
+        if (mouse.active) {
+          const holdSecs = Math.min(3.0, (now - touchStartTime) / 1000);
+          ctx.save();
+          ctx.beginPath();
+          const ringR = 30 + Math.sin(now * 0.012) * 6 + holdSecs * 25;
+          ctx.arc(mouse.x, mouse.y, ringR, 0, Math.PI * 2);
+          ctx.shadowBlur = 25; ctx.shadowColor = '#ffde00';
+          ctx.strokeStyle = 'rgba(255, 222, 0, 0.88)'; ctx.lineWidth = 3;
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(mouse.x, mouse.y, ringR * 0.65, 0, Math.PI * 2);
+          ctx.shadowBlur = 15; ctx.shadowColor = '#ff0038';
+          ctx.strokeStyle = 'rgba(255, 0, 56, 0.75)'; ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.restore();
+
+          if (Math.random() < 0.8) {
+            const angle = Math.random() * Math.PI * 2;
+            const rx = mouse.x + Math.cos(angle) * (50 + Math.random() * 40);
+            const ry = mouse.y + Math.sin(angle) * (50 + Math.random() * 40);
+            arcs.push(new ElectricArc(mouse.x, mouse.y, rx, ry));
+          }
+        }
 
         requestAnimationFrame(animate);
       }
