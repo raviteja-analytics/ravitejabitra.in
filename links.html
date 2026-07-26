@@ -19,7 +19,7 @@
       width: 100vw;
       height: 100vh;
       pointer-events: none;
-      z-index: 10;
+      z-index: 0;
     }
 
     body {
@@ -28,7 +28,7 @@
       align-items: center;
       min-height: 100vh;
       padding: 30px 16px 80px 16px;
-      background-color: #090b10;
+      background-color: #080a0f;
       color: var(--text-primary);
       overflow-x: hidden;
     }
@@ -43,12 +43,12 @@
       position: relative;
       z-index: 2;
       padding: 36px 24px;
-      background: rgba(13, 17, 26, 0.82);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: rgba(13, 17, 26, 0.88);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 28px;
-      box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1);
     }
 
     .profile-avatar {
@@ -730,7 +730,14 @@
         }
 
         draw() {
-          let mainAlpha = 0.92;
+          const container = document.querySelector('.links-container');
+          let mainAlpha = 0.90;
+          if (container) {
+            const rect = container.getBoundingClientRect();
+            if (this.x >= rect.left && this.x <= rect.right && this.y >= rect.top && this.y <= rect.bottom) {
+              mainAlpha = 0.40; // Soft translucent ambient glow behind the main glass card container
+            }
+          }
 
           // Trail
           this.trail.forEach(t => {
