@@ -10,6 +10,25 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  
+  <style>
+    @keyframes floatShoe {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+      100% { transform: translateY(0); }
+    }
+    .shoe-image {
+      animation: floatShoe 4s ease-in-out infinite;
+    }
+    .shoe-graphic-container:hover .shoe-image {
+      animation-play-state: paused;
+      transform: translateY(-10px) scale(1.03);
+    }
+    .shoe-graphic-container:hover .shoe-glow {
+      transform: translate(-50%, -50%) scale(1.25);
+      opacity: 0.8;
+    }
+  </style>
 </head>
 <body>
 
@@ -46,16 +65,23 @@
         
         <div style="display: flex; flex-direction: column; gap: 24px; width: 100%;">
           
-          <!-- Shoe 1: Puma Deviate Nitro 3 -->
-          <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px;">
-            <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">Puma Deviate Nitro 3</h3>
-            <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px;">
-              Plated speed trainer featuring double-layer NITRO Elite foam and a carbon-composite PWRPLATE. Engineered for tempo runs and race-day performance.
-            </p>
-            <div style="display: flex; gap: 12px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">
-              <span style="color: var(--theme-color);">Category: Plated Trainer</span>
-              <span style="color: var(--text-muted);">|</span>
-              <span style="color: var(--text-secondary);">Status: Active Rotation</span>
+          <!-- Shoe 1: Puma Deviate Nitro 3 Ekiden Version -->
+          <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 24px; margin-bottom: 12px; display: flex; flex-direction: row; flex-wrap: wrap; gap: 24px; align-items: center;">
+            <div class="shoe-graphic-container" style="flex: 1 1 260px; min-height: 220px; display: flex; justify-content: center; align-items: center; background: rgba(59, 130, 246, 0.02); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative; padding: 16px;">
+              <img src="puma-deviate-nitro-3-ekiden.png" alt="Puma Deviate Nitro 3 Ekiden Version" class="shoe-image" style="max-height: 180px; max-width: 100%; object-fit: contain; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.3)); transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);">
+              <div class="shoe-glow" style="position: absolute; width: 140px; height: 140px; background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%); top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; opacity: 0.5; transition: all 0.4s ease;"></div>
+            </div>
+            
+            <div style="flex: 2 1 300px;">
+              <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">Puma Deviate Nitro 3 Ekiden Version</h3>
+              <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px;">
+                Plated speed trainer featuring double-layer NITRO Elite foam and a carbon-composite PWRPLATE. Engineered for tempo runs and race-day performance.
+              </p>
+              <div style="display: flex; gap: 12px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">
+                <span style="color: var(--theme-color);">Category: Plated Trainer</span>
+                <span style="color: var(--text-muted);">|</span>
+                <span style="color: var(--text-secondary);">Status: Active Rotation</span>
+              </div>
             </div>
           </div>
 
