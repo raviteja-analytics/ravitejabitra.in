@@ -155,6 +155,17 @@ export default async function handler(req, res) {
       }
     });
 
+    // Calculate total running distance since July 8th, 2026 for Deviate Nitro 3 Ekiden Version
+    const july8_2026 = new Date('2026-07-08T00:00:00Z');
+    const runsSinceJuly8 = allActivities.filter(act => {
+      const isRun = runTypes.includes(act.type) || runTypes.includes(act.sport_type);
+      const actDate = new Date(act.start_date);
+      return isRun && actDate >= july8_2026;
+    });
+
+    const deviateNitro3DistanceMeters = runsSinceJuly8.reduce((sum, act) => sum + (act.distance || 0), 0);
+    const deviateNitro3Km = parseFloat((deviateNitro3DistanceMeters / 1000).toFixed(1));
+
     return res.status(200).json({
       stats: {
         all_run_totals: stats.all_run_totals || { count: 0, distance: 0, moving_time: 0 },
@@ -178,6 +189,11 @@ export default async function handler(req, res) {
       strength_stats: {
         total_sessions: allWorkouts.length,
         total_time_seconds: totalWorkoutTime
+      },
+      shoes_stats: {
+        deviate_nitro_3_distance_meters: deviateNitro3DistanceMeters,
+        deviate_nitro_3_km: deviateNitro3Km,
+        deviate_nitro_3_runs_count: runsSinceJuly8.length
       },
       recent_workouts: workouts
     });
