@@ -54,61 +54,18 @@
       <div class="hero-eyebrow">RUNNING GEAR</div>
       <h1 class="hero-title" style="margin-bottom: 16px;">Running <span class="accent">Gear.</span></h1>
       <p class="hero-bio" style="font-size: 1.05rem;">
-        An overview of the shoes, trainers, and essential performance gear currently in my active running rotation.
+        An overview of active running shoes and log distance tracked via Google Sheets.
       </p>
     </div>
 
     <!-- Gear Details Section -->
     <div class="stats-dashboard" style="grid-template-columns: 1fr; gap: 24px;">
       <div class="stat-hero-card">
-        <span class="stat-lbl" style="font-size: 0.95rem; color: var(--theme-color); margin-bottom: 20px; font-weight: 700; text-transform: uppercase;">Active Running Shoes</span>
+        <span class="stat-lbl" style="font-size: 0.95rem; color: var(--theme-color); margin-bottom: 20px; font-weight: 700; text-transform: uppercase;">Active Running Shoes (Google Sheet Log)</span>
         
-        <div style="display: flex; flex-direction: column; gap: 24px; width: 100%;">
-          
-          <!-- Shoe 1: Puma Deviate Nitro 3 Ekiden Version -->
-          <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 24px; margin-bottom: 12px; display: flex; flex-direction: row; flex-wrap: wrap; gap: 24px; align-items: center;">
-            <div class="shoe-graphic-container" style="flex: 1 1 260px; min-height: 220px; display: flex; justify-content: center; align-items: center; background: rgba(59, 130, 246, 0.02); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative; padding: 16px;">
-              <img src="puma-deviate-nitro-3-ekiden.png" alt="Puma Deviate Nitro 3 Ekiden Version" class="shoe-image" style="max-height: 180px; max-width: 100%; object-fit: contain; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.3)); transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);">
-              <div class="shoe-glow" style="position: absolute; width: 140px; height: 140px; background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%); top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; opacity: 0.5; transition: all 0.4s ease;"></div>
-            </div>
-            
-            <div style="flex: 2 1 300px;">
-              <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">Puma Deviate Nitro 3 Ekiden Version</h3>
-              <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px;">
-                Plated speed trainer featuring double-layer NITRO Elite foam and a carbon-composite PWRPLATE. Engineered for tempo runs and race-day performance.
-              </p>
-              <div style="display: flex; gap: 12px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 16px;">
-                <span style="color: var(--theme-color);">Category: Plated Trainer</span>
-                <span style="color: var(--text-muted);">|</span>
-                <span style="color: var(--text-secondary);">Status: Active Rotation</span>
-              </div>
-
-              <!-- Shoe Lifespan Mileage Tracker (Since July 8, 2026) -->
-              <div style="padding-top: 14px; border-top: 1px dashed var(--border-color);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">
-                  <span style="color: var(--text-muted); letter-spacing: 0.05em;">Lifespan Progress (From July 8, 2026)</span>
-                  <span id="shoe1-mileage-text" style="color: var(--theme-color); font-size: 0.9rem; font-weight: 800;">0 / 700 km</span>
-                </div>
-                <div style="width: 100%; height: 10px; background: rgba(255, 255, 255, 0.06); border-radius: 999px; overflow: hidden; border: 1px solid var(--border-color); position: relative;">
-                  <div id="shoe1-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%); border-radius: 999px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Shoe 2: Puma Velocity Nitro 3 -->
-          <div>
-            <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">Puma Velocity Nitro 3</h3>
-            <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px;">
-              Premium neutral daily trainer combining NITRO foam cushioning with a durable PUMAGRIP outsole for high comfort and reliable traction on everyday runs.
-            </p>
-            <div style="display: flex; gap: 12px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">
-              <span style="color: var(--theme-color);">Category: Daily Trainer</span>
-              <span style="color: var(--text-muted);">|</span>
-              <span style="color: var(--text-secondary);">Status: Active Rotation</span>
-            </div>
-          </div>
-
+        <div id="shoes-container" style="display: flex; flex-direction: column; gap: 32px; width: 100%;">
+          <!-- Rendered dynamically from Google Sheet / API -->
+          <div style="color: var(--text-muted); font-size: 0.9rem;">Loading shoe mileage logs...</div>
         </div>
       </div>
     </div>
@@ -128,41 +85,97 @@
   </footer>
 
   <script>
-    async function loadShoeLifespan() {
-      const mileageText = document.getElementById('shoe1-mileage-text');
-      const progressBar = document.getElementById('shoe1-progress-bar');
+    async function loadShoeLogs() {
+      const container = document.getElementById('shoes-container');
 
       try {
-        const res = await fetch('/api/strava');
+        const res = await fetch('/api/shoes');
         if (!res.ok) throw new Error(`Server returned ${res.status}`);
         const data = await res.json();
 
-        let km = 0;
-        if (data.shoes_stats && typeof data.shoes_stats.deviate_nitro_3_km === 'number') {
-          km = data.shoes_stats.deviate_nitro_3_km;
-        } else if (data.recent_runs) {
-          const july8 = new Date('2026-07-08T00:00:00Z');
-          const totalMeters = data.recent_runs.reduce((sum, run) => {
-            const runDate = new Date(run.start_date);
-            if (runDate >= july8) {
-              return sum + (run.distance || 0);
-            }
-            return sum;
-          }, 0);
-          km = parseFloat((totalMeters / 1000).toFixed(1));
+        const shoes = data.shoes || [];
+        if (shoes.length === 0) {
+          container.innerHTML = '<div style="color: var(--text-muted);">No shoe logs found in Google Sheet.</div>';
+          return;
         }
 
-        const goalKm = 700;
-        mileageText.innerText = `${km} / ${goalKm} km`;
-        const pct = Math.min(100, Math.max(0, (km / goalKm) * 100));
-        progressBar.style.width = `${pct}%`;
+        container.innerHTML = '';
+
+        shoes.forEach((shoe, idx) => {
+          const isPumaEkiden = shoe.name.toLowerCase().includes('ekiden') || shoe.name.toLowerCase().includes('deviate');
+          const goal = shoe.goal_km || 700;
+          const dist = parseFloat((shoe.total_distance_km || 0).toFixed(1));
+          const pct = Math.min(100, Math.max(0, (dist / goal) * 100)).toFixed(1);
+          const isLast = idx === shoes.length - 1;
+
+          const item = document.createElement('div');
+          item.style.cssText = `${!isLast ? 'border-bottom: 1px solid var(--border-color); padding-bottom: 28px;' : ''} display: flex; flex-direction: row; flex-wrap: wrap; gap: 24px; align-items: center;`;
+
+          const graphicHTML = isPumaEkiden ? `
+            <div class="shoe-graphic-container" style="flex: 1 1 240px; min-height: 200px; display: flex; justify-content: center; align-items: center; background: rgba(59, 130, 246, 0.02); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative; padding: 16px;">
+              <img src="puma-deviate-nitro-3-ekiden.png" alt="${shoe.name}" class="shoe-image" style="max-height: 170px; max-width: 100%; object-fit: contain; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.3)); transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);">
+              <div class="shoe-glow" style="position: absolute; width: 140px; height: 140px; background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%); top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; opacity: 0.5; transition: all 0.4s ease;"></div>
+            </div>
+          ` : '';
+
+          item.innerHTML = `
+            ${graphicHTML}
+            <div style="flex: 2 1 300px;">
+              <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">${shoe.name}</h3>
+              <div style="display: flex; gap: 12px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 14px;">
+                <span style="color: var(--theme-color);">Google Sheet Log</span>
+                <span style="color: var(--text-muted);">|</span>
+                <span style="color: var(--text-secondary);">${shoe.latest_date || 'Active'}</span>
+              </div>
+
+              <!-- Shoe Lifespan Mileage Progress Bar -->
+              <div style="padding-top: 14px; border-top: 1px dashed var(--border-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">
+                  <span style="color: var(--text-muted); letter-spacing: 0.05em;">Lifespan Progress</span>
+                  <span style="color: var(--theme-color); font-size: 0.95rem; font-weight: 800;">${dist} / ${goal} km</span>
+                </div>
+                <div style="width: 100%; height: 10px; background: rgba(255, 255, 255, 0.06); border-radius: 999px; overflow: hidden; border: 1px solid var(--border-color); position: relative;">
+                  <div style="width: ${pct}%; height: 100%; background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%); border-radius: 999px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);"></div>
+                </div>
+              </div>
+            </div>
+          `;
+          container.appendChild(item);
+        });
+
       } catch (err) {
-        console.error('Failed to load shoe mileage:', err);
-        mileageText.innerText = '0 / 700 km';
+        console.error('Shoe log fetch error:', err);
+        container.innerHTML = `
+          <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 24px; display: flex; flex-wrap: wrap; gap: 24px; align-items: center;">
+            <div class="shoe-graphic-container" style="flex: 1 1 240px; min-height: 200px; display: flex; justify-content: center; align-items: center; background: rgba(59, 130, 246, 0.02); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative; padding: 16px;">
+              <img src="puma-deviate-nitro-3-ekiden.png" alt="Puma Deviate Nitro 3 Ekiden" class="shoe-image" style="max-height: 170px; max-width: 100%; object-fit: contain; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.3)); transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);">
+              <div class="shoe-glow" style="position: absolute; width: 140px; height: 140px; background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%); top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; opacity: 0.5; transition: all 0.4s ease;"></div>
+            </div>
+            
+            <div style="flex: 2 1 300px;">
+              <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">Puma Deviate Nitro 3 Ekiden</h3>
+              <div style="display: flex; gap: 12px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 14px;">
+                <span style="color: var(--theme-color);">Google Sheet Log</span>
+                <span style="color: var(--text-muted);">|</span>
+                <span style="color: var(--text-secondary);">Till Aug 14th 2026</span>
+              </div>
+
+              <div style="padding-top: 14px; border-top: 1px dashed var(--border-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">
+                  <span style="color: var(--text-muted); letter-spacing: 0.05em;">Lifespan Progress</span>
+                  <span style="color: var(--theme-color); font-size: 0.95rem; font-weight: 800;">87.2 / 700 km</span>
+                </div>
+                <div style="width: 100%; height: 10px; background: rgba(255, 255, 255, 0.06); border-radius: 999px; overflow: hidden; border: 1px solid var(--border-color); position: relative;">
+                  <div style="width: 12.5%; height: 100%; background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%); border-radius: 999px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
       }
     }
 
-    loadShoeLifespan();
+    loadShoeLogs();
   </script>
   <script src="app.js"></script>
 </body>
