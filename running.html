@@ -29,11 +29,8 @@
 
   <main class="container">
     
-    <!-- Back Button & Gear Page Link -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
-      <a href="index.html" class="back-btn" style="margin-bottom: 0;">← Back to Home</a>
-      <a href="running-gear.html" class="back-btn" style="margin-bottom: 0; padding: 6px 14px; background: rgba(59, 130, 246, 0.1); border: 1px solid var(--theme-color); border-radius: 6px; color: var(--theme-color);">Running Gear →</a>
-    </div>
+    <!-- Back Button -->
+    <a href="index.html" class="back-btn">← Back to Home</a>
 
     <!-- Page Header -->
     <div class="hero" style="margin-bottom: 48px;">
@@ -52,7 +49,7 @@
 
     <!-- Stats Grid -->
     <div class="stats-dashboard">
-      <div class="stat-hero-card full-width">
+      <div class="stat-hero-card">
         <span class="stat-lbl">Total Distance Conquered</span>
         <div id="stat-total-dist" class="stat-val">—</div>
         <span class="stat-lbl" id="stat-total-runs" style="color: var(--text-muted);">— runs logged in total</span>
@@ -69,6 +66,12 @@
         <div id="stat-total-hours" class="stat-val">—</div>
         <span class="stat-lbl" style="color: var(--text-muted);">total running time logged</span>
       </div>
+
+      <a href="running-gear.html" class="stat-hero-card" style="border-color: var(--theme-color); text-decoration: none; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s ease;">
+        <span class="stat-lbl" style="color: var(--theme-color); font-weight: 700;">Running Gear</span>
+        <div class="stat-val" style="font-size: 1.8rem; margin: 12px 0; color: var(--theme-color);">Shoe Rotation →</div>
+        <span class="stat-lbl" style="color: var(--text-muted);">Puma Deviate Nitro 3 & more</span>
+      </a>
     </div>
 
     <!-- Personal Records & Distance Milestones -->
