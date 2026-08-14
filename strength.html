@@ -8,203 +8,12 @@
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   
-  <style>
-    :root {
-      --accent-color: #ffd700; /* Asgardian Gold */
-      --bg-primary: #040812;   /* Deep Space Onyx */
-      --bg-secondary: #0d1629;
-      --bg-card: #14223d;
-      --border-color: rgba(255, 215, 0, 0.15);
-      --border-hover: rgba(255, 215, 0, 0.5);
-      --text-secondary: #d0e8ff;
-    }
 
-    body {
-      background: radial-gradient(circle at center, #10192e 0%, #040812 100%) !important;
-    }
-
-    .hero-eyebrow {
-      background: #ffd700 !important;
-      color: #000000 !important;
-      font-weight: 900 !important;
-      clip-path: polygon(0 0, 100% 0, 94% 100%, 0 100%);
-      box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
-    }
-    
-    .hero-title .accent {
-      color: #ffd700 !important;
-      text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-    }
-
-    .stat-hero-card {
-      border: 1px solid rgba(255, 215, 0, 0.2);
-      background: rgba(20, 34, 61, 0.82) !important;
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      position: relative;
-    }
-
-    .stat-hero-card::before {
-      content: '🔨';
-      position: absolute;
-      top: 12px;
-      right: 16px;
-      font-size: 1.2rem;
-      opacity: 0.35;
-    }
-
-    .stat-hero-card:hover {
-      border-color: rgba(255, 215, 0, 0.6);
-      box-shadow: 0 0 25px rgba(255, 215, 0, 0.15);
-    }
-
-    .feed-item {
-      border: 1px solid rgba(255, 215, 0, 0.15);
-      background: rgba(13, 22, 41, 0.82) !important;
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-    }
-
-    .feed-item:hover {
-      border-color: rgba(255, 215, 0, 0.4);
-      background: #14223d !important;
-      box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
-    }
-
-    .feed-dist {
-      color: #ffd700 !important;
-    }
-
-    .back-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-secondary);
-      margin-bottom: 32px;
-      transition: var(--transition);
-    }
-    .back-btn:hover {
-      color: var(--accent-color);
-      transform: translateX(-4px);
-    }
-    
-    .stats-dashboard {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-      margin-bottom: 48px;
-    }
-    
-    .stat-val {
-      font-size: clamp(2.5rem, 5vw, 4rem);
-      font-weight: 900;
-      color: var(--accent-color);
-      line-height: 1;
-      letter-spacing: -0.03em;
-      margin: 8px 0;
-    }
-    
-    .stat-lbl {
-      font-size: 0.8rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-secondary);
-    }
-    
-    .activity-feed {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    
-    .feed-info h4 {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 4px;
-      letter-spacing: -0.01em;
-    }
-    
-    .feed-info p {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-    
-    .feed-metrics {
-      text-align: right;
-    }
-    
-    .feed-dist {
-      font-size: 1.3rem;
-      font-weight: 800;
-      color: var(--text-primary);
-    }
-    
-    .feed-meta {
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-      font-weight: 600;
-    }
-
-    /* Loading / Error States */
-    .loading-pulse {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--accent-color);
-      animation: pulse 1.5s infinite;
-      margin-right: 8px;
-    }
-
-    .status-msg {
-      display: flex;
-      align-items: center;
-      font-size: 0.95rem;
-      color: var(--text-secondary);
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      padding: 16px 20px;
-      border-radius: 8px;
-      margin-bottom: 32px;
-    }
-    
-    @media (max-width: 600px) {
-      .stats-dashboard {
-        grid-template-columns: 1fr;
-      }
-      .stat-hero-card.full-width {
-        grid-column: span 1;
-      }
-      .feed-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
-      }
-      .feed-metrics {
-        text-align: left;
-        width: 100%;
-        border-top: 1px solid var(--border-color);
-        padding-top: 12px;
-      }
-    }
-  </style>
 </head>
 <body>
-
-  <!-- 60fps Live Animated Background Canvas -->
-  <canvas id="live-bg" data-custom-bg="thor-thunder"></canvas>
-
-  <!-- Ambient Lighting Aura -->
-  <div id="ambient-aura"></div>
 
   <!-- Navigation -->
   <header id="header">
@@ -221,21 +30,21 @@
   <main class="container">
     
     <!-- Back Button -->
-    <a href="index.html" class="back-btn">← Back to Journey</a>
+    <a href="index.html" class="back-btn">← Back to Home</a>
 
     <!-- Page Header -->
     <div class="hero" style="margin-bottom: 48px;">
-      <div class="hero-eyebrow">⚡ GOD OF THUNDER PROTOCOL · ASGARDIAN POWER</div>
-      <h1 class="hero-title" style="margin-bottom: 16px;">Thor <span class="accent">Strength.</span></h1>
+      <div class="hero-eyebrow">STRENGTH TRAINING</div>
+      <h1 class="hero-title" style="margin-bottom: 16px;">Strength <span class="accent">Training.</span></h1>
       <p class="hero-bio" style="font-size: 1.05rem;">
-        Asgardian iron power. I've been <strong>lifting weights consistently for 4 years</strong> to build progressive strength, power, and athletic foundation. Synced directly from Strava.
+        I've been <strong>lifting weights consistently for 4 years</strong> to build progressive strength, power, and athletic foundation. Synced directly from Strava.
       </p>
     </div>
 
     <!-- Status Messages (Loading/Error) -->
     <div id="status-container" class="status-msg">
       <span class="loading-pulse"></span>
-      <span id="status-text">Summoning Mjolnir... syncing weight training sessions...</span>
+      <span id="status-text">Fetching strength statistics from Strava...</span>
     </div>
 
     <!-- Stats Grid -->
@@ -243,19 +52,19 @@
       <div class="stat-hero-card full-width">
         <span class="stat-lbl">Total Weight Training Time</span>
         <div id="stat-total-hours" class="stat-val">—</div>
-        <span class="stat-lbl" id="stat-total-workouts" style="color: var(--text-muted);">— iron sessions logged in total</span>
+        <span class="stat-lbl" id="stat-total-workouts">— iron sessions logged in total</span>
       </div>
       
       <div class="stat-hero-card">
         <span class="stat-lbl">Consistency Benchmark</span>
         <div class="stat-val">4 Years</div>
-        <span class="stat-lbl" style="color: var(--text-muted);">Progressive Overload</span>
+        <span class="stat-lbl">Progressive Overload</span>
       </div>
 
       <div class="stat-hero-card">
-        <span class="stat-lbl">Divine Status</span>
-        <div class="stat-val">God of Thunder</div>
-        <span class="stat-lbl" style="color: var(--text-muted);">Mjolnir Heavy Lifts</span>
+        <span class="stat-lbl">Lifting Status</span>
+        <div class="stat-val">Active Lifter</div>
+        <span class="stat-lbl">Heavy Lift Focus</span>
       </div>
     </div>
 
@@ -329,12 +138,12 @@
             item.className = 'feed-item';
             item.innerHTML = `
               <div class="feed-info">
-                <h4>⚡ ${workout.name}</h4>
-                <p>${formatDate(workout.start_date)} · Heavy Iron Weight Training</p>
+                <h4>${workout.name}</h4>
+                <p>${formatDate(workout.start_date)} · Weight Training</p>
               </div>
               <div class="feed-metrics">
                 <div class="feed-dist">${formatDuration(workout.moving_time)}</div>
-                <div class="feed-meta">👏 ${workout.kudos_count} Kudos</div>
+                 <div class="feed-meta">${workout.kudos_count} Kudos</div>
               </div>
             `;
             feed.appendChild(item);
@@ -345,401 +154,16 @@
 
       } catch (err) {
         console.error(err);
-        statusContainer.style.background = 'rgba(255, 215, 0, 0.08)';
-        statusContainer.style.borderColor = 'rgba(255, 215, 0, 0.3)';
-        statusText.style.color = '#ffd700';
-        statusText.innerHTML = `<strong>Console offline:</strong> ${err.message}. Please configure your Vercel Environment Variables.`;
+        statusContainer.style.backgroundColor = '#fff3cd';
+        statusContainer.style.borderColor = '#ffeeba';
+        statusContainer.style.color = '#856404';
+         statusText.innerHTML = `<strong>Integration offline:</strong> ${err.message}. Please configure your Vercel Environment Variables.`;
         const pulse = statusContainer.querySelector('.loading-pulse');
         if (pulse) pulse.style.display = 'none';
       }
     }
 
     loadStrengthData();
-  </script>
-
-  <!-- Thor God of Thunder Heavy Lifting Canvas Animation Engine -->
-  <script>
-    (function() {
-      const canvas = document.getElementById('live-bg');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      let width = (canvas.width = window.innerWidth);
-      let height = (canvas.height = window.innerHeight);
-
-      window.addEventListener('resize', () => {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-      });
-
-      // ── Divine Lightning Bolt Particle ────────────────────
-      class ThorLightning {
-        constructor(startX, startY, endX, endY, isDivineStrike = false) {
-          this.startX = startX !== undefined ? startX : Math.random() * width;
-          this.startY = startY !== undefined ? startY : 0;
-          this.endX = endX !== undefined ? endX : this.startX + (Math.random() - 0.5) * 200;
-          this.endY = endY !== undefined ? endY : height;
-          this.isDivine = isDivineStrike;
-          this.life = isDivineStrike ? 14 : 8;
-          this.maxLife = this.life;
-          this.path = this.createPath();
-          this.color = isDivineStrike ? '#ffffff' : Math.random() > 0.5 ? '#00e5ff' : '#ffd700';
-        }
-
-        createPath() {
-          const path = [{ x: this.startX, y: this.startY }];
-          const segments = 10;
-          let currentX = this.startX;
-          let currentY = this.startY;
-          const dy = (this.endY - this.startY) / segments;
-
-          for (let i = 1; i <= segments; i++) {
-            currentY += dy;
-            currentX += (Math.random() - 0.5) * (this.isDivine ? 45 : 30);
-            path.push({ x: currentX, y: currentY });
-          }
-          return path;
-        }
-
-        update() {
-          this.life--;
-        }
-
-        draw() {
-          if (this.life <= 0) return;
-          const alpha = this.life / this.maxLife;
-
-          ctx.save();
-          ctx.shadowBlur = this.isDivine ? 30 : 15;
-          ctx.shadowColor = this.color;
-          ctx.strokeStyle = this.color;
-          ctx.lineWidth = (this.isDivine ? 5 : 2) * alpha;
-          ctx.globalAlpha = alpha;
-
-          ctx.beginPath();
-          ctx.moveTo(this.path[0].x, this.path[0].y);
-          for (let i = 1; i < this.path.length; i++) {
-            ctx.lineTo(this.path[i].x, this.path[i].y);
-          }
-          ctx.stroke();
-          ctx.restore();
-        }
-      }
-
-      // ── Thor Heavy Lifter (3 Asgardian Power Stations) ─────
-      class ThorLifter {
-        constructor() {
-          this.stationIndex = 0;
-          this.initPosition();
-        }
-
-        initPosition() {
-          this.stationIndex = (this.stationIndex + 1) % 3; // 0 = Mjolnir Overhead Press, 1 = Stormbreaker Anvil Deadlift, 2 = Bifrost Chain Row
-          const isMobile = width < 600;
-          this.scale = (Math.random() * 0.35 + 0.52) * (isMobile ? 0.78 : 1.0);
-          this.x = width * 0.5 + (Math.random() - 0.5) * 160;
-          this.y = height * 0.7;
-          this.liftCycle = 0;
-          this.active = true;
-          this.disappearTimer = 0;
-          this.stationTime = 0;
-          this.maxStationTime = 260; // ~4.3 seconds per exercise station
-          this.hasStruckLightning = false;
-        }
-
-        update() {
-          if (!this.active) {
-            this.disappearTimer--;
-            if (this.disappearTimer <= 0) {
-              this.initPosition();
-            }
-            return;
-          }
-
-          this.liftCycle += 0.08;
-          this.stationTime++;
-
-          // At top of lift (Mjolnir Overhead Press), summon Divine Lightning Strike!
-          const topPhase = Math.sin(this.liftCycle);
-          if (this.stationIndex === 0 && topPhase > 0.92 && !this.hasStruckLightning) {
-            this.hasStruckLightning = true;
-            bolts.push(new ThorLightning(this.x, 0, this.x, this.y - 120 * this.scale, true));
-          } else if (topPhase < 0.1) {
-            this.hasStruckLightning = false;
-          }
-
-          if (this.stationTime >= this.maxStationTime) {
-            // Trigger exit lightning flash
-            bolts.push(new ThorLightning(this.x, 0, this.x, this.y, true));
-            this.active = false;
-            this.disappearTimer = Math.floor(Math.random() * 60) + 30;
-          }
-        }
-
-        draw() {
-          if (!this.active) return;
-
-          if (this.stationIndex === 0) {
-            this.drawMjolnirOverheadPress(this.x, this.y, this.liftCycle, this.scale);
-          } else if (this.stationIndex === 1) {
-            this.drawStormbreakerAnvil(this.x, this.y, this.liftCycle, this.scale);
-          } else {
-            this.drawBifrostChainRow(this.x, this.y, this.liftCycle, this.scale);
-          }
-        }
-
-        // EXERCISE 0: Mjolnir Barbell Overhead Press
-        drawMjolnirOverheadPress(x, y, cycle, scale) {
-          ctx.save();
-          ctx.translate(x, y);
-
-          const liftProgress = (Math.sin(cycle) + 1) / 2; // 0 = rack height, 1 = overhead lock
-          const barY = -70 * scale - liftProgress * 65 * scale;
-
-          ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-
-          // 1. Draw Massive Asgardian Barbell with Mjolnir Hammers on sides!
-          const barLen = 140 * scale;
-          ctx.shadowBlur = 20; ctx.shadowColor = '#00e5ff';
-          ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 4 * scale;
-          ctx.beginPath(); ctx.moveTo(-barLen / 2, barY); ctx.lineTo(barLen / 2, barY); ctx.stroke();
-
-          // Mjolnir Hammer Plates on ends
-          [-barLen / 2 - 10 * scale, barLen / 2 - 10 * scale].forEach(hx => {
-            ctx.fillStyle = '#94a3b8'; ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 2 * scale;
-            ctx.fillRect(hx, barY - 16 * scale, 20 * scale, 32 * scale);
-            ctx.strokeRect(hx, barY - 16 * scale, 20 * scale, 32 * scale);
-          });
-
-          // 2. Draw Thor (Armor Discs, Red Cape, Flying Hair & Helmet)
-          const hipX = 0, hipY = -40 * scale;
-          const chestX = 0, chestY = -75 * scale;
-          const headX = 0, headY = -92 * scale;
-
-          // Red Flowing Cape
-          ctx.shadowBlur = 15; ctx.shadowColor = '#ef4444';
-          ctx.fillStyle = '#b91c1c';
-          ctx.beginPath();
-          ctx.moveTo(-15 * scale, chestY);
-          ctx.lineTo(-40 * scale, hipY + 30 * scale);
-          ctx.lineTo(40 * scale, hipY + 30 * scale);
-          ctx.lineTo(15 * scale, chestY);
-          ctx.closePath();
-          ctx.fill();
-
-          // Legs & Suit
-          ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 9 * scale;
-          ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(-16 * scale, 0); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(16 * scale, 0); ctx.stroke();
-
-          // Muscular Armor Torso with 6 Glowing Blue Armor Discs!
-          ctx.shadowBlur = 10; ctx.shadowColor = '#ffd700';
-          ctx.fillStyle = '#334155';
-          ctx.beginPath(); ctx.arc(chestX, chestY, 14 * scale, 0, Math.PI * 2); ctx.fill();
-
-          // Glowing Blue Armor Circles
-          ctx.fillStyle = '#00e5ff';
-          [-6 * scale, 6 * scale].forEach(cx => {
-            [-8 * scale, 0, 8 * scale].forEach(cy => {
-              ctx.beginPath(); ctx.arc(chestX + cx, chestY + cy, 2.5 * scale, 0, Math.PI * 2); ctx.fill();
-            });
-          });
-
-          // Arms lifting Barbell
-          ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 6 * scale;
-          ctx.beginPath(); ctx.moveTo(chestX - 10 * scale, chestY); ctx.lineTo(-30 * scale, barY); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(chestX + 10 * scale, chestY); ctx.lineTo(30 * scale, barY); ctx.stroke();
-
-          // Head & Winged Helmet
-          this.drawThorHead(headX, headY, scale);
-          ctx.restore();
-        }
-
-        // EXERCISE 1: Stormbreaker Heavy Anvil Slam / Deadlift
-        drawStormbreakerAnvil(x, y, cycle, scale) {
-          ctx.save();
-          ctx.translate(x, y);
-
-          const liftProgress = (Math.sin(cycle) + 1) / 2;
-          const anvilY = -25 * scale - liftProgress * 40 * scale;
-
-          // Heavy Asgardian Anvil Weight
-          ctx.shadowBlur = 15; ctx.shadowColor = '#ffd700';
-          ctx.fillStyle = '#0f172a'; ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 3 * scale;
-          ctx.fillRect(-35 * scale, anvilY - 20 * scale, 70 * scale, 30 * scale);
-          ctx.strokeRect(-35 * scale, anvilY - 20 * scale, 70 * scale, 30 * scale);
-
-          // Thor Lifting Pose
-          const hipX = 0, hipY = -45 * scale;
-          const chestX = 0, chestY = -75 * scale;
-          const headX = 0, headY = -92 * scale;
-
-          // Red Cape
-          ctx.fillStyle = '#b91c1c';
-          ctx.beginPath(); ctx.moveTo(-15 * scale, chestY); ctx.lineTo(-35 * scale, 0); ctx.lineTo(35 * scale, 0); ctx.lineTo(15 * scale, chestY); ctx.closePath(); ctx.fill();
-
-          // Legs & Torso
-          ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 9 * scale;
-          ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(-18 * scale, 0); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(18 * scale, 0); ctx.stroke();
-
-          ctx.fillStyle = '#334155'; ctx.beginPath(); ctx.arc(chestX, chestY, 14 * scale, 0, Math.PI * 2); ctx.fill();
-
-          // Arms pulling Anvil
-          ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 6 * scale;
-          ctx.beginPath(); ctx.moveTo(chestX - 8 * scale, chestY); ctx.lineTo(-15 * scale, anvilY); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(chestX + 8 * scale, chestY); ctx.lineTo(15 * scale, anvilY); ctx.stroke();
-
-          this.drawThorHead(headX, headY, scale);
-          ctx.restore();
-        }
-
-        // EXERCISE 2: Bifrost Heavy Chain Row
-        drawBifrostChainRow(x, y, cycle, scale) {
-          ctx.save();
-          ctx.translate(x, y);
-
-          const pullProgress = (Math.sin(cycle) + 1) / 2;
-          const handX = 20 * scale + pullProgress * 25 * scale;
-
-          // Bifrost Chains
-          ctx.shadowBlur = 15; ctx.shadowColor = '#00e5ff';
-          ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 3 * scale;
-          ctx.beginPath(); ctx.moveTo(-80 * scale, -60 * scale); ctx.lineTo(handX, -60 * scale); ctx.stroke();
-
-          const hipX = 0, hipY = -45 * scale;
-          const chestX = 0, chestY = -75 * scale;
-          const headX = 0, headY = -92 * scale;
-
-          ctx.fillStyle = '#b91c1c';
-          ctx.beginPath(); ctx.moveTo(-15 * scale, chestY); ctx.lineTo(-35 * scale, 0); ctx.lineTo(35 * scale, 0); ctx.lineTo(15 * scale, chestY); ctx.closePath(); ctx.fill();
-
-          ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 9 * scale;
-          ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(-18 * scale, 0); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(18 * scale, 0); ctx.stroke();
-
-          ctx.fillStyle = '#334155'; ctx.beginPath(); ctx.arc(chestX, chestY, 14 * scale, 0, Math.PI * 2); ctx.fill();
-
-          ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 6 * scale;
-          ctx.beginPath(); ctx.moveTo(chestX, chestY); ctx.lineTo(handX, -60 * scale); ctx.stroke();
-
-          this.drawThorHead(headX, headY, scale);
-          ctx.restore();
-        }
-
-        drawThorHead(headX, headY, scale) {
-          // Thor Head Face
-          ctx.shadowBlur = 12; ctx.shadowColor = '#ffd700';
-          ctx.fillStyle = '#e2e8f0';
-          ctx.beginPath(); ctx.arc(headX, headY, 9 * scale, 0, Math.PI * 2); ctx.fill();
-
-          // Golden Hair
-          ctx.fillStyle = '#ffd700';
-          ctx.beginPath(); ctx.arc(headX, headY - 2 * scale, 10 * scale, Math.PI, Math.PI * 2); ctx.fill();
-
-          // Silver Winged Helmet Wings
-          ctx.fillStyle = '#cbd5e1';
-          ctx.beginPath(); ctx.moveTo(headX - 6 * scale, headY - 4 * scale); ctx.lineTo(headX - 18 * scale, headY - 22 * scale); ctx.lineTo(headX - 8 * scale, headY + 2 * scale); ctx.closePath(); ctx.fill();
-          ctx.beginPath(); ctx.moveTo(headX + 6 * scale, headY - 4 * scale); ctx.lineTo(headX + 18 * scale, headY - 22 * scale); ctx.lineTo(headX + 8 * scale, headY + 2 * scale); ctx.closePath(); ctx.fill();
-        }
-      }
-
-      // Pools
-      const bolts = Array.from({ length: 2 }, () => new ThorLightning());
-      const lifter = new ThorLifter();
-
-      // Touch & Mouse position tracking
-      let mouse = { x: width / 2, y: height / 2, active: false };
-      let touchStartTime = 0;
-
-      function setPos(e) {
-        if (e.touches && e.touches.length > 0) {
-          mouse.x = e.touches[0].clientX;
-          mouse.y = e.touches[0].clientY;
-        } else {
-          mouse.x = e.clientX;
-          mouse.y = e.clientY;
-        }
-        if (!mouse.active) {
-          mouse.active = true;
-          touchStartTime = Date.now();
-        }
-      }
-
-      window.addEventListener('mousemove', setPos);
-      window.addEventListener('mouseenter', setPos);
-      window.addEventListener('mouseleave', () => { mouse.active = false; });
-
-      window.addEventListener('touchstart', (e) => { setPos(e); }, { passive: true });
-      window.addEventListener('touchmove', (e) => { setPos(e); }, { passive: true });
-      window.addEventListener('touchend', () => { mouse.active = false; });
-      window.addEventListener('touchcancel', () => { mouse.active = false; });
-
-      let lastBoltTime = 0;
-
-      // ── Main Render Loop ──────────────────────────────────
-      function animate() {
-        ctx.clearRect(0, 0, width, height);
-
-        const now = Date.now();
-
-        // Summon Thor Divine Lightning Strike & Orbiting Mjolnir Aura when held/moving
-        if (mouse.active) {
-          const holdSecs = Math.min(3.0, (now - touchStartTime) / 1000);
-
-          // Touch Asgardian Energy Pulse Halo Ring
-          ctx.save();
-          ctx.beginPath();
-          const ringR = 26 + Math.sin(now * 0.012) * 5 + holdSecs * 15;
-          ctx.arc(mouse.x, mouse.y, ringR, 0, Math.PI * 2);
-          ctx.shadowBlur = 20; ctx.shadowColor = '#ffd700';
-          ctx.strokeStyle = 'rgba(255, 215, 0, 0.85)'; ctx.lineWidth = 2.5;
-          ctx.stroke();
-          ctx.restore();
-
-          const interval = Math.max(40, 140 - holdSecs * 30);
-          if (now - lastBoltTime > interval) {
-            bolts.push(new ThorLightning(mouse.x + (Math.random() - 0.5) * 40, 0, mouse.x, mouse.y, true));
-            lastBoltTime = now;
-          }
-
-          // Draw orbiting Mjolnir hammer aura around finger/cursor
-          ctx.save();
-          ctx.translate(mouse.x, mouse.y);
-          ctx.rotate(now * 0.005);
-          ctx.shadowBlur = 20; ctx.shadowColor = '#ffd700';
-          ctx.fillStyle = '#ffd700'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5;
-          const orbitRadius = 40 + holdSecs * 25;
-          for (let k = 0; k < 3; k++) {
-            const kAngle = (k * Math.PI * 2) / 3;
-            const kx = Math.cos(kAngle) * orbitRadius;
-            const ky = Math.sin(kAngle) * orbitRadius;
-            ctx.fillRect(kx - 6, ky - 9, 12, 18);
-            ctx.strokeRect(kx - 6, ky - 9, 12, 18);
-          }
-          ctx.restore();
-        }
-
-        // Random background lightning flashes
-        if (Math.random() < 0.02 && bolts.length < 5) {
-          bolts.push(new ThorLightning());
-        }
-
-        // Draw Lightning bolts
-        for (let i = bolts.length - 1; i >= 0; i--) {
-          bolts[i].update();
-          bolts[i].draw();
-          if (bolts[i].life <= 0) bolts.splice(i, 1);
-        }
-
-        // Draw Thor Lifter
-        lifter.update();
-        lifter.draw();
-
-        requestAnimationFrame(animate);
-      }
-
-      animate();
-    })();
   </script>
   <script src="app.js"></script>
 </body>

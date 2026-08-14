@@ -3,208 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Ravi Teja Bitra - Hyrox & Functional Fitness. Sled pushes, wall balls, and Weapon X conditioning.">
+  <meta name="description" content="Ravi Teja Bitra - Hyrox & Functional Fitness. Sled pushes, wall balls, and Berserker Trial conditioning.">
   <title>Hyrox | Ravi Teja Bitra</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   
-  <style>
-    :root {
-      --accent-color: #ffc800; /* Adamantium Gold */
-      --bg-primary: #0d0c0a;   /* Dark Weapon X Onyx */
-      --bg-secondary: #171510;
-      --bg-card: #242018;
-      --border-color: rgba(255, 200, 0, 0.15);
-      --border-hover: rgba(255, 200, 0, 0.5);
-      --text-secondary: #ffebd0;
-    }
-
-    body {
-      background: radial-gradient(circle at center, #1a160d 0%, #080705 100%) !important;
-    }
-
-    .hero-eyebrow {
-      background: #ffc800 !important;
-      color: #000000 !important;
-      font-weight: 900 !important;
-      clip-path: polygon(0 0, 100% 0, 94% 100%, 0 100%);
-      box-shadow: 0 0 15px rgba(255, 200, 0, 0.4);
-    }
-    
-    .hero-title .accent {
-      color: #ffc800 !important;
-      text-shadow: 0 0 20px rgba(255, 200, 0, 0.5);
-    }
-
-    .stat-hero-card {
-      border: 1px solid rgba(255, 200, 0, 0.2);
-      background: rgba(36, 32, 24, 0.82) !important;
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      position: relative;
-    }
-
-    .stat-hero-card::before {
-      content: '🐺';
-      position: absolute;
-      top: 12px;
-      right: 16px;
-      font-size: 1.2rem;
-      opacity: 0.35;
-    }
-
-    .stat-hero-card:hover {
-      border-color: rgba(255, 200, 0, 0.6);
-      box-shadow: 0 0 25px rgba(255, 200, 0, 0.15);
-    }
-
-    .feed-item {
-      border: 1px solid rgba(255, 200, 0, 0.15);
-      background: rgba(23, 21, 16, 0.82) !important;
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-    }
-
-    .feed-item:hover {
-      border-color: rgba(255, 200, 0, 0.4);
-      background: #242018 !important;
-      box-shadow: 0 0 15px rgba(255, 200, 0, 0.1);
-    }
-
-    .feed-dist {
-      color: #ffc800 !important;
-    }
-
-    .back-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-secondary);
-      margin-bottom: 32px;
-      transition: var(--transition);
-    }
-    .back-btn:hover {
-      color: var(--accent-color);
-      transform: translateX(-4px);
-    }
-    
-    .stats-dashboard {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-      margin-bottom: 48px;
-    }
-    
-    .stat-val {
-      font-size: clamp(2.5rem, 5vw, 4rem);
-      font-weight: 900;
-      color: var(--accent-color);
-      line-height: 1;
-      letter-spacing: -0.03em;
-      margin: 8px 0;
-    }
-    
-    .stat-lbl {
-      font-size: 0.8rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-secondary);
-    }
-    
-    .activity-feed {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    
-    .feed-info h4 {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 4px;
-      letter-spacing: -0.01em;
-    }
-    
-    .feed-info p {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-    
-    .feed-metrics {
-      text-align: right;
-    }
-    
-    .feed-dist {
-      font-size: 1.3rem;
-      font-weight: 800;
-      color: var(--text-primary);
-    }
-    
-    .feed-meta {
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-      font-weight: 600;
-    }
-
-    /* Loading / Error States */
-    .loading-pulse {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--accent-color);
-      animation: pulse 1.5s infinite;
-      margin-right: 8px;
-    }
-
-    .status-msg {
-      display: flex;
-      align-items: center;
-      font-size: 0.95rem;
-      color: var(--text-secondary);
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      padding: 16px 20px;
-      border-radius: 8px;
-      margin-bottom: 32px;
-    }
-    
-    @media (max-width: 600px) {
-      .stats-dashboard {
-        grid-template-columns: 1fr;
-      }
-      .stat-hero-card.full-width {
-        grid-column: span 1;
-      }
-      .feed-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
-      }
-      .feed-metrics {
-        text-align: left;
-        width: 100%;
-        border-top: 1px solid var(--border-color);
-        padding-top: 12px;
-      }
-    }
-  </style>
 </head>
 <body>
-
-  <!-- 60fps Live Animated Background Canvas -->
-  <canvas id="live-bg" data-custom-bg="hyrox-wolverine"></canvas>
-
-  <!-- Ambient Lighting Aura -->
-  <div id="ambient-aura"></div>
 
   <!-- Navigation -->
   <header id="header">
@@ -221,21 +29,21 @@
   <main class="container">
     
     <!-- Back Button -->
-    <a href="index.html" class="back-btn">← Back to Journey</a>
+    <a href="index.html" class="back-btn">← Back to Home</a>
 
     <!-- Page Header -->
     <div class="hero" style="margin-bottom: 48px;">
-      <div class="hero-eyebrow">🐺 WEAPON X PROTOCOL · BERSERKER RAGE</div>
-      <h1 class="hero-title" style="margin-bottom: 16px;">Wolverine <span class="accent">Hyrox.</span></h1>
+      <div class="hero-eyebrow">HYROX LOG</div>
+      <h1 class="hero-title" style="margin-bottom: 16px;">Hyrox <span class="accent">Log.</span></h1>
       <p class="hero-bio" style="font-size: 1.05rem;">
-        Pure Adamantium drive. Hyrox combines 8km of running with 8 functional workout stations — sled pushes, wall balls, farmer carries, and burpee broad jumps. This page tracks functional conditioning sessions live via Strava.
+        Hyrox training combining runs with functional workout stations — sled pushes, wall balls, farmer carries, and burpee broad jumps. This page tracks functional conditioning sessions live via Strava.
       </p>
     </div>
 
     <!-- Status Messages (Loading/Error) -->
     <div id="status-container" class="status-msg">
       <span class="loading-pulse"></span>
-      <span id="status-text">Unsheathing claws... fetching Strava metrics...</span>
+      <span id="status-text">Fetching hyrox statistics from Strava...</span>
     </div>
 
     <!-- Stats Grid -->
@@ -254,7 +62,7 @@
 
       <div class="stat-hero-card">
         <span class="stat-lbl">Conditioning Status</span>
-        <div class="stat-val">Weapon X</div>
+        <div class="stat-val">Conditioned</div>
         <span class="stat-lbl" style="color: var(--text-muted);">High Intensity Threshold</span>
       </div>
     </div>
@@ -329,12 +137,12 @@
             item.className = 'feed-item';
             item.innerHTML = `
               <div class="feed-info">
-                <h4>🐺 ${workout.name}</h4>
+                <h4>${workout.name}</h4>
                 <p>${formatDate(workout.start_date)} · Functional Hyrox Conditioning</p>
               </div>
               <div class="feed-metrics">
                 <div class="feed-dist">${formatDuration(workout.moving_time)}</div>
-                <div class="feed-meta">👏 ${workout.kudos_count} Kudos</div>
+                 <div class="feed-meta">${workout.kudos_count} Kudos</div>
               </div>
             `;
             feed.appendChild(item);
@@ -345,471 +153,16 @@
 
       } catch (err) {
         console.error(err);
-        statusContainer.style.background = 'rgba(255, 200, 0, 0.08)';
-        statusContainer.style.borderColor = 'rgba(255, 200, 0, 0.3)';
-        statusText.style.color = '#ffc800';
-        statusText.innerHTML = `<strong>Console offline:</strong> ${err.message}. Please configure your Vercel Environment Variables.`;
+        statusContainer.style.background = 'rgba(223, 163, 66, 0.08)';
+        statusContainer.style.borderColor = 'rgba(223, 163, 66, 0.3)';
+        statusText.style.color = 'var(--theme-color)';
+         statusText.innerHTML = `<strong>Integration offline:</strong> ${err.message}. Please configure your Vercel Environment Variables.`;
         const pulse = statusContainer.querySelector('.loading-pulse');
         if (pulse) pulse.style.display = 'none';
       }
     }
 
     loadStravaData();
-  </script>
-
-  <!-- Wolverine Weapon X Sled Push Canvas Animation Engine -->
-  <script>
-    (function() {
-      const canvas = document.getElementById('live-bg');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      let width = (canvas.width = window.innerWidth);
-      let height = (canvas.height = window.innerHeight);
-
-      window.addEventListener('resize', () => {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-      });
-
-      // ── Metallic Adamantium Claw Slash ────────────────────
-      class AdamantiumSlash {
-        constructor(x, y) {
-          this.x = x || Math.random() * (width - 300) + 150;
-          this.y = y || Math.random() * (height - 300) + 150;
-          this.life = 12;
-          this.maxLife = this.life;
-          this.length = Math.random() * 120 + 90;
-          this.angle = -0.6; // diagonal slash
-          this.color = Math.random() > 0.5 ? '#ffc800' : '#38bdf8'; // gold or cyan
-        }
-
-        update() {
-          this.life--;
-        }
-
-        draw() {
-          if (this.life <= 0) return;
-          const alpha = this.life / this.maxLife;
-
-          ctx.save();
-          ctx.translate(this.x, this.y);
-          ctx.rotate(this.angle);
-          ctx.shadowBlur = 20;
-          ctx.shadowColor = this.color;
-          ctx.strokeStyle = this.color;
-          ctx.globalAlpha = alpha;
-
-          // Draw 3 parallel Adamantium Claw slashes
-          const spacing = 12;
-          for (let i = -1; i <= 1; i++) {
-            ctx.beginPath();
-            ctx.moveTo(-this.length / 2, i * spacing);
-            ctx.lineTo(this.length / 2, i * spacing);
-            ctx.lineWidth = 3.5 * alpha;
-            ctx.stroke();
-          }
-
-          ctx.restore();
-        }
-      }
-
-      // ── Friction Sparks from Sled & Metal Cut ──────────────
-      class MetalSpark {
-        constructor(x, y) {
-          this.reset(x, y);
-        }
-
-        reset(x, y) {
-          this.x = x || Math.random() * width;
-          this.y = y || height - 40;
-          this.vx = (Math.random() - 0.7) * 8; // fly backward/upward
-          this.vy = -(Math.random() * 4 + 1);
-          this.size = Math.random() * 2.5 + 1;
-          this.life = Math.floor(Math.random() * 20) + 10;
-          this.maxLife = this.life;
-          this.color = Math.random() > 0.4 ? '#ffc800' : '#ff5500';
-        }
-
-        update() {
-          this.x += this.vx;
-          this.y += this.vy;
-          this.life--;
-        }
-
-        draw() {
-          if (this.life <= 0) return;
-          const alpha = this.life / this.maxLife;
-          ctx.save();
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = this.color;
-          ctx.fillStyle = this.color;
-          ctx.globalAlpha = alpha;
-
-          ctx.beginPath();
-          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
-        }
-      }
-
-      // ── Procedural Wolverine Hyrox Athlete (Multi-Station) ──
-      class WolverinePusher {
-        constructor() {
-          this.stationIndex = 0;
-          this.initPosition();
-        }
-
-        initPosition() {
-          this.stationIndex = (this.stationIndex + 1) % 3; // Cycle station: 0 = Sled, 1 = Wall Ball, 2 = Farmer Carry
-          const isMobile = width < 600;
-          this.scale = (Math.random() * 0.35 + 0.52) * (isMobile ? 0.78 : 1.0);
-          this.direction = Math.random() > 0.5 ? 1 : -1;
-          
-          if (this.stationIndex === 1) { // Wall Ball Station (Stationary center wall)
-            this.x = width * 0.5 + (Math.random() - 0.5) * 100;
-            this.y = height * 0.7;
-            this.vx = 0;
-            this.vy = 0;
-            this.stationTime = 0;
-            this.maxStationTime = 240; // 4 seconds of wall balls
-          } else { // Sled Push or Farmer Carry
-            this.x = this.direction === 1 ? -220 : width + 220;
-            this.y = height * 0.52 + (Math.random() - 0.5) * (height * 0.35);
-            this.vx = (this.stationIndex === 0 ? Math.random() * 2 + 4.5 : Math.random() * 1.5 + 3.5) * this.direction;
-            this.vy = (Math.random() - 0.5) * 0.8;
-          }
-
-          this.driveCycle = 0;
-          this.active = true;
-          this.disappearTimer = 0;
-        }
-
-        update() {
-          if (!this.active) {
-            this.disappearTimer--;
-            if (this.disappearTimer <= 0) {
-              this.initPosition();
-            }
-            return;
-          }
-
-          this.driveCycle += 0.14;
-
-          if (this.stationIndex === 1) { // Wall Ball update
-            this.stationTime++;
-            if (this.stationTime >= this.maxStationTime) {
-              slashes.push(new AdamantiumSlash(this.x, this.y - 40 * this.scale));
-              this.active = false;
-              this.disappearTimer = Math.floor(Math.random() * 60) + 30;
-            }
-          } else { // Movement update
-            this.x += this.vx;
-            this.y += this.vy;
-
-            if (this.stationIndex === 0) { // Sled friction sparks
-              const sledX = this.x + (40 * this.scale) * this.direction;
-              sparks.push(new MetalSpark(sledX, this.y - 5));
-            }
-
-            const isExit = (this.direction === 1 && this.x > width + 220) || (this.direction === -1 && this.x < -220);
-            if (isExit || Math.random() < 0.003) {
-              slashes.push(new AdamantiumSlash(this.x, this.y - 40 * this.scale));
-              this.active = false;
-              this.disappearTimer = Math.floor(Math.random() * 60) + 30;
-            }
-          }
-        }
-
-        draw() {
-          if (!this.active) return;
-          
-          if (this.stationIndex === 0) {
-            this.drawSledPush(this.x, this.y, this.driveCycle, this.direction, this.scale);
-          } else if (this.stationIndex === 1) {
-            this.drawWallBall(this.x, this.y, this.driveCycle, this.direction, this.scale);
-          } else {
-            this.drawFarmerCarry(this.x, this.y, this.driveCycle, this.direction, this.scale);
-          }
-        }
-
-        // STATION 0: Sled Push
-        drawSledPush(x, y, cycle, dir, scale) {
-          ctx.save();
-          ctx.translate(x, y);
-          ctx.scale(dir, 1);
-
-          // Heavy Sled Geometry
-          const sledX = 40 * scale, sledY = 0;
-          const sledWidth = 45 * scale, sledHeight = 35 * scale, handleBarHeight = 55 * scale;
-
-          ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-          ctx.shadowBlur = 12; ctx.shadowColor = '#38bdf8';
-
-          // Sled Base & Weights
-          ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 5 * scale;
-          ctx.beginPath(); ctx.moveTo(sledX - 10 * scale, sledY - 2 * scale); ctx.lineTo(sledX + sledWidth + 10 * scale, sledY - 2 * scale); ctx.stroke();
-
-          ctx.fillStyle = '#1e293b'; ctx.fillRect(sledX, sledY - sledHeight, sledWidth, sledHeight);
-          ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2 * scale; ctx.strokeRect(sledX, sledY - sledHeight, sledWidth, sledHeight);
-
-          // Handles
-          ctx.strokeStyle = '#ffc800'; ctx.lineWidth = 4 * scale;
-          ctx.beginPath(); ctx.moveTo(sledX + 5 * scale, sledY - sledHeight); ctx.lineTo(sledX + 5 * scale, sledY - handleBarHeight); ctx.stroke();
-
-          // Wolverine Pushing Joints
-          const hipX = -35 * scale, hipY = -40 * scale;
-          const chestX = -10 * scale, chestY = -55 * scale;
-          const headX = 5 * scale, headY = -62 * scale;
-
-          const leg1 = Math.sin(cycle), leg2 = Math.sin(cycle + Math.PI);
-          const lKneeX = hipX + Math.sin(leg1) * 20 * scale - 10 * scale, lKneeY = hipY + Math.cos(leg1) * 12 * scale + 15 * scale;
-          const lFootX = lKneeX + Math.sin(leg1 - 0.6) * 22 * scale - 12 * scale, lFootY = lKneeY + Math.cos(leg1 - 0.6) * 16 * scale;
-
-          const rKneeX = hipX + Math.sin(leg2) * 20 * scale - 10 * scale, rKneeY = hipY + Math.cos(leg2) * 12 * scale + 15 * scale;
-          const rFootX = rKneeX + Math.sin(leg2 - 0.6) * 22 * scale - 12 * scale, rFootY = rKneeY + Math.cos(leg2 - 0.6) * 16 * scale;
-
-          // Legs & Suit
-          ctx.strokeStyle = '#ffc800'; ctx.lineWidth = 8 * scale;
-          ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(lKneeX, lKneeY); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(rKneeX, rKneeY); ctx.stroke();
-
-          ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 6 * scale;
-          ctx.beginPath(); ctx.moveTo(lKneeX, lKneeY); ctx.lineTo(lFootX, lFootY); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(rKneeX, rKneeY); ctx.lineTo(rFootX, rFootY); ctx.stroke();
-
-          // Torso & Arms
-          ctx.fillStyle = '#ffc800';
-          ctx.beginPath(); ctx.moveTo(hipX - 6 * scale, hipY); ctx.lineTo(hipX + 6 * scale, hipY); ctx.lineTo(chestX + 12 * scale, chestY); ctx.lineTo(chestX - 10 * scale, chestY); ctx.closePath(); ctx.fill();
-
-          const handX = sledX + 5 * scale, handY = sledY - handleBarHeight + 10 * scale;
-          ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 6 * scale;
-          ctx.beginPath(); ctx.moveTo(chestX, chestY); ctx.lineTo(handX, handY); ctx.stroke();
-
-          // Claws
-          ctx.shadowBlur = 15; ctx.shadowColor = '#38bdf8'; ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 2 * scale;
-          for (let i = -1; i <= 1; i++) {
-            ctx.beginPath(); ctx.moveTo(handX + i * 3 * scale, handY - 4 * scale); ctx.lineTo(handX + 22 * scale + i * 3 * scale, handY - 14 * scale); ctx.stroke();
-          }
-
-          // Wolverine Head
-          this.drawHead(headX, headY, scale);
-          ctx.restore();
-        }
-
-        // STATION 1: Wall Balls
-        drawWallBall(x, y, cycle, dir, scale) {
-          ctx.save();
-          ctx.translate(x, y);
-          ctx.scale(dir, 1);
-
-          // Wall target line on right side
-          const targetX = 60 * scale;
-          const targetY = -140 * scale;
-
-          ctx.strokeStyle = 'rgba(255, 200, 0, 0.4)'; ctx.lineWidth = 3 * scale;
-          ctx.beginPath(); ctx.moveTo(targetX - 20 * scale, targetY); ctx.lineTo(targetX + 20 * scale, targetY); ctx.stroke();
-
-          // Squat and ball toss cycle (0 to 1)
-          const squatProgress = (Math.sin(cycle * 1.5) + 1) / 2; // 0 = lowest squat, 1 = highest throw
-          const squatYOffset = (1 - squatProgress) * 25 * scale;
-
-          const hipX = 0, hipY = -35 * scale + squatYOffset;
-          const chestX = 0, chestY = -65 * scale + squatYOffset;
-          const headX = 0, headY = -80 * scale + squatYOffset;
-
-          // Animated Wall Ball trajectory
-          const ballY = -65 * scale + squatYOffset - squatProgress * 80 * scale;
-          const ballX = 15 * scale + squatProgress * 35 * scale;
-
-          // Draw Heavy Hyrox Wall Ball (Black/Gold ball)
-          ctx.shadowBlur = 15; ctx.shadowColor = '#ffc800';
-          ctx.fillStyle = '#1e293b'; ctx.beginPath(); ctx.arc(ballX, ballY, 12 * scale, 0, Math.PI * 2); ctx.fill();
-          ctx.strokeStyle = '#ffc800'; ctx.lineWidth = 2 * scale; ctx.stroke();
-
-          // Legs in squat posture
-          const kneeX = 18 * scale, kneeY = -15 * scale + squatYOffset * 0.5;
-          const footX = 12 * scale, footY = 0;
-
-          ctx.strokeStyle = '#ffc800'; ctx.lineWidth = 8 * scale;
-          ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(kneeX, kneeY); ctx.stroke();
-          ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 6 * scale;
-          ctx.beginPath(); ctx.moveTo(kneeX, kneeY); ctx.lineTo(footX, footY); ctx.stroke();
-
-          // Torso & Upward Reaching Arms
-          ctx.fillStyle = '#ffc800';
-          ctx.beginPath(); ctx.moveTo(hipX - 8 * scale, hipY); ctx.lineTo(hipX + 8 * scale, hipY); ctx.lineTo(chestX + 10 * scale, chestY); ctx.lineTo(chestX - 10 * scale, chestY); ctx.closePath(); ctx.fill();
-
-          ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 5 * scale;
-          ctx.beginPath(); ctx.moveTo(chestX, chestY); ctx.lineTo(ballX - 5 * scale, ballY + 10 * scale); ctx.stroke();
-
-          // Head
-          this.drawHead(headX, headY, scale);
-          ctx.restore();
-        }
-
-        // STATION 2: Farmer Carry (Kettlebells)
-        drawFarmerCarry(x, y, cycle, dir, scale) {
-          ctx.save();
-          ctx.translate(x, y);
-          ctx.scale(dir, 1);
-
-          const hipX = 0, hipY = -45 * scale;
-          const chestX = 0, chestY = -75 * scale;
-          const headX = 0, headY = -90 * scale;
-
-          const leg1 = Math.sin(cycle * 1.5), leg2 = Math.sin(cycle * 1.5 + Math.PI);
-          const lKneeX = hipX + Math.sin(leg1) * 16 * scale, lKneeY = hipY + 22 * scale;
-          const lFootX = lKneeX + Math.sin(leg1 - 0.4) * 18 * scale, lFootY = lKneeY + 20 * scale;
-
-          const rKneeX = hipX + Math.sin(leg2) * 16 * scale, rKneeY = hipY + 22 * scale;
-          const rFootX = rKneeX + Math.sin(leg2 - 0.4) * 18 * scale, rFootY = rKneeY + 20 * scale;
-
-          // Legs
-          ctx.strokeStyle = '#ffc800'; ctx.lineWidth = 8 * scale;
-          ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(lKneeX, lKneeY); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(rKneeX, rKneeY); ctx.stroke();
-
-          ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 6 * scale;
-          ctx.beginPath(); ctx.moveTo(lKneeX, lKneeY); ctx.lineTo(lFootX, lFootY); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(rKneeX, rKneeY); ctx.lineTo(rFootX, rFootY); ctx.stroke();
-
-          // Torso & Heavy Arms carrying Kettlebells
-          ctx.fillStyle = '#ffc800';
-          ctx.beginPath(); ctx.moveTo(hipX - 8 * scale, hipY); ctx.lineTo(hipX + 8 * scale, hipY); ctx.lineTo(chestX + 12 * scale, chestY); ctx.lineTo(chestX - 12 * scale, chestY); ctx.closePath(); ctx.fill();
-
-          // Heavy Kettlebells in hands
-          const kbLeftX = chestX - 16 * scale, kbLeftY = chestY + 30 * scale;
-          const kbRightX = chestX + 16 * scale, kbRightY = chestY + 30 * scale;
-
-          ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 5 * scale;
-          ctx.beginPath(); ctx.moveTo(chestX - 10 * scale, chestY); ctx.lineTo(kbLeftX, kbLeftY - 12 * scale); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(chestX + 10 * scale, chestY); ctx.lineTo(kbRightX, kbRightY - 12 * scale); ctx.stroke();
-
-          // Draw Kettlebell weights
-          ctx.shadowBlur = 12; ctx.shadowColor = '#38bdf8';
-          ctx.fillStyle = '#0f172a'; ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2 * scale;
-          ctx.beginPath(); ctx.arc(kbLeftX, kbLeftY, 9 * scale, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-          ctx.beginPath(); ctx.arc(kbRightX, kbRightY, 9 * scale, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-
-          // Claws extended sideways!
-          ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 2 * scale;
-          for (let i = -1; i <= 1; i++) {
-            ctx.beginPath(); ctx.moveTo(kbRightX + i * 3 * scale, kbRightY); ctx.lineTo(kbRightX + 18 * scale + i * 3 * scale, kbRightY - 8 * scale); ctx.stroke();
-          }
-
-          // Head
-          this.drawHead(headX, headY, scale);
-          ctx.restore();
-        }
-
-        // Shared Wolverine Head Mask & Wings
-        drawHead(headX, headY, scale) {
-          ctx.shadowBlur = 10; ctx.shadowColor = '#ffc800';
-          ctx.fillStyle = '#ffc800';
-          ctx.beginPath(); ctx.arc(headX, headY, 9 * scale, 0, Math.PI * 2); ctx.fill();
-
-          ctx.fillStyle = '#0f172a';
-          ctx.beginPath(); ctx.moveTo(headX - 2 * scale, headY - 4 * scale); ctx.lineTo(headX - 16 * scale, headY - 18 * scale); ctx.lineTo(headX - 6 * scale, headY + 2 * scale); ctx.closePath(); ctx.fill();
-          ctx.beginPath(); ctx.moveTo(headX + 2 * scale, headY - 4 * scale); ctx.lineTo(headX + 16 * scale, headY - 18 * scale); ctx.lineTo(headX + 6 * scale, headY + 2 * scale); ctx.closePath(); ctx.fill();
-
-          ctx.fillStyle = '#ffffff';
-          ctx.beginPath(); ctx.moveTo(headX + 2 * scale, headY - 2 * scale); ctx.lineTo(headX + 8 * scale, headY - 2 * scale); ctx.lineTo(headX + 5 * scale, headY + 2 * scale); ctx.closePath(); ctx.fill();
-        }
-      }
-
-      // Pools
-      const slashes = Array.from({ length: 2 }, () => new AdamantiumSlash());
-      const sparks = Array.from({ length: 30 }, () => new MetalSpark());
-      const runner = new WolverinePusher();
-
-      // Touch & Mouse position tracking
-      let mouse = { x: width / 2, y: height / 2, active: false };
-      let touchStartTime = 0;
-
-      function setPos(e) {
-        if (e.touches && e.touches.length > 0) {
-          mouse.x = e.touches[0].clientX;
-          mouse.y = e.touches[0].clientY;
-        } else {
-          mouse.x = e.clientX;
-          mouse.y = e.clientY;
-        }
-        if (!mouse.active) {
-          mouse.active = true;
-          touchStartTime = Date.now();
-        }
-      }
-
-      window.addEventListener('mousemove', setPos);
-      window.addEventListener('mouseenter', setPos);
-      window.addEventListener('mouseleave', () => { mouse.active = false; });
-
-      window.addEventListener('touchstart', (e) => { setPos(e); }, { passive: true });
-      window.addEventListener('touchmove', (e) => { setPos(e); }, { passive: true });
-      window.addEventListener('touchend', () => { mouse.active = false; });
-      window.addEventListener('touchcancel', () => { mouse.active = false; });
-
-      let lastSlashTime = 0;
-
-      // ── Main Render Loop ──────────────────────────────────
-      function animate() {
-        ctx.clearRect(0, 0, width, height);
-
-        const now = Date.now();
-
-        // Continuous Adamantium Claw Slash & Spark Storm when held/moving
-        if (mouse.active) {
-          const holdSecs = Math.min(3.0, (now - touchStartTime) / 1000);
-
-          // Touch Claw Energy Pulse Halo Ring
-          ctx.save();
-          ctx.beginPath();
-          const ringR = 26 + Math.sin(now * 0.012) * 5 + holdSecs * 15;
-          ctx.arc(mouse.x, mouse.y, ringR, 0, Math.PI * 2);
-          ctx.shadowBlur = 20; ctx.shadowColor = '#ffc800';
-          ctx.strokeStyle = 'rgba(255, 200, 0, 0.85)'; ctx.lineWidth = 2.5;
-          ctx.stroke();
-          ctx.restore();
-
-          const interval = Math.max(40, 140 - holdSecs * 40);
-          if (now - lastSlashTime > interval) {
-            const offsetX = (Math.random() - 0.5) * (40 + holdSecs * 60);
-            const offsetY = (Math.random() - 0.5) * (40 + holdSecs * 60);
-            slashes.push(new AdamantiumSlash(mouse.x + offsetX, mouse.y + offsetY));
-            for (let i = 0; i < 6 + Math.floor(holdSecs * 4); i++) {
-              sparks.push(new MetalSpark(mouse.x + offsetX, mouse.y + offsetY));
-            }
-            lastSlashTime = now;
-          }
-        }
-
-        // Randomly spawn background Adamantium claw slashes
-        if (Math.random() < 0.02 && slashes.length < 4) {
-          slashes.push(new AdamantiumSlash());
-        }
-
-        // Draw Slashes
-        for (let i = slashes.length - 1; i >= 0; i--) {
-          slashes[i].update();
-          slashes[i].draw();
-          if (slashes[i].life <= 0) slashes.splice(i, 1);
-        }
-
-        // Draw Sparks
-        sparks.forEach(s => {
-          s.update();
-          s.draw();
-        });
-
-        // Draw Wolverine Sled Pusher
-        runner.update();
-        runner.draw();
-
-        requestAnimationFrame(animate);
-      }
-
-      animate();
-    })();
   </script>
   <script src="app.js"></script>
 </body>
