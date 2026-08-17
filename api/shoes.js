@@ -47,12 +47,39 @@ export default async function handler(req, res) {
     return lines;
   }
 
+  function normalizeShoeName(rawName) {
+    const nameLower = rawName.toLowerCase();
+    if (nameLower.includes('deviate') || nameLower.includes('devaite')) {
+      return "Puma Deviate Nitro 3 Ekiden";
+    }
+    if (nameLower.includes('gt-2000') || nameLower.includes('gt 2000') || nameLower.includes('asics')) {
+      return "Asics GT-2000 13";
+    }
+    return rawName.trim();
+  }
+
   // Master Google Sheet CSV URL (Sheet2) - append cache buster timestamp
   const masterSheetId = process.env.GOOGLE_SHEET_ID || "1HmwPdXpSD-NHgFYLQCebiyL15OGoPA2jGnGWtt__CrA";
   const timestamp = Date.now();
   const sheetCsvUrl = `https://docs.google.com/spreadsheets/d/${masterSheetId}/gviz/tq?tqx=out:csv&sheet=Sheet2&t=${timestamp}`;
 
   const shoeMap = new Map();
+
+  // Pre-seed the known active shoes in rotation (ensures they display even if 0 km logged in sheet)
+  shoeMap.set("Puma Deviate Nitro 3 Ekiden", {
+    name: "Puma Deviate Nitro 3 Ekiden",
+    total_distance_km: 0.0,
+    latest_date: "Till Aug 14th 2026",
+    goal_km: 700,
+    entries_count: 0
+  });
+  shoeMap.set("Asics GT-2000 13", {
+    name: "Asics GT-2000 13",
+    total_distance_km: 0.0,
+    latest_date: "Active",
+    goal_km: 700,
+    entries_count: 0
+  });
 
   try {
     const sheetRes = await fetch(sheetCsvUrl, { cache: 'no-store' });
@@ -83,17 +110,17 @@ export default async function handler(req, res) {
             if (rawName && distStr) {
               const cleanDist = parseFloat(distStr.replace(/[^0-9.]/g, ''));
               if (!isNaN(cleanDist) && cleanDist > 0) {
-                const nameKey = rawName.trim();
-                if (!shoeMap.has(nameKey)) {
-                  shoeMap.set(nameKey, {
-                    name: nameKey,
+                const normalizedName = normalizeShoeName(rawName);
+                if (!shoeMap.has(normalizedName)) {
+                  shoeMap.set(normalizedName, {
+                    name: normalizedName,
                     total_distance_km: 0,
                     latest_date: dateStr,
                     goal_km: 700,
                     entries_count: 0
                   });
                 }
-                const entry = shoeMap.get(nameKey);
+                const entry = shoeMap.get(normalizedName);
                 entry.total_distance_km += cleanDist;
                 entry.entries_count += 1;
                 // Update latest date string if valid
@@ -112,7 +139,7 @@ export default async function handler(req, res) {
 
   const shoesList = Array.from(shoeMap.values());
 
-  // Fallback default if sheet has no shoes rows yet
+  // Fallback defaults in case sheet reading fails completely
   if (shoesList.length === 0) {
     shoesList.push({
       name: "Puma Deviate Nitro 3 Ekiden",
