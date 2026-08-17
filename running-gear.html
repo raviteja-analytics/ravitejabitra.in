@@ -130,7 +130,11 @@
             <div class="shoe-video-container" style="flex: 0 0 200px; aspect-ratio: 9/16; max-height: 355px; display: flex; justify-content: center; align-items: center; background: #000; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative;">
               <video src="Puma Deviate Nitro 3 Ekiden.mp4" autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
             </div>
-          ` : '';
+          ` : (shoe.name.toLowerCase().includes('asics') || shoe.name.toLowerCase().includes('gt-2000') ? `
+            <div class="shoe-video-container" style="flex: 0 0 200px; aspect-ratio: 9/16; max-height: 355px; display: flex; justify-content: center; align-items: center; background: #000; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative;">
+              <video src="Asics GT 2000-13.mp4" autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+            </div>
+          ` : '');
 
           item.innerHTML = `
             ${graphicHTML}
@@ -192,6 +196,10 @@
 
           <!-- Asics Shoe Card -->
           <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 24px; align-items: center;">
+            <div class="shoe-video-container" style="flex: 0 0 200px; aspect-ratio: 9/16; max-height: 355px; display: flex; justify-content: center; align-items: center; background: #000; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative;">
+              <video src="Asics GT 2000-13.mp4" autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+            </div>
+
             <div style="flex: 2 1 300px;">
               <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">Asics GT-2000 13</h3>
               <div style="display: flex; gap: 12px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 14px;">
