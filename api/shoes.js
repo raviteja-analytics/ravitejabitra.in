@@ -120,6 +120,12 @@ export default async function handler(req, res) {
       latest_date: "Till Aug 14th 2026",
       goal_km: 700,
       entries_count: 1
+    }, {
+      name: "Asics GT-2000 13",
+      total_distance_km: 0.0,
+      latest_date: "Aug 17th 2026",
+      goal_km: 700,
+      entries_count: 1
     });
   }
 
