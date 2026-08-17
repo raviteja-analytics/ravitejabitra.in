@@ -112,12 +112,8 @@
           item.style.cssText = `${!isLast ? 'border-bottom: 1px solid var(--border-color); padding-bottom: 28px;' : ''} display: flex; flex-direction: row; flex-wrap: wrap; gap: 24px; align-items: center;`;
 
           const graphicHTML = isPumaEkiden ? `
-            <div class="shoe-graphic-container" style="flex: 1 1 220px; min-height: 180px; display: flex; justify-content: center; align-items: center; background: rgba(59, 130, 246, 0.02); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative; padding: 16px;">
-              <img src="puma-deviate-nitro-3-ekiden.png" alt="${shoe.name}" class="shoe-image" style="max-height: 150px; max-width: 100%; object-fit: contain; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.3)); transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);">
-              <div class="shoe-glow" style="position: absolute; width: 140px; height: 140px; background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%); top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; opacity: 0.5; transition: all 0.4s ease;"></div>
-            </div>
-            <div class="shoe-video-container" style="flex: 1 1 220px; min-height: 180px; display: flex; justify-content: center; align-items: center; background: #000; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative;">
-              <video src="Puma Deviate Nitro 3 Ekiden.mp4" autoplay loop muted playsinline style="width: 100%; height: 180px; object-fit: cover;"></video>
+            <div class="shoe-video-container" style="flex: 0 0 200px; aspect-ratio: 9/16; max-height: 355px; display: flex; justify-content: center; align-items: center; background: #000; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative;">
+              <video src="Puma Deviate Nitro 3 Ekiden.mp4" autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
             </div>
           ` : '';
 
@@ -150,12 +146,8 @@
         console.error('Shoe log fetch error:', err);
         container.innerHTML = `
           <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 24px; display: flex; flex-wrap: wrap; gap: 24px; align-items: center;">
-            <div class="shoe-graphic-container" style="flex: 1 1 220px; min-height: 180px; display: flex; justify-content: center; align-items: center; background: rgba(59, 130, 246, 0.02); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative; padding: 16px;">
-              <img src="puma-deviate-nitro-3-ekiden.png" alt="Puma Deviate Nitro 3 Ekiden" class="shoe-image" style="max-height: 150px; max-width: 100%; object-fit: contain; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.3)); transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);">
-              <div class="shoe-glow" style="position: absolute; width: 140px; height: 140px; background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%); top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; opacity: 0.5; transition: all 0.4s ease;"></div>
-            </div>
-            <div class="shoe-video-container" style="flex: 1 1 220px; min-height: 180px; display: flex; justify-content: center; align-items: center; background: #000; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative;">
-              <video src="Puma Deviate Nitro 3 Ekiden.mp4" autoplay loop muted playsinline style="width: 100%; height: 180px; object-fit: cover;"></video>
+            <div class="shoe-video-container" style="flex: 0 0 200px; aspect-ratio: 9/16; max-height: 355px; display: flex; justify-content: center; align-items: center; background: #000; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative;">
+              <video src="Puma Deviate Nitro 3 Ekiden.mp4" autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
             </div>
             
             <div style="flex: 2 1 300px;">
