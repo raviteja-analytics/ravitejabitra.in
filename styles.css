@@ -1,23 +1,23 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&family=Syne:wght@700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,800;1,9..144,400&display=swap');
 
 :root {
-  --bg-primary: #060708; /* Obsidian Black */
-  --bg-secondary: #0c0d0f; /* Dark Charcoal Slate */
+  --bg-primary: #121314; /* Warm Indigo-Sand Charcoal */
+  --bg-secondary: #1a1b1d; /* Slightly lighter warm charcoal */
   
-  --text-primary: #f8fafc; /* Slate 50 */
-  --text-secondary: #94a3b8; /* Slate 400 */
-  --text-muted: #475569; /* Slate 600 */
+  --text-primary: #f5f2eb; /* Warm Sand / Cream Off-white */
+  --text-secondary: #a3a099; /* Warm Muted Sand Gray */
+  --text-muted: #5a5752; /* Darker Sand Gray */
   
-  --theme-color: #d4fc34; /* High-performance Volt / Acid Green */
-  --theme-hover: #e5ff5c; /* Lighter Volt */
-  --theme-glow: rgba(212, 252, 52, 0.08);
+  --theme-color: #e05a47; /* Terracotta Orange / Vermillion */
+  --theme-hover: #ff715b; /* Lighter Terracotta */
+  --theme-glow: rgba(224, 90, 71, 0.08);
   
-  --border-color: #17191b; /* Crisp Slate Charcoal */
-  --border-muted: rgba(255, 255, 255, 0.04);
+  --border-color: #222326; /* Warm Dark Border */
+  --border-muted: rgba(255, 255, 255, 0.03);
   
   --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
-  --font-display: "Syne", var(--font-family);
+  --font-display: "Fraunces", serif;
   --max-width: 920px;
   --nav-height: 64px;
 }
@@ -56,7 +56,7 @@ header {
   top: 0; left: 0;
   width: 100%;
   height: var(--nav-height);
-  background: rgba(6, 7, 8, 0.9);
+  background: rgba(18, 19, 20, 0.9);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border-color);
@@ -68,7 +68,7 @@ header {
 
 header.header-scrolled {
   height: 52px;
-  border-bottom-color: rgba(212, 252, 52, 0.15);
+  border-bottom-color: rgba(224, 90, 71, 0.15);
 }
 
 .nav-content {
@@ -80,9 +80,9 @@ header.header-scrolled {
 
 .logo {
   font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--text-primary);
   padding: 4px 0;
   transition: color 0.2s ease;
@@ -206,8 +206,8 @@ main {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--theme-color);
-  background: rgba(212, 252, 52, 0.03);
-  border: 1px solid rgba(212, 252, 52, 0.15);
+  background: rgba(224, 90, 71, 0.03);
+  border: 1px solid rgba(224, 90, 71, 0.15);
   padding: 4px 10px;
   border-radius: 0px;
   margin-bottom: 18px;
@@ -216,16 +216,17 @@ main {
 .hero-title {
   font-family: var(--font-display);
   font-size: clamp(2.4rem, 5vw, 4.2rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   margin-bottom: 18px;
-  line-height: 1.05;
+  line-height: 1.1;
   color: var(--text-primary);
 }
 
 .hero-title .accent {
   color: var(--theme-color);
-  font-weight: 800;
+  font-style: italic;
+  font-weight: 400;
 }
 
 .hero-lead {
@@ -271,8 +272,8 @@ main {
 
 .hero-cta:hover {
   background: var(--theme-color);
-  color: #060708;
-  box-shadow: 0 0 14px rgba(212, 252, 52, 0.2);
+  color: #121314;
+  box-shadow: 0 0 14px rgba(224, 90, 71, 0.2);
 }
 
 .hero-cta-secondary {
@@ -307,10 +308,10 @@ main {
 
 .section-header h2 {
   font-family: var(--font-display);
-  font-size: 0.9rem;
-  font-weight: 800;
+  font-size: 0.95rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   color: var(--text-secondary);
 }
 
@@ -344,12 +345,12 @@ main {
 }
 
 .stat-number {
-  font-family: var(--font-mono);
-  font-size: clamp(1.6rem, 2.8vw, 2rem);
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 2.8vw, 2.2rem);
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.1;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   margin-bottom: 8px;
 }
 
@@ -378,7 +379,8 @@ main {
 }
 
 .chapter-quote {
-  font-size: clamp(0.98rem, 1.5vw, 1.1rem);
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
   color: var(--text-primary);
   line-height: 1.7;
   font-weight: 400;
@@ -416,7 +418,7 @@ main {
 
 .activity-card:hover {
   border-color: var(--theme-color);
-  background: rgba(212, 252, 52, 0.01);
+  background: rgba(224, 90, 71, 0.01);
 }
 
 .card-top {
@@ -430,8 +432,8 @@ main {
 
 .card-name {
   font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 800;
+  font-size: 1rem;
+  font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.01em;
   white-space: nowrap;
@@ -455,7 +457,7 @@ main {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--theme-color);
-  border-bottom: 1px solid rgba(212, 252, 52, 0.3);
+  border-bottom: 1px solid rgba(224, 90, 71, 0.3);
   padding-bottom: 1px;
 }
 
@@ -493,8 +495,8 @@ main {
 
 .challenge-title {
   font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 800;
+  font-size: 1.05rem;
+  font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 4px;
   letter-spacing: -0.01em;
@@ -579,8 +581,8 @@ main {
 
 .travel-info h3 {
   font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 800;
+  font-size: 1.15rem;
+  font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 6px;
 }
@@ -633,8 +635,8 @@ main {
 .connect-title {
   font-family: var(--font-display);
   font-size: 1.5rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   margin-bottom: 2px;
 }
 
@@ -676,7 +678,7 @@ main {
 
 .quick-link-btn:hover {
   border-color: var(--theme-color);
-  color: #060708;
+  color: #121314;
   background: var(--theme-color);
 }
 
@@ -717,7 +719,7 @@ textarea.form-input {
   justify-content: center;
   padding: 8px 16px;
   background: var(--theme-color);
-  color: #060708;
+  color: #121314;
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: 0.72rem;
