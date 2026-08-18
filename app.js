@@ -47,9 +47,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function highlightNavOnScroll() {
     const scrollY = window.pageYOffset;
+    
+    // Clear active states if at the top (within the hero section)
+    if (scrollY < 180) {
+      navLinksList.forEach(link => link.classList.remove('active'));
+      return;
+    }
+
     sections.forEach(current => {
       const sectionHeight = current.offsetHeight;
-      const sectionTop = current.offsetTop - 120;
+      const sectionTop = current.offsetTop - 160;
       const sectionId = current.getAttribute('id');
 
       if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
@@ -65,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.addEventListener('scroll', highlightNavOnScroll);
+  highlightNavOnScroll(); // Run once initially
 
   // 4. Mobile Nav Drawer Toggle
   const menuToggle = document.getElementById('menu-toggle');
