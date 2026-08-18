@@ -3,17 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Ravi Teja Bitra — Hybrid Athlete & Explorer. Anime & Superhero Cinematic Universe.">
-  <title>Ravi Teja Bitra | Hybrid Athlete & Explorer</title>
+  <meta name="description" content="Ravi Teja Bitra — Personal digital journal. IT Professional, runner, lifter, and explorer documenting the ongoing journey.">
+  <title>Ravi Teja Bitra | IT Professional • Athlete Mindset • Explorer</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-
 
   <!-- Navigation -->
   <header id="header">
@@ -28,7 +26,7 @@
         <li><a href="links.html" style="color: var(--theme-color);">Registrations</a></li>
         <li><a href="#about">About</a></li>
         <li><a href="#activities">Activities</a></li>
-        <li><a href="#lifestyle">Lifestyle</a></li>
+        <li><a href="#challenges">Challenges</a></li>
         <li><a href="#connect">Connect</a></li>
       </ul>
     </div>
@@ -36,11 +34,26 @@
 
   <main class="container">
 
-    <!-- ── Hero / About Me ──────────────────────────────────── -->
-    <section id="about" class="hero">
-      <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px;">
-        <div class="hero-eyebrow" style="margin-bottom: 0;">Active Logs</div>
-        <a href="links.html" class="hero-eyebrow" style="margin-bottom: 0; background: #000; color: var(--theme-color); border: 1px solid var(--theme-color);">Active Registrations →</a>
+    <!-- ── 1. Hero Section ──────────────────────────────────── -->
+    <section id="about" class="hero fade-in-section">
+      <!-- Subtle Technical Grid Overlay & Route Line -->
+      <div class="hero-grid-bg"></div>
+      <svg class="hero-route-svg" viewBox="0 0 280 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 180 C 60 140, 100 190, 140 120 C 180 50, 220 100, 260 20" stroke="url(#hero-gradient)" stroke-width="2.5" stroke-dasharray="6 4" />
+        <circle cx="20" cy="180" r="4" fill="#3b82f6"/>
+        <circle cx="260" cy="20" r="4" fill="#60a5fa"/>
+        <defs>
+          <linearGradient id="hero-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#60a5fa" stop-opacity="0.9"/>
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <div class="hero-coordinates">12.9716° N, 77.5946° E • BENGALURU</div>
+
+      <div class="identity-badge">
+        <span>IT PROFESSIONAL</span> • <span>RUNNER</span> • <span>LIFTER</span> • <span>EXPLORER</span>
       </div>
 
       <h1 class="hero-title">
@@ -48,22 +61,69 @@
         Teja <span class="accent">Bitra.</span>
       </h1>
 
-      <p class="hero-bio">
-        By day, I'm an <strong>IT professional</strong>. Outside of work, I'm someone who is obsessed with pushing personal limits — one discipline at a time.
+      <p class="hero-lead">
+        By day, I'm an IT professional. Outside work, I'm obsessed with seeing what this body and mind are capable of.
       </p>
-      <p class="hero-bio">
-        I've been <strong>lifting weights for 4 years</strong>, picked up <strong>running just 4 months ago</strong> and already hooked, play <strong>Badminton</strong> whenever life allows, and hold my own in the <strong>pool</strong> — swimming is one of those things I genuinely love. The goal on the horizon? A full <strong>Triathlon</strong>. And after that, an <strong>Ultra Marathon</strong>, <strong>Hyrox</strong>, and somewhere in between — a serious <strong>Trekking</strong> expedition. I want to test what this body is really capable of.
+      
+      <p class="hero-subbio">
+        Strength training. Running. Swimming. Badminton. Travel. And a few ambitious goals along the way.
       </p>
-      <p class="hero-bio">
-        On the travel front, I've explored <strong>a lot of South India</strong> and am slowly working through the North. Haven't stepped outside the country yet — but that chapter is coming, and I intend to make it worth the wait.
-      </p>
-      <p class="hero-bio" style="color: var(--text-muted); font-style: italic; font-size: 1rem;">
-        This space is my honest, ongoing journal — no filters, no flexing. Just real progress, real places, and real talk.
-      </p>
+
+      <div class="hero-actions">
+        <a href="#stats" class="hero-cta">EXPLORE MY JOURNEY ↓</a>
+        <a href="links.html" class="hero-cta-secondary">Active Registrations →</a>
+      </div>
     </section>
 
-    <!-- ── Physical Activities Section ──────────────────────── -->
-    <section id="activities" class="card-section">
+    <!-- ── 2. Personal Stats Section ────────────────────────── -->
+    <section id="stats" class="card-section fade-in-section">
+      <div class="section-header">
+        <h2>Perspective & Metrics</h2>
+        <div class="section-header-line"></div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number">4 YEARS</div>
+          <div class="stat-label">Strength Training</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-number">4 MONTHS</div>
+          <div class="stat-label">Running</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-number">6</div>
+          <div class="stat-label">Physical Disciplines</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-number">SOUTH INDIA</div>
+          <div class="stat-label">Explored</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 3. Current Chapter Section ───────────────────────── -->
+    <section id="chapter" class="card-section fade-in-section">
+      <div class="section-header">
+        <h2>Current Chapter</h2>
+        <div class="section-header-line"></div>
+      </div>
+
+      <div class="chapter-card">
+        <p class="chapter-quote">
+          "This isn't a finished story. I'm documenting what I'm learning, what I'm attempting, and where it takes me."
+        </p>
+        <p class="chapter-subtext">
+          No filters, no fluff — just real progress, real places, and real talk as I push my boundaries day by day.
+        </p>
+      </div>
+    </section>
+
+    <!-- ── 4. Physical Disciplines Section ──────────────────── -->
+    <section id="activities" class="card-section fade-in-section">
       <div class="section-header">
         <h2>Physical Disciplines</h2>
         <div class="section-header-line"></div>
@@ -72,51 +132,182 @@
       <div class="card-grid">
 
         <a href="strength.html" class="activity-card">
-          <div class="card-name">Strength Training</div>
-          <div class="card-tag">Iron and Progressive Overload</div>
+          <div class="card-top">
+            <div class="card-name">Strength Training</div>
+            <span class="card-badge">4 YEARS</span>
+          </div>
+          <div class="card-tag">Progressive Overload & Iron</div>
+          <div class="card-arrow">View Log →</div>
         </a>
 
         <a href="running.html" class="activity-card">
-          <div class="card-name">Running</div>
-          <div class="card-tag">Endurance and Speed</div>
+          <div class="card-top">
+            <div class="card-name">Running</div>
+            <span class="card-badge">4 MONTHS IN</span>
+          </div>
+          <div class="card-tag">5K → 10K → More</div>
+          <div class="card-arrow">View Log →</div>
         </a>
 
         <a href="cycling.html" class="activity-card">
-          <div class="card-name">Cycling</div>
-          <div class="card-tag">Road and Speed Log</div>
+          <div class="card-top">
+            <div class="card-name">Cycling</div>
+            <span class="card-badge">ROAD & SPEED</span>
+          </div>
+          <div class="card-tag">Ride Log & Speed</div>
+          <div class="card-arrow">View Log →</div>
         </a>
 
         <a href="swimming.html" class="activity-card">
-          <div class="card-name">Swimming</div>
-          <div class="card-tag">Lap and Distance Log</div>
+          <div class="card-top">
+            <div class="card-name">Swimming</div>
+            <span class="card-badge">DISTANCE LOG</span>
+          </div>
+          <div class="card-tag">Laps & Endurance</div>
+          <div class="card-arrow">View Log →</div>
         </a>
 
         <a href="badminton.html" class="activity-card">
-          <div class="card-name">Badminton</div>
-          <div class="card-tag">Reflexes and Speed</div>
+          <div class="card-top">
+            <div class="card-name">Badminton</div>
+            <span class="card-badge">RECREATIONAL</span>
+          </div>
+          <div class="card-tag">Reflexes & Speed</div>
+          <div class="card-arrow">View Log →</div>
         </a>
 
         <a href="hyrox.html" class="activity-card">
-          <div class="card-name">Hyrox</div>
-          <div class="card-tag">Functional Fitness Trial</div>
+          <div class="card-top">
+            <div class="card-name">Hyrox</div>
+            <span class="card-badge">FUTURE TRIAL</span>
+          </div>
+          <div class="card-tag">Functional Fitness Challenge</div>
+          <div class="card-arrow">View Log →</div>
         </a>
 
       </div>
     </section>
 
-    <!-- ── Connect Section ───────────────────────────────────── -->
-    <section id="connect">
-      <h2 class="connect-title">Let's Connect.</h2>
-      <p class="connect-desc">Whether it's a training plan, fitness collab, or a query — I'd love to hear from you.</p>
+    <!-- ── 5. Next Challenges Section ───────────────────────── -->
+    <section id="challenges" class="card-section fade-in-section">
+      <div class="section-header">
+        <h2>Next Challenges</h2>
+        <div class="section-header-line"></div>
+      </div>
 
-      <form id="contact-form">
-        <div class="form-grid">
-          <input type="text" class="form-input" id="name" placeholder="Your Name" required>
-          <input type="email" class="form-input" id="email" placeholder="Your Email" required>
+      <div class="challenges-grid">
+        <div class="challenge-card">
+          <div class="challenge-num">01</div>
+          <div class="challenge-title">ULTRA MARATHON</div>
+          <div class="challenge-status">ON THE HORIZON</div>
         </div>
-        <textarea class="form-input" id="message" placeholder="Your Message" required></textarea>
-        <button type="submit" class="btn">Send Message</button>
-      </form>
+
+        <div class="challenge-card">
+          <div class="challenge-num">02</div>
+          <div class="challenge-title">HYROX</div>
+          <div class="challenge-status">COMING NEXT</div>
+        </div>
+
+        <div class="challenge-card">
+          <div class="challenge-num">03</div>
+          <div class="challenge-title">TREKKING EXPEDITION</div>
+          <div class="challenge-status">FUTURE CHALLENGE</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 6. The Journey Section ───────────────────────────── -->
+    <section id="journey" class="card-section fade-in-section">
+      <div class="section-header">
+        <h2>The Journey</h2>
+        <div class="section-header-line"></div>
+      </div>
+
+      <div class="journey-timeline">
+        <div class="timeline-step">
+          <div class="timeline-node"></div>
+          <div class="timeline-phase">PAST</div>
+          <div class="timeline-content">4 Years of Strength Training</div>
+        </div>
+
+        <div class="timeline-step">
+          <div class="timeline-node"></div>
+          <div class="timeline-phase">PRESENT</div>
+          <div class="timeline-content">Running Journey & Endurance Base</div>
+        </div>
+
+        <div class="timeline-step">
+          <div class="timeline-node"></div>
+          <div class="timeline-phase">NEXT</div>
+          <div class="timeline-content">10K → Half Marathon → Ultra</div>
+        </div>
+
+        <div class="timeline-step">
+          <div class="timeline-node"></div>
+          <div class="timeline-phase">FUTURE</div>
+          <div class="timeline-content">Hyrox + Trekking Expeditions</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 7. Travel Section ────────────────────────────────── -->
+    <section id="travel" class="card-section fade-in-section">
+      <div class="section-header">
+        <h2>Exploration & Travel</h2>
+        <div class="section-header-line"></div>
+      </div>
+
+      <div class="travel-card">
+        <div class="travel-info">
+          <h3>The Unfinished Map</h3>
+          <p>
+            I've explored a lot of South India and am slowly working through the North. Haven't stepped outside the country yet — but that international chapter is coming, and I intend to make it worth the wait.
+          </p>
+          <div style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--theme-color); letter-spacing: 0.05em;">
+            Status: Open Chapter
+          </div>
+        </div>
+
+        <div class="travel-map-container">
+          <svg class="travel-svg" viewBox="0 0 200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Simplified abstract outline of India -->
+            <path d="M80 20 L120 30 L160 70 L140 120 L110 200 L90 220 L70 170 L40 120 L50 60 Z" stroke="#334155" stroke-width="1.5" stroke-dasharray="4 4"/>
+            <!-- Highlighted South India region route -->
+            <path d="M70 150 C80 170, 90 190, 90 215 C95 190, 110 160, 120 140" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- Pulsing location pin on South India (Bengaluru) -->
+            <circle cx="92" cy="170" r="5" fill="#3b82f6"/>
+            <circle cx="92" cy="170" r="10" stroke="#3b82f6" stroke-width="1" opacity="0.5"/>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 8. Connect Section ───────────────────────────────── -->
+    <section id="connect" class="card-section fade-in-section">
+      <div class="connect-card">
+        <div class="connect-header">
+          <h2 class="connect-title">Let's Connect.</h2>
+          <p class="connect-desc">Whether it's a training discussion, route recommendation, or a personal query — feel free to reach out.</p>
+        </div>
+
+        <!-- Quick Direct Contact Links -->
+        <div class="social-quick-links">
+          <a href="mailto:ravitejabitra.official@gmail.com" class="quick-link-btn">✉ Email</a>
+          <a href="https://www.instagram.com/raviteja_bitra" target="_blank" rel="noopener noreferrer" class="quick-link-btn">📷 Instagram</a>
+          <a href="https://www.linkedin.com/in/ravitejabitra" target="_blank" rel="noopener noreferrer" class="quick-link-btn">💼 LinkedIn</a>
+          <a href="https://www.youtube.com/@Raviteja_Bitra" target="_blank" rel="noopener noreferrer" class="quick-link-btn">▶ YouTube</a>
+        </div>
+
+        <!-- Contact Form -->
+        <form id="contact-form">
+          <div class="form-grid">
+            <input type="text" class="form-input" id="name" placeholder="Your Name" required>
+            <input type="email" class="form-input" id="email" placeholder="Your Email" required>
+          </div>
+          <textarea class="form-input" id="message" placeholder="Your Message" required></textarea>
+          <button type="submit" class="btn">Send Message</button>
+        </form>
+      </div>
     </section>
 
   </main>
