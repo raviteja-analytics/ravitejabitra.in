@@ -820,8 +820,8 @@
         console.warn('JSON feed load failed:', e);
       }
 
-      // 2. Fetch Live Google Sheet CSV & Auto-Parse unformatted URL rows
-      const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1HmwPdXpSD-NHgFYLQCebiyL15OGoPA2jGnGWtt__CrA/export?format=csv";
+      // 2. Fetch Live Google Sheet CSV via CORS-enabled Gviz endpoint
+      const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1HmwPdXpSD-NHgFYLQCebiyL15OGoPA2jGnGWtt__CrA/gviz/tq?tqx=out:csv";
 
       try {
         const res = await fetch(sheetCsvUrl + '&v=' + Date.now());
