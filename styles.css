@@ -2,7 +2,7 @@
 
 :root {
   --bg-primary: #0f172a; /* Slate 900 */
-  --bg-secondary: #131d35; /* Subtle rhythm dark slate */
+  --bg-secondary: #131d35; /* Subtle dark slate */
   
   --text-primary: #f8fafc; /* Slate 50 */
   --text-secondary: #94a3b8; /* Slate 400 */
@@ -12,12 +12,11 @@
   --theme-hover: #60a5fa; /* Lighter blue */
   --theme-glow: rgba(59, 130, 246, 0.12);
   
-  --border-color: #1e293b; /* Slate 800 - very thin/subtle */
-  --border-accent: rgba(59, 130, 246, 0.3);
+  --border-color: #1e293b; /* Slate 800 */
   
   --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --max-width: 900px;
-  --nav-height: 72px;
+  --nav-height: 64px;
 }
 
 /* ── Reset ────────────────────────────────────────────────────── */
@@ -30,7 +29,7 @@ body {
   color: var(--text-primary);
   font-family: var(--font-family);
   font-size: 16px;
-  line-height: 1.7;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   overflow-x: hidden;
@@ -61,12 +60,12 @@ header {
   z-index: 200;
   display: flex;
   align-items: center;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
 }
 
 header.header-scrolled {
+  height: 56px;
   border-bottom-color: rgba(59, 130, 246, 0.1);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
 .nav-content {
@@ -77,13 +76,12 @@ header.header-scrolled {
 }
 
 .logo {
-  font-size: 1.25rem;
-  font-weight: 800;
+  font-size: 1.2rem;
+  font-weight: 850;
   letter-spacing: -0.02em;
   color: var(--text-primary);
   padding: 4px 0;
-  position: relative;
-  transition: color 0.25s ease;
+  transition: color 0.2s ease;
 }
 
 .logo span { color: var(--theme-color); }
@@ -94,19 +92,19 @@ header.header-scrolled {
 
 .nav-links {
   display: flex;
-  gap: 32px;
+  gap: 28px;
   list-style: none;
 }
 
 .nav-links a {
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-secondary);
   position: relative;
   padding: 4px 0;
-  transition: color 0.25s ease;
+  transition: color 0.2s ease;
 }
 
 .nav-links a::after {
@@ -152,72 +150,72 @@ header.header-scrolled {
 
 /* ── Main Layout ─────────────────────────────────────────────── */
 main {
-  padding-top: calc(var(--nav-height) + 20px);
-  padding-bottom: 80px;
+  padding-top: calc(var(--nav-height) + 16px);
+  padding-bottom: 60px;
 }
 
-/* ── Hero Section ───────────────────────────────────────────── */
+/* ── Hero Section (Split Composition Layout) ──────────────────── */
 .hero {
   position: relative;
-  padding: 40px 0 32px;
+  padding: 32px 0 24px;
 }
 
-.hero-grid-bg {
-  position: absolute;
-  top: -20px;
-  right: -20px;
-  width: 300px;
-  height: 300px;
-  background-image: 
-    radial-gradient(rgba(59, 130, 246, 0.08) 1px, transparent 1px);
-  background-size: 16px 16px;
-  mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 20%, transparent 80%);
-  -webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 20%, transparent 80%);
-  pointer-events: none;
-  opacity: 0.6;
+.hero-layout {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 40px;
+  align-items: center;
 }
 
-.hero-route-svg {
-  position: absolute;
-  top: 10px;
-  right: 0;
-  width: 240px;
-  height: 180px;
+.hero-content {
+  position: relative;
+}
+
+.hero-visual {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
   pointer-events: none;
-  opacity: 0.15;
+}
+
+.hero-journey-svg {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  opacity: 0.35;
 }
 
 .hero-coordinates {
   font-family: monospace;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   color: var(--theme-color);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   margin-bottom: 12px;
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 .identity-badge {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.72rem;
+  gap: 8px;
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--theme-color);
-  background: rgba(59, 130, 246, 0.06);
-  border: 1px solid rgba(59, 130, 246, 0.15);
-  padding: 5px 12px;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.12);
+  padding: 4px 10px;
   border-radius: 999px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .hero-title {
-  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-size: clamp(2.4rem, 4.8vw, 3.8rem);
   font-weight: 900;
   letter-spacing: -0.03em;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   line-height: 1.1;
   color: var(--text-primary);
 }
@@ -227,26 +225,26 @@ main {
 }
 
 .hero-lead {
-  font-size: clamp(1.05rem, 1.8vw, 1.2rem);
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
   color: var(--text-primary);
   font-weight: 400;
-  max-width: 640px;
+  max-width: 620px;
   line-height: 1.6;
   margin-bottom: 12px;
 }
 
 .hero-subbio {
-  font-size: clamp(0.92rem, 1.5vw, 1rem);
+  font-size: clamp(0.9rem, 1.4vw, 0.98rem);
   color: var(--text-secondary);
-  max-width: 600px;
+  max-width: 580px;
   line-height: 1.6;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .hero-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -254,36 +252,36 @@ main {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
-  background: rgba(59, 130, 246, 0.06);
+  padding: 8px 18px;
+  background: rgba(59, 130, 246, 0.05);
   border: 1px solid var(--theme-color);
   color: var(--theme-color);
   font-weight: 700;
-  font-size: 0.8rem;
-  letter-spacing: 0.06em;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   border-radius: 4px;
-  transition: all 0.25s ease;
+  transition: all 0.2s ease;
 }
 
 .hero-cta:hover {
   background: var(--theme-color);
   color: #ffffff;
-  box-shadow: 0 0 16px rgba(59, 130, 246, 0.3);
-  transform: translateY(-2px);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.25);
+  transform: translateY(-1px);
 }
 
 .hero-cta-secondary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 18px;
+  padding: 8px 16px;
   background: transparent;
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
   font-weight: 600;
-  font-size: 0.8rem;
-  letter-spacing: 0.05em;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   border-radius: 4px;
   transition: all 0.2s ease;
@@ -299,11 +297,11 @@ main {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .section-header h2 {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -318,15 +316,15 @@ main {
 
 /* ── Card Sections ────────────────────────────────────────────── */
 .card-section {
-  margin-bottom: 48px;
-  padding: 24px 0;
+  margin-bottom: 32px;
+  padding: 12px 0;
 }
 
-/* ── 2. Perspective & Metrics (Editorial Clean Style) ──────────── */
+/* ── 2. Perspective & Metrics ─────────────────────────────────── */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
+  gap: 20px;
 }
 
 .stat-card {
@@ -334,29 +332,23 @@ main {
   border: none;
   border-top: 2px solid var(--theme-color);
   border-radius: 0;
-  padding: 16px 0 0 0;
+  padding: 12px 0 0 0;
   display: flex;
   flex-direction: column;
-  position: relative;
-  transition: transform 0.25s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-3px);
 }
 
 .stat-number {
-  font-size: clamp(2rem, 3.5vw, 2.5rem);
+  font-size: clamp(1.8rem, 3vw, 2.2rem);
   font-weight: 900;
   color: var(--text-primary);
   line-height: 1.1;
-  letter-spacing: -0.03em;
-  margin-bottom: 4px;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
 }
 
 .stat-label {
-  font-size: 0.72rem;
-  font-weight: 800;
+  font-size: 0.7rem;
+  font-weight: 850;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--theme-color);
@@ -364,7 +356,7 @@ main {
 }
 
 .stat-sublabel {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-secondary);
   line-height: 1.3;
@@ -373,66 +365,67 @@ main {
 /* ── 3. Current Chapter Section ───────────────────────────────── */
 .chapter-content {
   border-left: 2px solid var(--theme-color);
-  padding-left: 24px;
-  max-width: 680px;
+  padding-left: 20px;
+  max-width: 760px;
 }
 
 .chapter-quote {
-  font-size: clamp(1.05rem, 1.8vw, 1.2rem);
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
   color: var(--text-primary);
   line-height: 1.6;
   font-weight: 500;
   font-style: italic;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .chapter-subtext {
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   color: var(--text-secondary);
   line-height: 1.5;
 }
 
-/* ── 4. Physical Disciplines (Clean Borders, No Solid Boxes) ──── */
+/* ── 4. Physical Disciplines ──────────────────────────────────── */
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 20px;
+  gap: 16px;
 }
 
 .activity-card {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 20px;
+  padding: 18px;
   background: transparent;
   border: 1px solid var(--border-color);
   border-radius: 6px;
   cursor: pointer;
   text-decoration: none;
-  min-height: 110px;
-  transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
-  position: relative;
+  min-height: 100px;
+  transition: all 0.2s ease;
 }
 
 .activity-card:hover {
   border-color: var(--theme-color);
-  background: rgba(59, 130, 246, 0.02);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  background: rgba(59, 130, 246, 0.01);
+  transform: translateY(-2px);
 }
 
 .card-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
 }
 
 .card-name {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 
 .card-arrow-icon {
@@ -447,28 +440,28 @@ main {
 }
 
 .card-badge {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--theme-color);
-  background: rgba(59, 130, 246, 0.08);
+  background: rgba(59, 130, 246, 0.06);
   padding: 2px 6px;
   border-radius: 3px;
 }
 
 .card-tag {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 400;
   color: var(--text-secondary);
   line-height: 1.4;
 }
 
-/* ── 5. Next Challenges (Minimal Columns with Separators) ─────── */
+/* ── 5. Next Challenges ───────────────────────────────────────── */
 .challenges-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 28px;
+  gap: 24px;
 }
 
 .challenge-column {
@@ -481,64 +474,66 @@ main {
 }
 
 .challenge-num {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-family: monospace;
   font-weight: 700;
   color: var(--theme-color);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   letter-spacing: 0.08em;
 }
 
 .challenge-title {
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 800;
   color: var(--text-primary);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   letter-spacing: -0.01em;
 }
 
 .challenge-status {
   display: inline-block;
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-secondary);
 }
 
-/* ── 6. The Journey Section (Clean Vertical Line) ──────────────── */
+/* ── 6. The Journey Section (Premium Horizontal Timeline) ──────── */
 .journey-timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
   position: relative;
-  padding-left: 20px;
+  padding-top: 20px;
 }
 
 .journey-timeline::before {
   content: '';
   position: absolute;
-  top: 6px;
-  bottom: 6px;
-  left: 3px;
-  width: 1px;
+  top: 26px;
+  left: 10px;
+  right: 10px;
+  height: 1px;
   background: var(--border-color);
 }
 
 .timeline-step {
   position: relative;
-  padding-left: 12px;
+  padding-top: 20px;
 }
 
 .timeline-node {
   position: absolute;
-  left: -22px;
-  top: 6px;
+  top: -19px;
+  left: 8px;
   width: 9px;
   height: 9px;
   border-radius: 50%;
   background: var(--bg-primary);
   border: 2px solid var(--theme-color);
+  transition: all 0.2s ease;
+  z-index: 2;
 }
 
 .timeline-step:hover .timeline-node {
@@ -547,21 +542,22 @@ main {
 }
 
 .timeline-phase {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--theme-color);
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .timeline-content {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--text-primary);
+  line-height: 1.4;
 }
 
-/* ── 7. Exploration & Travel (Minimal Alignment) ───────────────── */
+/* ── 7. Exploration & Travel ──────────────────────────────────── */
 .travel-card {
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
@@ -570,21 +566,21 @@ main {
 }
 
 .travel-info h3 {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 800;
   color: var(--text-primary);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .travel-info p {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--text-secondary);
   line-height: 1.6;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .travel-status {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   color: var(--theme-color);
@@ -598,62 +594,62 @@ main {
   background: transparent;
   border: 1px solid var(--border-color);
   border-radius: 6px;
-  padding: 16px;
-  min-height: 180px;
+  padding: 12px;
+  min-height: 170px;
 }
 
 .travel-svg {
   width: 100%;
-  max-width: 180px;
+  max-width: 160px;
   height: auto;
 }
 
-/* ── 8. Connect Section (Streamlined Visual Form) ──────────────── */
+/* ── 8. Connect Section (Refined & Visual) ────────────────────── */
 .connect-card {
   background: transparent;
   border: 1px solid var(--border-color);
   border-radius: 6px;
-  padding: 24px;
+  padding: 20px;
 }
 
 .connect-header {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .connect-title {
-  font-size: 1.5rem;
+  font-size: 1.45rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .connect-desc {
   color: var(--text-secondary);
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   line-height: 1.5;
 }
 
 .social-quick-links {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 20px;
-  padding-bottom: 20px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
   border-bottom: 1px dashed var(--border-color);
 }
 
 .quick-link-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.72rem;
+  gap: 6px;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-secondary);
   background: transparent;
   border: 1px solid var(--border-color);
-  padding: 6px 12px;
+  padding: 5px 10px;
   border-radius: 4px;
   transition: all 0.2s ease;
 }
@@ -671,18 +667,18 @@ main {
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .form-input {
   width: 100%;
-  padding: 10px 14px;
+  padding: 8px 12px;
   background: transparent;
   border: 1px solid var(--border-color);
   border-radius: 4px;
   color: var(--text-primary);
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-family: var(--font-family);
   transition: border-color 0.2s ease;
 }
@@ -694,8 +690,8 @@ main {
 
 textarea.form-input {
   resize: vertical;
-  min-height: 80px;
-  margin-bottom: 12px;
+  min-height: 70px;
+  margin-bottom: 10px;
   grid-column: 1 / -1;
 }
 
@@ -703,11 +699,11 @@ textarea.form-input {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 20px;
+  padding: 8px 16px;
   background: var(--theme-color);
   color: #ffffff;
   font-weight: 700;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   border-radius: 4px;
@@ -718,14 +714,13 @@ textarea.form-input {
 
 .btn:hover {
   background: var(--theme-hover);
-  transform: translateY(-1px);
 }
 
 /* ── Animation Classes ────────────────────────────────────────── */
 .fade-in-section {
   opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  transform: translateY(12px);
+  transition: opacity 0.45s ease-out, transform 0.45s ease-out;
   will-change: opacity, transform;
 }
 
@@ -737,14 +732,14 @@ textarea.form-input {
 /* ── Footer ───────────────────────────────────────────────────── */
 footer {
   border-top: 1px solid var(--border-color);
-  padding: 24px 0;
+  padding: 20px 0;
 }
 
 .footer-inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
@@ -754,7 +749,7 @@ footer {
 }
 
 .social-link {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -765,7 +760,7 @@ footer {
 .social-link:hover { color: var(--theme-color); }
 
 .copyright {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
 }
 
@@ -783,6 +778,27 @@ footer {
     border-right: none;
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 16px;
+  }
+  .journey-timeline {
+    grid-template-columns: 1fr;
+    padding-left: 20px;
+    padding-top: 0;
+    gap: 24px;
+  }
+  .journey-timeline::before {
+    top: 6px;
+    bottom: 6px;
+    left: 3px;
+    width: 1px;
+    height: auto;
+  }
+  .timeline-step {
+    padding-top: 0;
+    padding-left: 12px;
+  }
+  .timeline-node {
+    top: 6px;
+    left: -22px;
   }
   .travel-card {
     grid-template-columns: 1fr;
@@ -821,7 +837,11 @@ footer {
     grid-template-columns: 1fr;
   }
 
-  .hero-grid-bg, .hero-route-svg {
+  .hero-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-visual {
     display: none;
   }
 
@@ -832,9 +852,6 @@ footer {
 }
 
 @media (max-width: 480px) {
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
   .hero-actions {
     flex-direction: column;
     align-items: stretch;
@@ -844,7 +861,7 @@ footer {
   }
 }
 
-/* ── Common Activity Subpage Components ── */
+/* ── Subpages Common Components ── */
 .back-btn {
   display: inline-flex;
   align-items: center;
