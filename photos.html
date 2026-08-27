@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Ravi Teja Bitra — Private Photo Archive. Password protected.">
+  <title>Photos | Ravi Teja Bitra</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+
+  <style>
+    .auth-container {
+      max-width: 400px;
+      margin: 100px auto;
+      padding: 32px;
+      border: 1px solid var(--border-color);
+      background: transparent;
+      text-align: center;
+    }
+
+    .auth-title {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+
+    .auth-desc {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .password-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .password-input {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.25s ease;
+      border-radius: 0;
+    }
+
+    .password-input:focus {
+      border-color: var(--theme-color);
+    }
+
+    .unlock-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--theme-color);
+      color: #ffffff;
+      border: 1px solid var(--theme-color);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      border-radius: 0;
+    }
+
+    .unlock-btn:hover {
+      background: transparent;
+      color: var(--theme-color);
+    }
+
+    .error-msg {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: #e05a47;
+      margin-top: 12px;
+      display: none;
+    }
+
+    /* Photos view styling */
+    .photos-view {
+      display: none;
+    }
+
+    .photos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px;
+      margin-top: 32px;
+    }
+
+    .photo-card {
+      border: 1px solid var(--border-color);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      background: transparent;
+    }
+
+    .photo-wrapper {
+      position: relative;
+      width: 100%;
+      padding-top: 66.66%; /* 3:2 Aspect Ratio */
+      overflow: hidden;
+      margin-bottom: 12px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .photo-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(15%);
+      transition: filter 0.3s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .photo-card:hover .photo-img {
+      filter: grayscale(0%);
+      transform: scale(1.03);
+    }
+
+    .photo-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-top: 8px;
+    }
+
+    .photo-caption {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .photo-date {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--theme-color);
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header id="header">
+    <div class="container nav-content">
+      <ul class="nav-links">
+        <li><a href="index.html#chapter">Profile</a></li>
+        <li><a href="index.html#activities">Activities</a></li>
+        <li><a href="index.html#connect">Connect</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="container">
+    
+    <!-- Password Prompt View -->
+    <div id="auth-view" class="auth-container">
+      <h2 class="auth-title">Archive Locked</h2>
+      <p class="auth-desc">This section contains private photo memories and requires access clearance.</p>
+      
+      <form id="auth-form" class="password-form">
+        <input type="password" id="password-input" class="password-input" placeholder="ENTER ACCESS CODE" required autocomplete="off">
+        <button type="submit" class="unlock-btn">Decrypt Archive</button>
+      </form>
+      <div id="error-msg" class="error-msg">INVALID DECRYPTION KEY</div>
+    </div>
+
+    <!-- Photos Grid View -->
+    <div id="photos-view" class="photos-view">
+      <a href="index.html" class="back-btn">← Back to Home</a>
+      
+      <div class="hero" style="margin-bottom: 48px;">
+        <div class="hero-eyebrow">DECRYPTED PORTFOLIO</div>
+        <h1 class="hero-title" style="margin-bottom: 16px;">Photos <span class="accent">Archive.</span></h1>
+        <p class="hero-bio" style="font-size: 1.05rem;">
+          A premium visual log of challenges, routes, and mountain adventures. 
+        </p>
+      </div>
+
+      <div class="photos-grid" id="photos-grid">
+        <!-- Decrypted cards loaded here -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-socials">
+        <a href="https://www.strava.com/athletes/ravitejabitra" target="_blank" rel="noopener noreferrer" class="social-link">Strava</a>
+        <a href="https://www.instagram.com/raviteja_bitra" target="_blank" rel="noopener noreferrer" class="social-link">Instagram</a>
+        <a href="https://www.youtube.com/@Raviteja_Bitra" target="_blank" rel="noopener noreferrer" class="social-link">YouTube</a>
+      </div>
+      <p class="copyright">&copy; 2026 Ravi Teja Bitra</p>
+    </div>
+  </footer>
+
+  <script>
+    // AES-256-GCM Secure payload generated via node crypto
+    const cryptoConfig = {
+      salt: "2f828a85708a2f52fe15ad2d4284f572",
+      iv: "1937fc1f1d2ca4b1fe8f1ad1",
+      ciphertext: "5c31b7b4f1d2083ab44a3e34e40d212182300fa387c7e90c7aa8b57c547db607125b701fe75dd8d2e079d5d9f64c01d0d387c4a28e5e9331436aaff790d2dd0bcc7b11d24f5ce61f7b92eccf4657e3c71290b7ebbc5465cfbaac402f8c71f3dc3cbad2928653efa37aa96d2047133cf1e121f15d7db09e2ff76fbd4b316a0d119a7a1820a57727e3f32d198fe42a875c53987ec8661ec5c04e7cdd0c13024a01f722c926bc406773a09ef7489cabbfc1798853de64f8a7ddf1cfc5b2c16784d0ec4b1acad2feed92620923309f5ce51ba35d24fa483bef072e152e52d1c3c670402d45deae139fa01318d421590ae191ae8e42b7a6d999c5cada8f28995a95388e7408b047592f15feea4c16fea9ef3571f26bf896f05e064a319cef81495fcb00fff1a19df030a613dac0548621d3de727822c03d5dae23fd3dafa0578a921f757585e5",
+      tag: "eb8d6414fbea9e9bfc68e684bf40e476"
+    };
+
+    // Helper: Hex string to Uint8Array
+    function hexToUint8Array(hex) {
+      return new Uint8Array(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+    }
+
+    // Web Crypto Decryptor
+    async function decryptArchive(password) {
+      try {
+        const salt = hexToUint8Array(cryptoConfig.salt);
+        const iv = hexToUint8Array(cryptoConfig.iv);
+        const ciphertext = hexToUint8Array(cryptoConfig.ciphertext);
+        const tag = hexToUint8Array(cryptoConfig.tag);
+
+        // Concatenate ciphertext and auth tag for browser Web Crypto API
+        const encryptedData = new Uint8Array(ciphertext.length + tag.length);
+        encryptedData.set(ciphertext);
+        encryptedData.set(tag, ciphertext.length);
+
+        const enc = new TextEncoder();
+        const keyMaterial = await window.crypto.subtle.importKey(
+          "raw",
+          enc.encode(password),
+          { name: "PBKDF2" },
+          false,
+          ["deriveBits", "deriveKey"]
+        );
+
+        const key = await window.crypto.subtle.deriveKey(
+          {
+            name: "PBKDF2",
+            salt: salt,
+            iterations: 100000,
+            hash: "SHA-256"
+          },
+          keyMaterial,
+          { name: "AES-GCM", length: 256 },
+          false,
+          ["decrypt"]
+        );
+
+        const decryptedBuffer = await window.crypto.subtle.decrypt(
+          {
+            name: "AES-GCM",
+            iv: iv,
+            tagLength: 128
+          },
+          key,
+          encryptedData
+        );
+
+        const dec = new TextDecoder();
+        return JSON.parse(dec.decode(decryptedBuffer));
+      } catch (err) {
+        console.error("Decryption failed:", err);
+        return null;
+      }
+    }
+
+    // UI renderer
+    function renderPhotos(photos) {
+      const grid = document.getElementById("photos-grid");
+      grid.innerHTML = "";
+      
+      photos.forEach(photo => {
+        const card = document.createElement("div");
+        card.className = "photo-card";
+        card.innerHTML = `
+          <div class="photo-wrapper">
+            <img src="${photo.url}" alt="${photo.caption}" class="photo-img" loading="lazy">
+          </div>
+          <div class="photo-meta">
+            <span class="photo-caption">${photo.caption}</span>
+            <span class="photo-date">${photo.date}</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      document.getElementById("auth-view").style.display = "none";
+      document.getElementById("photos-view").style.display = "block";
+    }
+
+    // Form logic
+    const form = document.getElementById("auth-form");
+    const passInput = document.getElementById("password-input");
+    const errorMsg = document.getElementById("error-msg");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorMsg.style.display = "none";
+      
+      const password = passInput.value;
+      const data = await decryptArchive(password);
+      
+      if (data) {
+        sessionStorage.setItem("photos_pass", password);
+        renderPhotos(data);
+      } else {
+        errorMsg.style.display = "block";
+      }
+    });
+
+    // Auto-login if session password exists
+    window.addEventListener("DOMContentLoaded", async () => {
+      const savedPass = sessionStorage.getItem("photos_pass");
+      if (savedPass) {
+        const data = await decryptArchive(savedPass);
+        if (data) renderPhotos(data);
+      }
+    });
+  </script>
+</body>
+</html>
