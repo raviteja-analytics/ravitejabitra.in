@@ -89,16 +89,69 @@
       display: none;
     }
 
-    /* Photos view styling */
+    /* Decrypted View Container */
     .photos-view {
       display: none;
+    }
+
+    /* Category selection layout */
+    .categories-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 600px) {
+      .categories-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .category-card {
+      border: 1px solid var(--border-color);
+      padding: 40px 24px;
+      text-align: center;
+      cursor: pointer;
+      background: transparent;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .category-card:hover {
+      border-color: var(--theme-color);
+      background: rgba(224, 90, 71, 0.02);
+    }
+
+    .category-icon {
+      font-size: 2.2rem;
+      margin-bottom: 16px;
+      color: var(--theme-color);
+    }
+
+    .category-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .category-desc {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* Grid for actual photos */
+    .photos-grid-wrapper {
+      display: none; /* Shown dynamically when folder is clicked */
+      margin-top: 32px;
     }
 
     .photos-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: 24px;
-      margin-top: 32px;
     }
 
     .photo-card {
@@ -183,21 +236,40 @@
       <div id="error-msg" class="error-msg">INVALID DECRYPTION KEY</div>
     </div>
 
-    <!-- Photos Grid View -->
+    <!-- Decrypted Main View -->
     <div id="photos-view" class="photos-view">
-      <a href="index.html" class="back-btn">← Back to Home</a>
       
-      <div class="hero" style="margin-bottom: 48px;">
-        <div class="hero-eyebrow">DECRYPTED PORTFOLIO</div>
-        <h1 class="hero-title" style="margin-bottom: 16px;">Photos <span class="accent">Archive.</span></h1>
-        <p class="hero-bio" style="font-size: 1.05rem;">
-          A premium visual log of challenges, routes, and mountain adventures. 
-        </p>
+      <!-- Back Buttons (Dynamic toggle) -->
+      <a href="index.html" id="home-back-btn" class="back-btn">← Back to Home</a>
+      <a href="#" id="folder-back-btn" class="back-btn" style="display: none;" onclick="closeFolder(event)">← Back to Categories</a>
+      
+      <!-- Minimalist Editorial Title (eyebrow and secondary text removed per user instructions) -->
+      <div class="hero" style="margin-bottom: 24px;">
+        <h1 class="hero-title"><span id="page-title-base">Photos</span> <span class="accent" id="page-title-sub">Archive.</span></h1>
       </div>
 
-      <div class="photos-grid" id="photos-grid">
-        <!-- Decrypted cards loaded here -->
+      <!-- Categories Selector -->
+      <div id="categories-selector" class="categories-grid">
+        <div class="category-card" onclick="openFolder('running')">
+          <div class="category-icon">🏃‍♂️</div>
+          <h3 class="category-title">Running Logs</h3>
+          <p class="category-desc">Visual documentation of running routes, marathon pacing, and personal runs.</p>
+        </div>
+        
+        <div class="category-card" onclick="openFolder('explorer')">
+          <div class="category-icon">🧭</div>
+          <h3 class="category-title">Explorer Logs</h3>
+          <p class="category-desc">Travels, landscape trails, mountain base camps, hikes, and life memories.</p>
+        </div>
       </div>
+
+      <!-- Actual Photos Grid (Hidden initially) -->
+      <div id="photos-grid-wrapper" class="photos-grid-wrapper">
+        <div class="photos-grid" id="photos-grid">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+
     </div>
 
   </main>
@@ -217,11 +289,13 @@
   <script>
     // AES-256-GCM Secure payload generated via node crypto
     const cryptoConfig = {
-      salt: "54aee6ff0ca9d660f11298b06bbb0486",
-      iv: "88337db65be2d2c4523edc7c",
-      ciphertext: "9e8c8a1c0be0c9e54c45b3bb838ffe259cd19cd31abe89d11a534f427803f7f8680ecd52bc8bfc4bf453514cd300024483d96b9c352ddf42911d3f22c54672262ccb0b7beee8148a5680d0f8b70531db8a474f63fd959ea7297c126f2ed9373e63cafd5081875954f0161e328cbef6dde3c0813d502856e35b88c3c0f787f1727bda250ff99230190f91e2d544ea749931ad7d6ef11143b56d74bd829466acf1b114f79d36a74bd496c081a8da923abf99e6b096b97501f1012d5a9b6d09c9524f8b08ce3c8af2a2e81114b49db3b9900b4f26b22763c7ff398b5774be00e4fa35c0b15da13acbd0648385065bd13b577253c6a478b7350cba10539ec347f5e69aabc1cbd40a02bfd15cc5bcf8c767f7a08143450d1ea49c3ba82d925deddb6f0575319d91b4e826071c2a38eee2153de82e79fbef3f82f21a7c9079cd1aabd5249e3374",
-      tag: "34137835b897d0a0c178c8d4587f3d50"
+      salt: "bfb2cc77dda5f9f056140a7858d61558",
+      iv: "be6d1d8f0f2bfa3f94bccd63",
+      ciphertext: "3fff2150b745b364590ad9122b6f434cbdef4b3e21d4ad0cc49ae2d284af07cb6150ee71b4ac124c04106146c6534676535d3d4edd9bae29458b6b2dab280fee3ab3c78be4a3317dd18e3e93388b17ba3672bdaba3d03be0a02377ae7fd6785187e41c5a3eb25671311f6adcbc86c7cf9380c13cb05c5e85d770b935827ae4857c07ff7b5f868cc153cf044eea1b12322b61116437ef0a86e27896c4d7402b6a24866eed20ee666fd35810b4b57ebe4f6b31c125bcadbb42d23ec0e4fea24872e4f709ef241221922476ac2640c0bfd4ebc3e774152b1b5374e2dbe9fc1697228f02c54aa929224b32ef45e55f05579e67d3c48a37285439dbf094c184dbc0f8e59fcefdd8161547cae946c6a252a36d40cf5b6e988fdecc3ebe77c1c2753c7969550c7029cd189a0165df0cd3dfee6437b103932b7cf9affadd1f81a2dc2a542eb5abc0004d6b8e75b362d6831ad813b9067ce6c4496b48dfec6f9c7e",
+      tag: "a4566b0af48553bddddfd1e3422ba9db"
     };
+
+    let decryptedDb = null;
 
     // Helper: Hex string to Uint8Array
     function hexToUint8Array(hex) {
@@ -236,7 +310,6 @@
         const ciphertext = hexToUint8Array(cryptoConfig.ciphertext);
         const tag = hexToUint8Array(cryptoConfig.tag);
 
-        // Concatenate ciphertext and auth tag for browser Web Crypto API
         const encryptedData = new Uint8Array(ciphertext.length + tag.length);
         encryptedData.set(ciphertext);
         encryptedData.set(tag, ciphertext.length);
@@ -281,8 +354,18 @@
       }
     }
 
-    // UI renderer
-    function renderPhotos(photos) {
+    // Load category view
+    function onUnlockSuccess(data) {
+      decryptedDb = data;
+      document.getElementById("auth-view").style.display = "none";
+      document.getElementById("photos-view").style.display = "block";
+    }
+
+    // Folder view toggles
+    function openFolder(categoryKey) {
+      if (!decryptedDb || !decryptedDb[categoryKey]) return;
+
+      const photos = decryptedDb[categoryKey];
       const grid = document.getElementById("photos-grid");
       grid.innerHTML = "";
       
@@ -301,8 +384,33 @@
         grid.appendChild(card);
       });
 
-      document.getElementById("auth-view").style.display = "none";
-      document.getElementById("photos-view").style.display = "block";
+      // Update Page Headers dynamically to show folder path
+      document.getElementById("page-title-base").innerText = categoryKey === "running" ? "Running" : "Explorer";
+      document.getElementById("page-title-sub").innerText = "Logs.";
+
+      // Swap views
+      document.getElementById("categories-selector").style.display = "none";
+      document.getElementById("photos-grid-wrapper").style.display = "block";
+
+      // Swap back buttons
+      document.getElementById("home-back-btn").style.display = "none";
+      document.getElementById("folder-back-btn").style.display = "inline-block";
+    }
+
+    function closeFolder(e) {
+      if (e) e.preventDefault();
+
+      // Restore original page title
+      document.getElementById("page-title-base").innerText = "Photos";
+      document.getElementById("page-title-sub").innerText = "Archive.";
+
+      // Swap views
+      document.getElementById("photos-grid-wrapper").style.display = "none";
+      document.getElementById("categories-selector").style.display = "grid";
+
+      // Swap back buttons
+      document.getElementById("folder-back-btn").style.display = "none";
+      document.getElementById("home-back-btn").style.display = "inline-block";
     }
 
     // Form logic
@@ -319,7 +427,7 @@
       
       if (data) {
         sessionStorage.setItem("photos_pass", password);
-        renderPhotos(data);
+        onUnlockSuccess(data);
       } else {
         errorMsg.style.display = "block";
       }
@@ -330,7 +438,7 @@
       const savedPass = sessionStorage.getItem("photos_pass");
       if (savedPass) {
         const data = await decryptArchive(savedPass);
-        if (data) renderPhotos(data);
+        if (data) onUnlockSuccess(data);
       }
     });
   </script>
