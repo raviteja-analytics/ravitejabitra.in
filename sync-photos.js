@@ -56,7 +56,7 @@ async function processDirectory(sourceDir, destDir, webPathPrefix, isRunning = f
     
     if (stat.isFile()) {
       const ext = path.extname(file).toLowerCase();
-      const baseName = path.basename(file, ext);
+      const baseName = file.substring(0, file.length - ext.length);
       
       // Target file name on the website
       let targetFileName = file;
@@ -107,16 +107,28 @@ async function processDirectory(sourceDir, destDir, webPathPrefix, isRunning = f
       if (isRunning) {
         // Smart sorting logic based on filenames/dates
         const name = file.toLowerCase();
-        if (name.includes('8918') || name.includes('8919') || name.includes('8920') || 
-            name.includes('8921') || name.includes('8922') || name.includes('8923') || 
-            name.includes('8925') || name.includes('8926') || name.includes('8641') || 
-            name.includes('8642') || name.includes('8643') || name.includes('8644') || 
-            name.includes('8645')) {
+        
+        // 1. Green BLR 2.0 Run (August 22-23): Maroon shirts
+        if (
+          name.includes('8918') || name.includes('8919') || name.includes('8920') || 
+          name.includes('8921') || name.includes('8922') || name.includes('8923') || 
+          name.includes('8925') || name.includes('8926') ||
+          name.includes('0bb4a122') || name.includes('52403721') || name.includes('7d416621') || 
+          name.includes('9784c0bb') || name.includes('90f7dedc')
+        ) {
           runningData.greenblr.photos.push(photoItem);
-        } else if (name.includes('8361') || name.includes('8362') || name.includes('8365') || 
-                   name.includes('8546') || name.includes('8547')) {
+        } 
+        // 2. DNMR 2026 Run (August 8-9): Nandi Hills light green shirts
+        else if (
+          name.includes('8361') || name.includes('8362') || name.includes('8365') || 
+          name.includes('8546') || name.includes('8547') ||
+          name.includes('8641') || name.includes('8642') || name.includes('8643') || 
+          name.includes('8644') || name.includes('8645')
+        ) {
           runningData.dnmr.photos.push(photoItem);
-        } else {
+        } 
+        // 3. JSW Steel City Run 2026 (August 1-2): Default fallback for JSW medals & shirts
+        else {
           runningData.jsw.photos.push(photoItem);
         }
       } else {
