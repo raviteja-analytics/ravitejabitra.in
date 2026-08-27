@@ -21,10 +21,30 @@ async function ensureDir(dir) {
   }
 }
 
-async function processDirectory(sourceDir, destDir, webPathPrefix) {
-  const list = [];
+async function processDirectory(sourceDir, destDir, webPathPrefix, isRunning = false) {
+  // If running, we structure photos into sub-folders
+  const runningData = {
+    dnmr: {
+      title: "DNMR 2026",
+      desc: "DivyaSree Nandi Monsoon Run 2026",
+      photos: []
+    },
+    jsw: {
+      title: "JSW Steel City Run 2026",
+      desc: "JSW Steel City Run 2026 - Ballari",
+      photos: []
+    },
+    greenblr: {
+      title: "Green BLR 2.0 Run",
+      desc: "Green Bengaluru Run 2.0 - Cubbon Park",
+      photos: []
+    }
+  };
+
+  const explorerList = [];
+
   if (!fs.existsSync(sourceDir)) {
-    return list;
+    return isRunning ? runningData : explorerList;
   }
 
   await ensureDir(destDir);
@@ -78,38 +98,50 @@ async function processDirectory(sourceDir, destDir, webPathPrefix) {
       const mtime = stat.mtime;
       const dateString = mtime.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 
-      list.push({
+      const photoItem = {
         url: `${webPathPrefix}/${targetFileName}`,
         caption: baseName.replace(/[-_]/g, ' '),
         date: dateString
-      });
+      };
+
+      if (isRunning) {
+        // Smart sorting logic based on filenames/dates
+        const name = file.toLowerCase();
+        if (name.includes('8918') || name.includes('8919') || name.includes('8920') || 
+            name.includes('8921') || name.includes('8922') || name.includes('8923') || 
+            name.includes('8925') || name.includes('8926') || name.includes('8641') || 
+            name.includes('8642') || name.includes('8643') || name.includes('8644') || 
+            name.includes('8645')) {
+          runningData.greenblr.photos.push(photoItem);
+        } else if (name.includes('8361') || name.includes('8362') || name.includes('8365') || 
+                   name.includes('8546') || name.includes('8547')) {
+          runningData.dnmr.photos.push(photoItem);
+        } else {
+          runningData.jsw.photos.push(photoItem);
+        }
+      } else {
+        explorerList.push(photoItem);
+      }
     }
   }
-  return list;
+  return isRunning ? runningData : explorerList;
 }
 
 async function run() {
   try {
     console.log("Scanning Google Drive folders...");
     
-    const runningPhotos = await processDirectory(runSourceDir, runDestDir, 'assets/photos/running');
-    const explorerPhotos = await processDirectory(expSourceDir, expDestDir, 'assets/photos/explorer');
+    const runningData = await processDirectory(runSourceDir, runDestDir, 'assets/photos/running', true);
+    const explorerPhotos = await processDirectory(expSourceDir, expDestDir, 'assets/photos/explorer', false);
 
-    console.log(`Processed: ${runningPhotos.length} Running photos, ${explorerPhotos.length} Explorer photos.`);
+    console.log(`Processed: ${runningData.dnmr.photos.length} DNMR, ${runningData.jsw.photos.length} JSW, ${runningData.greenblr.photos.length} Green BLR photos.`);
 
     const processedData = {
-      running: runningPhotos,
+      running: runningData,
       explorer: explorerPhotos
     };
 
     // Fallback placeholder arrays if directories are empty
-    if (processedData.running.length === 0) {
-      processedData.running.push({
-        url: "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&w=1200&q=80",
-        caption: "Pacing the morning miles",
-        date: "August 2026"
-      });
-    }
     if (processedData.explorer.length === 0) {
       processedData.explorer.push({
         url: "https://images.unsplash.com/photo-1501555088652-021faa106b9b?auto=format&fit=crop&w=1200&q=80",
@@ -160,7 +192,7 @@ async function run() {
     const updatedHtml = html.substring(0, configBlockStart) + configString + html.substring(configBlockEnd);
     
     fs.writeFileSync(photosHtmlPath, updatedHtml, 'utf8');
-    console.log("SUCCESS: Photos synchronized, HEIC converted, encrypted and saved to photos.html!");
+    console.log("SUCCESS: Photos synchronized, categorized, encrypted and saved to photos.html!");
 
   } catch (err) {
     console.error("ERROR:", err.message);
