@@ -55,6 +55,9 @@ export default async function handler(req, res) {
     if (nameLower.includes('gt-2000') || nameLower.includes('gt 2000') || nameLower.includes('asics')) {
       return "Asics GT-2000 13";
     }
+    if (nameLower.includes('supernova') || nameLower.includes('rise') || nameLower.includes('adidas')) {
+      return "Adidas Supernova Rise 3";
+    }
     return rawName.trim();
   }
 
@@ -69,12 +72,19 @@ export default async function handler(req, res) {
   shoeMap.set("Puma Deviate Nitro 3 Ekiden", {
     name: "Puma Deviate Nitro 3 Ekiden",
     total_distance_km: 0.0,
-    latest_date: "Till Aug 14th 2026",
+    latest_date: "Active",
     goal_km: 700,
     entries_count: 0
   });
   shoeMap.set("Asics GT-2000 13", {
     name: "Asics GT-2000 13",
+    total_distance_km: 0.0,
+    latest_date: "Active",
+    goal_km: 700,
+    entries_count: 0
+  });
+  shoeMap.set("Adidas Supernova Rise 3", {
+    name: "Adidas Supernova Rise 3",
     total_distance_km: 0.0,
     latest_date: "Active",
     goal_km: 700,
@@ -104,7 +114,6 @@ export default async function handler(req, res) {
           const row = rows[i];
           if (row.length > Math.max(shoeNameIdx, distanceIdx)) {
             const rawName = row[shoeNameIdx] || '';
-            const dateStr = row[dateIdx] || '';
             const distStr = row[distanceIdx] || '';
 
             if (rawName && distStr) {
@@ -115,7 +124,7 @@ export default async function handler(req, res) {
                   shoeMap.set(normalizedName, {
                     name: normalizedName,
                     total_distance_km: 0,
-                    latest_date: dateStr,
+                    latest_date: 'Active',
                     goal_km: 700,
                     entries_count: 0
                   });
@@ -123,9 +132,23 @@ export default async function handler(req, res) {
                 const entry = shoeMap.get(normalizedName);
                 entry.total_distance_km += cleanDist;
                 entry.entries_count += 1;
-                // Update latest date string if valid
-                if (dateStr) {
-                  entry.latest_date = dateStr;
+
+                // Extract date information from date column and any detail columns
+                let mainDate = (row[dateIdx] || '').trim();
+                let detailDate = '';
+                for (let c = 0; c < row.length; c++) {
+                  if (c !== shoeNameIdx && c !== distanceIdx && c !== dateIdx) {
+                    const val = (row[c] || '').trim();
+                    if (val && /(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|202\d)/i.test(val)) {
+                      detailDate = val;
+                      break;
+                    }
+                  }
+                }
+                if (detailDate) {
+                  entry.latest_date = mainDate.toLowerCase().includes('till') ? (`Till ${detailDate}`) : detailDate;
+                } else if (mainDate) {
+                  entry.latest_date = mainDate;
                 }
               }
             }
@@ -143,14 +166,20 @@ export default async function handler(req, res) {
   if (shoesList.length === 0) {
     shoesList.push({
       name: "Puma Deviate Nitro 3 Ekiden",
-      total_distance_km: 87.2,
-      latest_date: "Till Aug 14th 2026",
+      total_distance_km: 153.0,
+      latest_date: "Till Oct 14th 2026",
       goal_km: 700,
       entries_count: 1
     }, {
       name: "Asics GT-2000 13",
-      total_distance_km: 0.0,
-      latest_date: "Aug 17th 2026",
+      total_distance_km: 111.0,
+      latest_date: "Till Oct 14th 2026",
+      goal_km: 700,
+      entries_count: 1
+    }, {
+      name: "Adidas Supernova Rise 3",
+      total_distance_km: 5.0,
+      latest_date: "Till Oct 22nd 2026",
       goal_km: 700,
       entries_count: 1
     });

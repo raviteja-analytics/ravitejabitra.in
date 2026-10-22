@@ -103,6 +103,9 @@
 
         shoes.forEach((shoe, idx) => {
           const isPumaEkiden = shoe.name.toLowerCase().includes('ekiden') || shoe.name.toLowerCase().includes('deviate');
+          const isAsics = shoe.name.toLowerCase().includes('asics') || shoe.name.toLowerCase().includes('gt-2000');
+          const isAdidas = shoe.name.toLowerCase().includes('adidas') || shoe.name.toLowerCase().includes('supernova') || shoe.name.toLowerCase().includes('rise');
+
           const goal = shoe.goal_km || 700;
           const dist = parseFloat((shoe.total_distance_km || 0).toFixed(1));
           const pct = Math.min(100, Math.max(0, (dist / goal) * 100)).toFixed(1);
@@ -111,7 +114,9 @@
           // Mapping descriptions based on shoe name keywords
           const descMap = {
             'deviate': 'Plated speed trainer featuring double-layer NITRO Elite foam and a carbon-composite PWRPLATE. Engineered for tempo runs and race-day performance.',
-            'gt-2000': 'Reliable daily stability trainer featuring PureGEL technology and FF BLAST PLUS cushioning for soft landings and smooth transitions.'
+            'gt-2000': 'Reliable daily stability trainer featuring PureGEL technology and FF BLAST PLUS cushioning for soft landings and smooth transitions.',
+            'supernova': 'Daily comfort trainer engineered with responsive Dreamstrike+ super-foam and dense foam Support Rods for effortless transitions and everyday mileage.',
+            'rise': 'Daily comfort trainer engineered with responsive Dreamstrike+ super-foam and dense foam Support Rods for effortless transitions and everyday mileage.'
           };
 
           let desc = 'Daily running trainer logged via Google Sheet.';
@@ -126,15 +131,39 @@
           const item = document.createElement('div');
           item.style.cssText = `${!isLast ? 'border-bottom: 1px solid var(--border-color); padding-bottom: 28px;' : ''} display: flex; flex-direction: row; flex-wrap: wrap; gap: 24px; align-items: center;`;
 
-          const graphicHTML = isPumaEkiden ? `
-            <div class="shoe-video-container" style="flex: 0 0 200px; aspect-ratio: 9/16; max-height: 355px; display: flex; justify-content: center; align-items: center; background: #000; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative;">
-              <video src="Puma Deviate Nitro 3 Ekiden.mp4" autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
-            </div>
-          ` : (shoe.name.toLowerCase().includes('asics') || shoe.name.toLowerCase().includes('gt-2000') ? `
-            <div class="shoe-video-container" style="flex: 0 0 200px; aspect-ratio: 9/16; max-height: 355px; display: flex; justify-content: center; align-items: center; background: #000; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative;">
-              <video src="Asics GT 2000-13.mp4" autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
-            </div>
-          ` : '');
+          let graphicHTML = '';
+          if (isPumaEkiden) {
+            graphicHTML = `
+              <div class="shoe-video-container" style="flex: 0 0 200px; aspect-ratio: 9/16; max-height: 355px; display: flex; justify-content: center; align-items: center; background: #000; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative;">
+                <video src="Puma Deviate Nitro 3 Ekiden.mp4" autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+              </div>
+            `;
+          } else if (isAsics) {
+            graphicHTML = `
+              <div class="shoe-video-container" style="flex: 0 0 200px; aspect-ratio: 9/16; max-height: 355px; display: flex; justify-content: center; align-items: center; background: #000; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative;">
+                <video src="Asics GT 2000-13.mp4" autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+              </div>
+            `;
+          } else if (isAdidas) {
+            graphicHTML = `
+              <div class="shoe-graphic-container" style="flex: 0 0 200px; aspect-ratio: 9/16; max-height: 355px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; background: radial-gradient(circle at 50% 40%, rgba(249, 115, 22, 0.12) 0%, #080c14 75%); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative; padding: 16px 10px 12px; box-sizing: border-box;">
+                <div style="flex: 1; display: flex; align-items: center; justify-content: center; width: 100%;">
+                  <img id="shoe-img-${idx}" class="shoe-image" src="adidas-supernova-rise-3.png" alt="Adidas Supernova Rise 3" style="width: 100%; max-height: 220px; object-fit: contain; filter: drop-shadow(0 12px 18px rgba(0,0,0,0.6)); transition: all 0.3s ease;">
+                </div>
+                <div style="display: flex; gap: 8px; z-index: 3; margin-top: 10px;">
+                  <button type="button" onclick="document.getElementById('shoe-img-${idx}').src='adidas-supernova-rise-3.png'" title="Side View" style="width: 38px; height: 38px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18); background: #0f172a; padding: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <img src="adidas-supernova-rise-3.png" alt="Side" style="width: 100%; height: 100%; object-fit: contain;">
+                  </button>
+                  <button type="button" onclick="document.getElementById('shoe-img-${idx}').src='adidas-supernova-rise-3-angle.png'" title="Front View" style="width: 38px; height: 38px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18); background: #0f172a; padding: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <img src="adidas-supernova-rise-3-angle.png" alt="Front" style="width: 100%; height: 100%; object-fit: contain;">
+                  </button>
+                  <button type="button" onclick="document.getElementById('shoe-img-${idx}').src='adidas-supernova-rise-3-rear.png'" title="Rear View" style="width: 38px; height: 38px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18); background: #0f172a; padding: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <img src="adidas-supernova-rise-3-rear.png" alt="Rear" style="width: 100%; height: 100%; object-fit: contain;">
+                  </button>
+                </div>
+              </div>
+            `;
+          }
 
           item.innerHTML = `
             ${graphicHTML}
@@ -176,7 +205,7 @@
               <div style="display: flex; gap: 12px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 14px;">
                 <a href="https://docs.google.com/spreadsheets/d/1HmwPdXpSD-NHgFYLQCebiyL15OGoPA2jGnGWtt__CrA/edit" target="_blank" rel="noopener noreferrer" style="color: var(--theme-color); text-decoration: none; border-bottom: 1px dashed rgba(59, 130, 246, 0.4); padding-bottom: 1px; transition: border-color 0.2s;">Google Sheet Log</a>
                 <span style="color: var(--text-muted);">|</span>
-                <span style="color: var(--text-secondary);">Till Aug 14th 2026</span>
+                <span style="color: var(--text-secondary);">Till Oct 14th 2026</span>
               </div>
               <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px;">
                 Plated speed trainer featuring double-layer NITRO Elite foam and a carbon-composite PWRPLATE. Engineered for tempo runs and race-day performance.
@@ -185,17 +214,17 @@
               <div style="padding-top: 14px; border-top: 1px dashed var(--border-color);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">
                   <span style="color: var(--text-muted); letter-spacing: 0.05em;">Lifespan Progress</span>
-                  <span style="color: var(--theme-color); font-size: 0.95rem; font-weight: 800;">87.2 / 700 km</span>
+                  <span style="color: var(--theme-color); font-size: 0.95rem; font-weight: 800;">153.0 / 700 km</span>
                 </div>
                 <div style="width: 100%; height: 10px; background: rgba(255, 255, 255, 0.06); border-radius: 999px; overflow: hidden; border: 1px solid var(--border-color); position: relative;">
-                  <div style="width: 12.5%; height: 100%; background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%); border-radius: 999px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);"></div>
+                  <div style="width: 21.9%; height: 100%; background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%); border-radius: 999px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);"></div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Asics Shoe Card -->
-          <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 24px; align-items: center;">
+          <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 28px; margin-bottom: 28px; display: flex; flex-direction: row; flex-wrap: wrap; gap: 24px; align-items: center;">
             <div class="shoe-video-container" style="flex: 0 0 200px; aspect-ratio: 9/16; max-height: 355px; display: flex; justify-content: center; align-items: center; background: #000; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative;">
               <video src="Asics GT 2000-13.mp4" autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
             </div>
@@ -205,7 +234,7 @@
               <div style="display: flex; gap: 12px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 14px;">
                 <a href="https://docs.google.com/spreadsheets/d/1HmwPdXpSD-NHgFYLQCebiyL15OGoPA2jGnGWtt__CrA/edit" target="_blank" rel="noopener noreferrer" style="color: var(--theme-color); text-decoration: none; border-bottom: 1px dashed rgba(59, 130, 246, 0.4); padding-bottom: 1px; transition: border-color 0.2s;">Google Sheet Log</a>
                 <span style="color: var(--text-muted);">|</span>
-                <span style="color: var(--text-secondary);">Active</span>
+                <span style="color: var(--text-secondary);">Till Oct 14th 2026</span>
               </div>
               <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px;">
                 Reliable daily stability trainer featuring PureGEL technology and FF BLAST PLUS cushioning for soft landings and smooth transitions.
@@ -214,10 +243,52 @@
               <div style="padding-top: 14px; border-top: 1px dashed var(--border-color);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">
                   <span style="color: var(--text-muted); letter-spacing: 0.05em;">Lifespan Progress</span>
-                  <span style="color: var(--theme-color); font-size: 0.95rem; font-weight: 800;">0.0 / 700 km</span>
+                  <span style="color: var(--theme-color); font-size: 0.95rem; font-weight: 800;">111.0 / 700 km</span>
                 </div>
                 <div style="width: 100%; height: 10px; background: rgba(255, 255, 255, 0.06); border-radius: 999px; overflow: hidden; border: 1px solid var(--border-color); position: relative;">
-                  <div style="width: 0%; height: 100%; background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%); border-radius: 999px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);"></div>
+                  <div style="width: 15.9%; height: 100%; background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%); border-radius: 999px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Adidas Shoe Card -->
+          <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 24px; align-items: center;">
+            <div class="shoe-graphic-container" style="flex: 0 0 200px; aspect-ratio: 9/16; max-height: 355px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; background: radial-gradient(circle at 50% 40%, rgba(249, 115, 22, 0.12) 0%, #080c14 75%); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; position: relative; padding: 16px 10px 12px; box-sizing: border-box;">
+              <div style="flex: 1; display: flex; align-items: center; justify-content: center; width: 100%;">
+                <img id="shoe-img-fallback-adidas" class="shoe-image" src="adidas-supernova-rise-3.png" alt="Adidas Supernova Rise 3" style="width: 100%; max-height: 220px; object-fit: contain; filter: drop-shadow(0 12px 18px rgba(0,0,0,0.6)); transition: all 0.3s ease;">
+              </div>
+              <div style="display: flex; gap: 8px; z-index: 3; margin-top: 10px;">
+                <button type="button" onclick="document.getElementById('shoe-img-fallback-adidas').src='adidas-supernova-rise-3.png'" title="Side View" style="width: 38px; height: 38px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18); background: #0f172a; padding: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                  <img src="adidas-supernova-rise-3.png" alt="Side" style="width: 100%; height: 100%; object-fit: contain;">
+                </button>
+                <button type="button" onclick="document.getElementById('shoe-img-fallback-adidas').src='adidas-supernova-rise-3-angle.png'" title="Front View" style="width: 38px; height: 38px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18); background: #0f172a; padding: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                  <img src="adidas-supernova-rise-3-angle.png" alt="Front" style="width: 100%; height: 100%; object-fit: contain;">
+                </button>
+                <button type="button" onclick="document.getElementById('shoe-img-fallback-adidas').src='adidas-supernova-rise-3-rear.png'" title="Rear View" style="width: 38px; height: 38px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18); background: #0f172a; padding: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                  <img src="adidas-supernova-rise-3-rear.png" alt="Rear" style="width: 100%; height: 100%; object-fit: contain;">
+                </button>
+              </div>
+            </div>
+
+            <div style="flex: 2 1 300px;">
+              <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">Adidas Supernova Rise 3</h3>
+              <div style="display: flex; gap: 12px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 14px;">
+                <a href="https://docs.google.com/spreadsheets/d/1HmwPdXpSD-NHgFYLQCebiyL15OGoPA2jGnGWtt__CrA/edit" target="_blank" rel="noopener noreferrer" style="color: var(--theme-color); text-decoration: none; border-bottom: 1px dashed rgba(59, 130, 246, 0.4); padding-bottom: 1px; transition: border-color 0.2s;">Google Sheet Log</a>
+                <span style="color: var(--text-muted);">|</span>
+                <span style="color: var(--text-secondary);">Till Oct 22nd 2026</span>
+              </div>
+              <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px;">
+                Daily comfort trainer engineered with responsive Dreamstrike+ super-foam and dense foam Support Rods for effortless transitions and everyday mileage.
+              </p>
+
+              <div style="padding-top: 14px; border-top: 1px dashed var(--border-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">
+                  <span style="color: var(--text-muted); letter-spacing: 0.05em;">Lifespan Progress</span>
+                  <span style="color: var(--theme-color); font-size: 0.95rem; font-weight: 800;">5.0 / 700 km</span>
+                </div>
+                <div style="width: 100%; height: 10px; background: rgba(255, 255, 255, 0.06); border-radius: 999px; overflow: hidden; border: 1px solid var(--border-color); position: relative;">
+                  <div style="width: 0.7%; height: 100%; background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%); border-radius: 999px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);"></div>
                 </div>
               </div>
             </div>
