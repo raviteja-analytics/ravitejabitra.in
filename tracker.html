@@ -172,6 +172,11 @@
     border-color: var(--green);
     color: #86efac;
   }
+  .sched-pill.active-run {
+    background: rgba(245, 158, 11, 0.18);
+    border-color: #f59e0b;
+    color: #fcd34d;
+  }
 
   /* Buttons */
   button { 
@@ -437,7 +442,7 @@
             <h3>Supplements & Nutrition</h3>
             <span class="section-badge" id="suppTotalBadge">₹0</span>
           </div>
-          <span style="font-size: 0.8rem; color: var(--muted);">Calculates Cost Per Serving and Daily Cost based on your daily intake</span>
+          <span style="font-size: 0.8rem; color: var(--muted);">Daily essentials (Whey, Creatine, Vitamins) and Run-Day fuel (Electrolytes, Energy Gels on active run days)</span>
         </div>
         <button class="btn-add" onclick="addSupplement()">+ Add Supplement</button>
       </div>
@@ -473,7 +478,73 @@
       </div>
     </div>
 
-    <!-- ── SECTION 3: House Rent & Fixed Living ────────────────────── -->
+    <!-- ── SECTION 3: Skin, Hair Care & Grooming (Cosmetics) ────────── -->
+    <div class="card">
+      <div class="flex-between">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h3>Skin, Hair Care & Grooming</h3>
+            <span class="section-badge" id="cosmeticsTotalBadge">₹0</span>
+          </div>
+          <span style="font-size: 0.8rem; color: var(--muted);">Sunscreen, perfumes, dental care, face wash & hair care (auto-calculates monthly burn from duration)</span>
+        </div>
+        <button class="btn-add" onclick="addCosmeticItem()">+ Add Product</button>
+      </div>
+      <div class="table-wrapper">
+        <table id="cosmeticsTable">
+          <!-- Rendered via JS -->
+        </table>
+      </div>
+      <div class="section-footer-summary" id="cosmeticsFooterSummary">
+        Total Grooming Burn: <strong>₹0</strong>
+      </div>
+    </div>
+
+    <!-- ── SECTION 4: Medication & Health ───────────────────────────── -->
+    <div class="card">
+      <div class="flex-between">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h3>Medication & Health</h3>
+            <span class="section-badge" id="medicationTotalBadge">₹0</span>
+          </div>
+          <span style="font-size: 0.8rem; color: var(--muted);">Prescriptions, recurring medicines, running first-aid and recovery care</span>
+        </div>
+        <button class="btn-add" onclick="addMedicationItem()">+ Add Medicine</button>
+      </div>
+      <div class="table-wrapper">
+        <table id="medicationTable">
+          <!-- Rendered via JS -->
+        </table>
+      </div>
+      <div class="section-footer-summary" id="medicationFooterSummary">
+        Total Medication Burn: <strong>₹0</strong>
+      </div>
+    </div>
+
+    <!-- ── SECTION 5: Commute & Fuel (Petrol / EV Charging) ─────────── -->
+    <div class="card">
+      <div class="flex-between">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h3>Commute & Fuel (Petrol / EV Charging)</h3>
+            <span class="section-badge" id="commuteTotalBadge">₹0</span>
+          </div>
+          <span style="font-size: 0.8rem; color: var(--muted);">Bike / car petrol, EV charging, vehicle maintenance, and transit costs</span>
+        </div>
+        <button class="btn-add" onclick="addCommuteItem()">+ Add Commute Expense</button>
+      </div>
+      <div class="table-wrapper">
+        <table id="commuteTable">
+          <!-- Rendered via JS -->
+        </table>
+      </div>
+      <div class="section-footer-summary" id="commuteFooterSummary">
+        Total Commute Burn: <strong>₹0</strong>
+      </div>
+    </div>
+
+    <!-- ── SECTION 6: House Rent & Fixed Living ────────────────────── -->
     <div class="card">
       <div class="flex-between">
         <div>
@@ -495,7 +566,7 @@
       </div>
     </div>
 
-    <!-- ── SECTION 4: Loans & EMIs ─────────────────────────────────── -->
+    <!-- ── SECTION 7: Active Loans & EMIs ─────────────────────────── -->
     <div class="card">
       <div class="flex-between">
         <div>
@@ -517,7 +588,7 @@
       </div>
     </div>
 
-    <!-- ── SECTION 5: Extra Expenses (Running, Gear, Misc) ─────────── -->
+    <!-- ── SECTION 8: Extra Expenses (Running, Gear, Misc) ─────────── -->
     <div class="card">
       <div class="flex-between">
         <div>
@@ -610,15 +681,31 @@
   const DEFAULT_DATA = {
     income: 67000,
     supplements: [
-      { id: 1, name: 'Impact Whey Protein Isolate', price: 2800, servings: 30, perDay: 1 },
-      { id: 2, name: 'Creatine Monohydrate', price: 899, servings: 83, perDay: 1 },
-      { id: 3, name: 'Daily Multivitamins', price: 550, servings: 60, perDay: 1 },
-      { id: 4, name: 'Fish Oil Omega-3', price: 750, servings: 60, perDay: 1 }
+      { id: 1, name: 'Impact Whey Protein Isolate', price: 2800, servings: 30, perDay: 1, daysPerWeek: 7, schedule: 'daily' },
+      { id: 2, name: 'Creatine Monohydrate', price: 899, servings: 83, perDay: 1, daysPerWeek: 7, schedule: 'daily' },
+      { id: 3, name: 'Daily Multivitamins', price: 550, servings: 60, perDay: 1, daysPerWeek: 7, schedule: 'daily' },
+      { id: 4, name: 'Fish Oil Omega-3', price: 750, servings: 60, perDay: 1, daysPerWeek: 7, schedule: 'daily' },
+      { id: 5, name: 'Electrolytes (Fast&Up / Electral)', price: 360, servings: 20, perDay: 1, daysPerWeek: 2, schedule: 'rundays' },
+      { id: 6, name: 'Energy Gels (Long Runs / Races)', price: 900, servings: 6, perDay: 1, daysPerWeek: 1, schedule: 'rundays' }
     ],
     food: [
       { id: 401, name: 'Eggs (Tray of 30)', price: 210, servings: 30, perDay: 4, daysPerWeek: 4, schedule: 'nonveg' },
       { id: 402, name: 'Chicken Breast (1kg pack)', price: 300, servings: 4, perDay: 1, daysPerWeek: 4, schedule: 'nonveg' },
       { id: 403, name: 'Paneer / Tofu (200g pack)', price: 120, servings: 1, perDay: 1, daysPerWeek: 3, schedule: 'veg' }
+    ],
+    cosmetics: [
+      { id: 501, name: 'Sunscreen (SPF 50+ PA++++)', price: 650, lastsMonths: 2 },
+      { id: 502, name: 'Perfume / Deodorant', price: 1500, lastsMonths: 3 },
+      { id: 503, name: 'Toothpaste & Dental Care', price: 150, lastsMonths: 1 },
+      { id: 504, name: 'Face Wash & Grooming Kit', price: 400, lastsMonths: 2 }
+    ],
+    medication: [
+      { id: 601, name: 'Daily Prescriptions & Supplements', amount: 500 },
+      { id: 602, name: 'Running Recovery & First Aid (Tape, Volini Spray)', amount: 350 }
+    ],
+    commute: [
+      { id: 701, name: 'Bike / Car Petrol', amount: 2000 },
+      { id: 702, name: 'EV Charging / Transit', amount: 500 }
     ],
     rent: [
       { id: 11, name: 'House Rent', amount: 20000 },
@@ -642,71 +729,36 @@
       // Auto-migrate from any older storage keys if present
       if (!saved) {
         const v2 = localStorage.getItem('raviteja_engine_state_v2');
-        if (v2) {
-          saved = v2;
-        } else {
-          const dynSupps = localStorage.getItem('dyn_supps');
-          const dynExps = localStorage.getItem('dyn_exps');
-          const dynInc = localStorage.getItem('dyn_inc');
-          if (dynSupps || dynExps || dynInc) {
-            const migrated = JSON.parse(JSON.stringify(DEFAULT_DATA));
-            if (dynInc) migrated.income = Number(dynInc) || 67000;
-            if (dynSupps) {
-              const parsedSupps = JSON.parse(dynSupps);
-              if (Array.isArray(parsedSupps) && parsedSupps.length > 0) {
-                migrated.supplements = parsedSupps.map(s => ({
-                  id: s.id || Date.now() + Math.random(),
-                  name: s.name || '',
-                  price: Number(s.price) || 0,
-                  servings: Number(s.servings) || 30,
-                  perDay: Number(s.perDay) || 1
-                }));
-              }
-            }
-            if (dynExps) {
-              const parsedExps = JSON.parse(dynExps);
-              if (Array.isArray(parsedExps) && parsedExps.length > 0) {
-                migrated.rent = parsedExps.map(e => ({
-                  id: e.id || Date.now() + Math.random(),
-                  name: e.name || '',
-                  amount: Number(e.amount) || 0
-                }));
-              }
-            }
-            return migrated;
-          }
-        }
+        if (v2) saved = v2;
       }
 
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && typeof parsed === 'object') {
-          // Check if parsed has any items at all
-          const hasSupps = Array.isArray(parsed.supplements) && parsed.supplements.length > 0;
-          const hasFood = Array.isArray(parsed.food) && parsed.food.length > 0;
-          const hasRent = Array.isArray(parsed.rent) && parsed.rent.length > 0;
-          const hasEmis = Array.isArray(parsed.emis) && parsed.emis.length > 0;
-          const hasExtras = Array.isArray(parsed.extras) && parsed.extras.length > 0;
-          const hasCustom = Array.isArray(parsed.customSections) && parsed.customSections.length > 0;
+          // Keep existing user arrays exactly as they are (even if user deleted all rows in a section!)
+          if (!Array.isArray(parsed.supplements)) parsed.supplements = [];
+          if (!Array.isArray(parsed.food)) parsed.food = [];
+          if (!Array.isArray(parsed.cosmetics)) {
+            parsed.cosmetics = JSON.parse(JSON.stringify(DEFAULT_DATA.cosmetics));
+          }
+          if (!Array.isArray(parsed.medication)) {
+            parsed.medication = JSON.parse(JSON.stringify(DEFAULT_DATA.medication));
+          }
+          if (!Array.isArray(parsed.commute)) {
+            parsed.commute = JSON.parse(JSON.stringify(DEFAULT_DATA.commute));
+          }
+          if (!Array.isArray(parsed.rent)) parsed.rent = [];
+          if (!Array.isArray(parsed.emis)) parsed.emis = [];
+          if (!Array.isArray(parsed.extras)) parsed.extras = [];
+          if (!Array.isArray(parsed.customSections)) parsed.customSections = [];
+          if (typeof parsed.income === 'undefined') parsed.income = 67000;
 
-          // If completely empty across all sections, populate defaults so user never sees blank cards
-          if (!hasSupps && !hasFood && !hasRent && !hasEmis && !hasExtras && !hasCustom) {
-            return JSON.parse(JSON.stringify(DEFAULT_DATA));
-          }
+          // For supplements, ensure daysPerWeek and schedule default gracefully
+          parsed.supplements.forEach(s => {
+            if (typeof s.daysPerWeek === 'undefined') s.daysPerWeek = 7;
+            if (!s.schedule) s.schedule = 'daily';
+          });
 
-          if (!parsed.supplements) parsed.supplements = [];
-          if (!parsed.rent) parsed.rent = [];
-          if (!parsed.emis) parsed.emis = [];
-          if (!parsed.extras) parsed.extras = [];
-          if (!parsed.customSections) parsed.customSections = [];
-          
-          // Seamlessly initialize food section if not present
-          if (!parsed.food || !Array.isArray(parsed.food) || parsed.food.length === 0) {
-            parsed.food = JSON.parse(JSON.stringify(DEFAULT_DATA.food));
-          }
-          if (typeof parsed.income === 'undefined') {
-            parsed.income = 67000;
-          }
           return parsed;
         }
       }
@@ -738,16 +790,21 @@
     calculate();
   }
 
-  // ── Section 1: Supplements Handlers ───────────────────────────────
+  // ── Section 1: Supplements Handlers (Daily & Run Days) ────────────
   function addSupplement() {
-    state.supplements.push({ id: Date.now(), name: '', price: 0, servings: 30, perDay: 1 });
+    state.supplements.push({ id: Date.now(), name: '', price: 0, servings: 30, perDay: 1, daysPerWeek: 7, schedule: 'daily' });
+    saveLocal();
     render();
   }
 
   function updateSupp(id, field, val) {
     const s = state.supplements.find(x => x.id === id);
     if(s) { 
-      s[field] = field === 'name' ? val : Math.max(0, Number(val) || 0); 
+      if (field === 'name' || field === 'schedule') {
+        s[field] = val;
+      } else {
+        s[field] = Math.max(0, Number(val) || 0);
+      }
       saveLocal(); 
       calculate();
       updateSuppRowCalculations(id, s);
@@ -757,7 +814,11 @@
   function stepSupp(id, field, delta) {
     const s = state.supplements.find(x => x.id === id);
     if(s) {
-      s[field] = Math.max(0, (Number(s[field]) || 0) + delta);
+      if (field === 'daysPerWeek') {
+        s.daysPerWeek = Math.min(7, Math.max(1, (Number(s.daysPerWeek) || 0) + delta));
+      } else {
+        s[field] = Math.max(0, (Number(s[field]) || 0) + delta);
+      }
       const input = document.getElementById(`supp_${field}_${id}`);
       if(input) input.value = s[field];
       saveLocal();
@@ -766,27 +827,47 @@
     }
   }
 
+  function setSuppSchedule(id, days, schedName) {
+    const s = state.supplements.find(x => x.id === id);
+    if (s) {
+      s.daysPerWeek = Math.min(7, Math.max(1, Number(days) || 7));
+      s.schedule = schedName;
+      saveLocal();
+      calculate();
+      render();
+    }
+  }
+
   function removeSupp(id) {
     state.supplements = state.supplements.filter(x => x.id !== id);
+    saveLocal();
     render();
   }
 
   function updateSuppRowCalculations(id, s) {
     const cpsEl = document.getElementById(`supp_cps_${id}`);
     const cpdEl = document.getElementById(`supp_cpd_${id}`);
-    const daysEl = document.getElementById(`supp_days_${id}`);
+    const monthEl = document.getElementById(`supp_month_${id}`);
 
     const servings = Number(s.servings) || 0;
     const price = Number(s.price) || 0;
     const perDay = Number(s.perDay) || 1;
+    const daysPerWeek = typeof s.daysPerWeek !== 'undefined' ? Number(s.daysPerWeek) : 7;
 
-    const cps = servings > 0 ? (price / servings).toFixed(2) : '0';
-    const cpd = servings > 0 ? ((price / servings) * perDay).toFixed(2) : '0';
-    const days = (servings > 0 && perDay > 0) ? Math.floor(servings / perDay) : 0;
+    const cps = servings > 0 ? (price / servings) : 0;
+    const costOnActiveDay = cps * perDay;
+    const effectiveDailyCost = (costOnActiveDay * daysPerWeek) / 7;
+    const monthlyCost = effectiveDailyCost * 30;
 
-    if(cpsEl) cpsEl.innerText = `₹${cps}`;
-    if(cpdEl) cpdEl.innerText = `₹${cpd}`;
-    if(daysEl) daysEl.innerText = days > 0 ? `(${days} days)` : '';
+    if(cpsEl) cpsEl.innerText = `₹${cps.toFixed(2)}`;
+    if(cpdEl) {
+      if (daysPerWeek < 7) {
+        cpdEl.innerHTML = `₹${effectiveDailyCost.toFixed(2)}<span style="font-size: 0.68rem; color: #f59e0b; display: block;">(₹${costOnActiveDay.toFixed(0)} on run day)</span>`;
+      } else {
+        cpdEl.innerHTML = `₹${effectiveDailyCost.toFixed(2)}`;
+      }
+    }
+    if(monthEl) monthEl.innerText = formatINR(monthlyCost);
   }
 
   // ── Section 2: Food & Diet Handlers (Daily / Veg / Non-Veg) ────────
@@ -800,6 +881,7 @@
       daysPerWeek: 4,
       schedule: 'nonveg'
     });
+    saveLocal();
     render();
   }
 
@@ -840,12 +922,13 @@
       f.schedule = schedName;
       saveLocal();
       calculate();
-      render(); // re-render to update active pill highlight
+      render();
     }
   }
 
   function removeFood(id) {
     state.food = state.food.filter(x => x.id !== id);
+    saveLocal();
     render();
   }
 
@@ -869,9 +952,123 @@
     if (monthEl) monthEl.innerText = formatINR(monthlyCost);
   }
 
-  // ── Section 3: Rent & Living Handlers ─────────────────────────────
+  // ── Section 3: Skin & Hair Care / Cosmetics Handlers ───────────────
+  function addCosmeticItem() {
+    state.cosmetics.push({ id: Date.now(), name: '', price: 0, lastsMonths: 2 });
+    saveLocal();
+    render();
+  }
+
+  function updateCosmetic(id, field, val) {
+    const c = state.cosmetics.find(x => x.id === id);
+    if(c) {
+      c[field] = field === 'name' ? val : Math.max(0, Number(val) || 0);
+      saveLocal();
+      calculate();
+      updateCosmeticRowCalculations(id, c);
+    }
+  }
+
+  function stepCosmetic(id, field, delta) {
+    const c = state.cosmetics.find(x => x.id === id);
+    if(c) {
+      if(field === 'lastsMonths') {
+        c.lastsMonths = Math.max(1, (Number(c.lastsMonths) || 1) + delta);
+      } else {
+        c[field] = Math.max(0, (Number(c[field]) || 0) + delta);
+      }
+      const input = document.getElementById(`cosmetic_${field}_${id}`);
+      if(input) input.value = c[field];
+      saveLocal();
+      calculate();
+      updateCosmeticRowCalculations(id, c);
+    }
+  }
+
+  function removeCosmetic(id) {
+    state.cosmetics = state.cosmetics.filter(x => x.id !== id);
+    saveLocal();
+    render();
+  }
+
+  function updateCosmeticRowCalculations(id, c) {
+    const burnEl = document.getElementById(`cosmetic_burn_${id}`);
+    const price = Number(c.price) || 0;
+    const lasts = Math.max(1, Number(c.lastsMonths) || 1);
+    const monthlyBurn = price / lasts;
+    if(burnEl) burnEl.innerText = formatINR(monthlyBurn);
+  }
+
+  // ── Section 4: Medication & Health Handlers ───────────────────────
+  function addMedicationItem() {
+    state.medication.push({ id: Date.now(), name: '', amount: 0 });
+    saveLocal();
+    render();
+  }
+
+  function updateMedication(id, field, val) {
+    const m = state.medication.find(x => x.id === id);
+    if(m) {
+      m[field] = field === 'name' ? val : Math.max(0, Number(val) || 0);
+      saveLocal();
+      calculate();
+    }
+  }
+
+  function stepMedication(id, delta) {
+    const m = state.medication.find(x => x.id === id);
+    if(m) {
+      m.amount = Math.max(0, (Number(m.amount) || 0) + delta);
+      const input = document.getElementById(`med_amount_${id}`);
+      if(input) input.value = m.amount;
+      saveLocal();
+      calculate();
+    }
+  }
+
+  function removeMedication(id) {
+    state.medication = state.medication.filter(x => x.id !== id);
+    saveLocal();
+    render();
+  }
+
+  // ── Section 5: Commute & Fuel (Petrol / EV) Handlers ──────────────
+  function addCommuteItem() {
+    state.commute.push({ id: Date.now(), name: '', amount: 0 });
+    saveLocal();
+    render();
+  }
+
+  function updateCommute(id, field, val) {
+    const c = state.commute.find(x => x.id === id);
+    if(c) {
+      c[field] = field === 'name' ? val : Math.max(0, Number(val) || 0);
+      saveLocal();
+      calculate();
+    }
+  }
+
+  function stepCommute(id, delta) {
+    const c = state.commute.find(x => x.id === id);
+    if(c) {
+      c.amount = Math.max(0, (Number(c.amount) || 0) + delta);
+      const input = document.getElementById(`commute_amount_${id}`);
+      if(input) input.value = c.amount;
+      saveLocal();
+      calculate();
+    }
+  }
+
+  function removeCommute(id) {
+    state.commute = state.commute.filter(x => x.id !== id);
+    saveLocal();
+    render();
+  }
+
+  // ── Section 6: Rent & Living Handlers ─────────────────────────────
   function addRentItem() {
     state.rent.push({ id: Date.now(), name: '', amount: 0 });
+    saveLocal();
     render();
   }
 
@@ -897,12 +1094,14 @@
 
   function removeRent(id) {
     state.rent = state.rent.filter(x => x.id !== id);
+    saveLocal();
     render();
   }
 
-  // ── Section 4: Loans & EMIs Handlers ──────────────────────────────
+  // ── Section 7: Loans & EMIs Handlers ──────────────────────────────
   function addEmiItem() {
     state.emis.push({ id: Date.now(), name: '', amount: 0, emisLeft: 6 });
+    saveLocal();
     render();
   }
 
@@ -930,6 +1129,7 @@
 
   function removeEmi(id) {
     state.emis = state.emis.filter(x => x.id !== id);
+    saveLocal();
     render();
   }
 
@@ -939,9 +1139,10 @@
     if(pendingEl) pendingEl.innerText = formatINR(pending);
   }
 
-  // ── Section 5: Extra Expenses Handlers ────────────────────────────
+  // ── Section 8: Extra Expenses Handlers ────────────────────────────
   function addExtraItem() {
     state.extras.push({ id: Date.now(), name: '', amount: 0 });
+    saveLocal();
     render();
   }
 
@@ -967,6 +1168,7 @@
 
   function removeExtra(id) {
     state.extras = state.extras.filter(x => x.id !== id);
+    saveLocal();
     render();
   }
 
@@ -990,7 +1192,7 @@
       type: type,
       items: [
         type === 'nutrition' 
-          ? { id: Date.now() + 1, name: '', price: 0, servings: 30, perDay: 1 }
+          ? { id: Date.now() + 1, name: '', price: 0, servings: 30, perDay: 1, daysPerWeek: 7, schedule: 'daily' }
           : (type === 'emi' ? { id: Date.now() + 1, name: '', amount: 0, emisLeft: 6 } : { id: Date.now() + 1, name: '', amount: 0 })
       ]
     };
@@ -1022,7 +1224,7 @@
     const sec = state.customSections.find(s => s.id === secId);
     if(sec) {
       if(sec.type === 'nutrition') {
-        sec.items.push({ id: Date.now(), name: '', price: 0, servings: 30, perDay: 1 });
+        sec.items.push({ id: Date.now(), name: '', price: 0, servings: 30, perDay: 1, daysPerWeek: 7, schedule: 'daily' });
       } else if(sec.type === 'emi') {
         sec.items.push({ id: Date.now(), name: '', amount: 0, emisLeft: 6 });
       } else {
@@ -1137,25 +1339,37 @@
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  // Safe DOM Helper Functions
+  function setText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.innerText = text;
+  }
+  function setHtml(id, html) {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  }
+
   // ── Render Function ───────────────────────────────────────────────
   function render() {
     // 0. Update Income input
     document.getElementById('income').value = state.income || 0;
 
-    // 1. Render Supplements Table
+    // 1. Render Supplements Table (Daily staples & Run-Day Fuel)
     const suppTbody = document.getElementById('suppTable');
     if (!state.supplements || state.supplements.length === 0) {
-      suppTbody.innerHTML = '<tr><td colspan="7" class="empty-state">No supplements added yet. Click "+ Add Supplement" to begin.</td></tr>';
+      suppTbody.innerHTML = '<tr><td colspan="9" class="empty-state">No supplements added yet. Click "+ Add Supplement" to begin.</td></tr>';
     } else {
       suppTbody.innerHTML = `
         <thead>
           <tr>
-            <th style="width: 30%">Brand / Item</th>
-            <th style="width: 20%">Total Price (₹)</th>
-            <th style="width: 15%">Total Servings</th>
-            <th style="width: 13%">Servings / Day</th>
-            <th style="width: 11%">Cost / Serving</th>
-            <th style="width: 11%">Cost / Day</th>
+            <th style="width: 25%">Brand / Item</th>
+            <th style="width: 17%">Pack Price (₹)</th>
+            <th style="width: 11%">Total Servings</th>
+            <th style="width: 11%">Intake / Day</th>
+            <th style="width: 17%">Days / Week</th>
+            <th style="width: 8%">Cost / Serv</th>
+            <th style="width: 11%">Daily Avg</th>
+            <th style="width: 9%">Monthly (₹)</th>
             <th style="width: 4%"></th>
           </tr>
         </thead>
@@ -1164,13 +1378,17 @@
             const servings = Number(s.servings) || 0;
             const price = Number(s.price) || 0;
             const perDay = Number(s.perDay) || 1;
-            const cps = servings > 0 ? (price / servings).toFixed(2) : '0';
-            const cpd = servings > 0 ? ((price / servings) * perDay).toFixed(2) : '0';
-            const days = (servings > 0 && perDay > 0) ? Math.floor(servings / perDay) : 0;
+            const daysPerWeek = typeof s.daysPerWeek !== 'undefined' ? Number(s.daysPerWeek) : 7;
+            const sched = s.schedule || 'daily';
+
+            const cps = servings > 0 ? (price / servings) : 0;
+            const costOnActiveDay = cps * perDay;
+            const effectiveDailyCost = (costOnActiveDay * daysPerWeek) / 7;
+            const monthlyCost = effectiveDailyCost * 30;
 
             return `<tr>
               <td>
-                <input type="text" placeholder="e.g. Impact Whey" value="${escapeHtml(s.name)}" oninput="updateSupp(${s.id}, 'name', this.value)">
+                <input type="text" placeholder="e.g. Impact Whey, Electrolytes" value="${escapeHtml(s.name)}" oninput="updateSupp(${s.id}, 'name', this.value)">
               </td>
               <td>
                 <div class="stepper-box">
@@ -1193,11 +1411,27 @@
                   <button class="stepper-btn" onclick="stepSupp(${s.id}, 'perDay', 1)">+</button>
                 </div>
               </td>
-              <td class="text-accent" id="supp_cps_${s.id}">₹${cps}</td>
               <td>
-                <span class="text-accent" id="supp_cpd_${s.id}" style="color: var(--green);">₹${cpd}</span>
-                <span style="font-size: 0.7rem; color: var(--muted); display: block;" id="supp_days_${s.id}">${days > 0 ? `(${days} days)` : ''}</span>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <div class="stepper-box" style="max-width: 90px;">
+                    <button class="stepper-btn" onclick="stepSupp(${s.id}, 'daysPerWeek', -1)">−</button>
+                    <input type="number" id="supp_daysPerWeek_${s.id}" value="${daysPerWeek}" min="1" max="7" oninput="updateSupp(${s.id}, 'daysPerWeek', this.value)">
+                    <button class="stepper-btn" onclick="stepSupp(${s.id}, 'daysPerWeek', 1)">+</button>
+                  </div>
+                  <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                    <span class="sched-pill ${daysPerWeek === 7 ? 'active' : ''}" onclick="setSuppSchedule(${s.id}, 7, 'daily')" title="Taken every day">Daily</span>
+                    <span class="sched-pill ${daysPerWeek === 2 && sched === 'rundays' ? 'active-run' : ''}" onclick="setSuppSchedule(${s.id}, 2, 'rundays')" title="2 Run days/week">Run (2d)</span>
+                    <span class="sched-pill ${daysPerWeek === 3 && sched === 'rundays' ? 'active-run' : ''}" onclick="setSuppSchedule(${s.id}, 3, 'rundays')" title="3 Run days/week">Run (3d)</span>
+                    <span class="sched-pill ${daysPerWeek === 4 && sched === 'rundays' ? 'active-run' : ''}" onclick="setSuppSchedule(${s.id}, 4, 'rundays')" title="4 Run days/week">Run (4d)</span>
+                  </div>
+                </div>
               </td>
+              <td class="text-accent" id="supp_cps_${s.id}">₹${cps.toFixed(2)}</td>
+              <td id="supp_cpd_${s.id}">
+                <span class="text-accent" style="color: var(--accent);">₹${effectiveDailyCost.toFixed(2)}</span>
+                ${daysPerWeek < 7 ? `<span style="font-size: 0.68rem; color: #f59e0b; display: block;">(₹${costOnActiveDay.toFixed(0)} on run day)</span>` : ''}
+              </td>
+              <td class="text-accent" id="supp_month_${s.id}">${formatINR(monthlyCost)}</td>
               <td style="text-align: right;">
                 <button class="btn-del" onclick="removeSupp(${s.id})" title="Delete item">✕</button>
               </td>
@@ -1293,7 +1527,122 @@
       `;
     }
 
-    // 3. Render Rent & Fixed Living Table
+    // 3. Render Skin & Hair Care / Cosmetics Table
+    const cosmeticsTbody = document.getElementById('cosmeticsTable');
+    if (!state.cosmetics || state.cosmetics.length === 0) {
+      cosmeticsTbody.innerHTML = '<tr><td colspan="5" class="empty-state">No grooming/cosmetics items added. Click "+ Add Product" to track sunscreen, perfumes, or toothpaste.</td></tr>';
+    } else {
+      cosmeticsTbody.innerHTML = `
+        <thead>
+          <tr>
+            <th style="width: 45%">Product / Cosmetic Name</th>
+            <th style="width: 25%">Pack Price (₹)</th>
+            <th style="width: 15%">Lasts (Months)</th>
+            <th style="width: 11%">Monthly Burn (₹)</th>
+            <th style="width: 4%"></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${state.cosmetics.map(c => {
+            const price = Number(c.price) || 0;
+            const lasts = Math.max(1, Number(c.lastsMonths) || 1);
+            const monthlyBurn = price / lasts;
+
+            return `<tr>
+              <td>
+                <input type="text" placeholder="e.g. Sunscreen SPF 50, Perfume, Paste" value="${escapeHtml(c.name)}" oninput="updateCosmetic(${c.id}, 'name', this.value)">
+              </td>
+              <td>
+                <div class="stepper-box">
+                  <button class="stepper-btn" onclick="stepCosmetic(${c.id}, 'price', -50)">−</button>
+                  <input type="number" id="cosmetic_price_${c.id}" placeholder="Price" value="${c.price || 0}" oninput="updateCosmetic(${c.id}, 'price', this.value)">
+                  <button class="stepper-btn" onclick="stepCosmetic(${c.id}, 'price', 50)">+</button>
+                </div>
+              </td>
+              <td>
+                <div class="stepper-box" style="max-width: 120px;">
+                  <button class="stepper-btn" onclick="stepCosmetic(${c.id}, 'lastsMonths', -1)">−</button>
+                  <input type="number" id="cosmetic_lastsMonths_${c.id}" placeholder="Months" value="${c.lastsMonths || 1}" min="1" oninput="updateCosmetic(${c.id}, 'lastsMonths', this.value)">
+                  <button class="stepper-btn" onclick="stepCosmetic(${c.id}, 'lastsMonths', 1)">+</button>
+                </div>
+              </td>
+              <td class="text-accent" id="cosmetic_burn_${c.id}">${formatINR(monthlyBurn)}</td>
+              <td style="text-align: right;">
+                <button class="btn-del" onclick="removeCosmetic(${c.id})" title="Delete item">✕</button>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      `;
+    }
+
+    // 4. Render Medication & Health Table
+    const medTbody = document.getElementById('medicationTable');
+    if (!state.medication || state.medication.length === 0) {
+      medTbody.innerHTML = '<tr><td colspan="3" class="empty-state">No medication items added. Click "+ Add Medicine" to track prescriptions or running first-aid.</td></tr>';
+    } else {
+      medTbody.innerHTML = `
+        <thead>
+          <tr>
+            <th style="width: 60%">Medicine / Health Item</th>
+            <th style="width: 35%">Monthly Amount (₹)</th>
+            <th style="width: 5%"></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${state.medication.map(m => `<tr>
+            <td>
+              <input type="text" placeholder="e.g. Daily Medication, Volini Spray, Knee Tape" value="${escapeHtml(m.name)}" oninput="updateMedication(${m.id}, 'name', this.value)">
+            </td>
+            <td>
+              <div class="stepper-box" style="max-width: 240px;">
+                <button class="stepper-btn" onclick="stepMedication(${m.id}, -100)">−</button>
+                <input type="number" id="med_amount_${m.id}" placeholder="Amount" value="${m.amount || 0}" oninput="updateMedication(${m.id}, 'amount', this.value)">
+                <button class="stepper-btn" onclick="stepMedication(${m.id}, 100)">+</button>
+              </div>
+            </td>
+            <td style="text-align: right;">
+              <button class="btn-del" onclick="removeMedication(${m.id})" title="Delete item">✕</button>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      `;
+    }
+
+    // 5. Render Commute & Fuel Table
+    const commuteTbody = document.getElementById('commuteTable');
+    if (!state.commute || state.commute.length === 0) {
+      commuteTbody.innerHTML = '<tr><td colspan="3" class="empty-state">No commute items added. Click "+ Add Commute Expense" to track petrol or EV charging.</td></tr>';
+    } else {
+      commuteTbody.innerHTML = `
+        <thead>
+          <tr>
+            <th style="width: 60%">Vehicle / Commute Expense</th>
+            <th style="width: 35%">Monthly Amount (₹)</th>
+            <th style="width: 5%"></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${state.commute.map(c => `<tr>
+            <td>
+              <input type="text" placeholder="e.g. Bike Petrol, EV Charging, Metro" value="${escapeHtml(c.name)}" oninput="updateCommute(${c.id}, 'name', this.value)">
+            </td>
+            <td>
+              <div class="stepper-box" style="max-width: 240px;">
+                <button class="stepper-btn" onclick="stepCommute(${c.id}, -200)">−</button>
+                <input type="number" id="commute_amount_${c.id}" placeholder="Amount" value="${c.amount || 0}" oninput="updateCommute(${c.id}, 'amount', this.value)">
+                <button class="stepper-btn" onclick="stepCommute(${c.id}, 200)">+</button>
+              </div>
+            </td>
+            <td style="text-align: right;">
+              <button class="btn-del" onclick="removeCommute(${c.id})" title="Delete item">✕</button>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      `;
+    }
+
+    // 6. Render Rent & Fixed Living Table
     const rentTbody = document.getElementById('rentTable');
     if (!state.rent || state.rent.length === 0) {
       rentTbody.innerHTML = '<tr><td colspan="3" class="empty-state">No rent/living items added. Click "+ Add Living Expense" to begin.</td></tr>';
@@ -1326,7 +1675,7 @@
       `;
     }
 
-    // 4. Render Loans & EMIs Table
+    // 7. Render Loans & EMIs Table
     const emiTbody = document.getElementById('emiTable');
     if (!state.emis || state.emis.length === 0) {
       emiTbody.innerHTML = '<tr><td colspan="5" class="empty-state">No EMIs added. Click "+ Add EMI" to begin.</td></tr>';
@@ -1372,7 +1721,7 @@
       `;
     }
 
-    // 5. Render Extra Expenses Table
+    // 8. Render Extra Expenses Table
     const extraTbody = document.getElementById('extraTable');
     if (!state.extras || state.extras.length === 0) {
       extraTbody.innerHTML = '<tr><td colspan="3" class="empty-state">No extras added. Click "+ Add Extra" to track running gear, registrations, or one-off items.</td></tr>';
@@ -1405,7 +1754,7 @@
       `;
     }
 
-    // 6. Render Dynamic Custom Sections (PRESERVED IN FULL)
+    // 9. Render Dynamic Custom Sections (PRESERVED IN FULL)
     const customContainer = document.getElementById('customSectionsContainer');
     customContainer.innerHTML = '';
 
@@ -1556,35 +1905,42 @@
     calculate();
   }
 
-  // Safe DOM Helper Functions
-  function setText(id, text) {
-    const el = document.getElementById(id);
-    if (el) el.innerText = text;
-  }
-  function setHtml(id, html) {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = html;
-  }
-
   // ── Calculation Engine ────────────────────────────────────────────
   function calculate() {
     try {
       const income = Number(state.income) || 0;
 
-      // 1. Supplements Daily & Monthly
+      // 1. Supplements Daily, Monthly & Run-Day Fuel
       let suppDailyTotal = 0;
-      const suppMonthlyTotal = (state.supplements || []).reduce((sum, s) => {
+      let suppMonthlyTotal = 0;
+      let suppRunDayActiveCost = 0;
+      let suppRestDayCost = 0;
+
+      (state.supplements || []).forEach(s => {
         const servings = Number(s.servings) || 0;
         const price = Number(s.price) || 0;
         const perDay = Number(s.perDay) || 1;
-        if (servings > 0 && price > 0) {
-          suppDailyTotal += (price / servings) * perDay;
+        const daysPerWeek = typeof s.daysPerWeek !== 'undefined' ? Number(s.daysPerWeek) : 7;
+        const sched = s.schedule || 'daily';
+
+        const cps = servings > 0 ? (price / servings) : 0;
+        const costOnActiveDay = cps * perDay;
+        const effectiveDailyCost = (costOnActiveDay * daysPerWeek) / 7;
+        const monthlyCost = effectiveDailyCost * 30;
+
+        suppDailyTotal += effectiveDailyCost;
+        suppMonthlyTotal += monthlyCost;
+
+        if (sched === 'rundays' || daysPerWeek < 7) {
+          suppRunDayActiveCost += costOnActiveDay;
+        } else {
+          suppRunDayActiveCost += costOnActiveDay;
+          suppRestDayCost += costOnActiveDay;
         }
-        return sum + price;
-      }, 0);
+      });
 
       setText('suppTotalBadge', formatINR(suppMonthlyTotal));
-      setHtml('suppFooterSummary', `Total Supplements Burn: <strong>${formatINR(suppMonthlyTotal)}</strong> • Daily Supplements: <strong style="color: var(--accent);">${formatINR(suppDailyTotal)}/day</strong>`);
+      setHtml('suppFooterSummary', `Total Supplements Burn: <strong>${formatINR(suppMonthlyTotal)}</strong> • Daily Avg: <strong style="color: var(--accent);">₹${suppDailyTotal.toFixed(2)}/day</strong> • Run-Day Fuel: <strong style="color: #f59e0b;">₹${suppRunDayActiveCost.toFixed(0)}/run day</strong>`);
 
       // 2. Food Daily, Monthly, and Veg vs Non-Veg Days
       let foodDailyTotal = 0;
@@ -1629,7 +1985,7 @@
       setText('combinedMonthlyVal', formatINR(combinedMonthly));
 
       setText('suppDailySum', `₹${suppDailyTotal.toFixed(2)} / day`);
-      setText('suppMonthlyEquiv', `~${formatINR(suppDailyTotal * 30)} / month`);
+      setText('suppMonthlyEquiv', `~${formatINR(suppMonthlyTotal)} / mo (Run day: ₹${suppRunDayActiveCost.toFixed(0)})`);
 
       setText('foodDailySum', `₹${foodDailyTotal.toFixed(2)} / day`);
       setText('foodMonthlyEquiv', `~${formatINR(foodMonthlyTotal)} / month`);
@@ -1638,24 +1994,43 @@
       const vegFullDaily = suppDailyTotal + vegDayActiveFoodSum;
       setText('dietSplitText', `Non-Veg Day: ₹${nonVegFullDaily.toFixed(0)} • Veg Day: ₹${vegFullDaily.toFixed(0)}`);
 
-      // 4. Rent Total Burn
+      // 4. Skin & Hair Care / Cosmetics Total Burn
+      const cosmeticsMonthlyTotal = (state.cosmetics || []).reduce((sum, c) => {
+        const price = Number(c.price) || 0;
+        const lasts = Math.max(1, Number(c.lastsMonths) || 1);
+        return sum + (price / lasts);
+      }, 0);
+      setText('cosmeticsTotalBadge', formatINR(cosmeticsMonthlyTotal));
+      setHtml('cosmeticsFooterSummary', `Total Grooming Burn: <strong>${formatINR(cosmeticsMonthlyTotal)}</strong>/month`);
+
+      // 5. Medication Total Burn
+      const medicationMonthlyTotal = (state.medication || []).reduce((sum, m) => sum + (Number(m.amount) || 0), 0);
+      setText('medicationTotalBadge', formatINR(medicationMonthlyTotal));
+      setHtml('medicationFooterSummary', `Total Medication Burn: <strong>${formatINR(medicationMonthlyTotal)}</strong>/month`);
+
+      // 6. Commute Total Burn
+      const commuteMonthlyTotal = (state.commute || []).reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
+      setText('commuteTotalBadge', formatINR(commuteMonthlyTotal));
+      setHtml('commuteFooterSummary', `Total Commute Burn: <strong>${formatINR(commuteMonthlyTotal)}</strong>/month`);
+
+      // 7. Rent Total Burn
       const rentTotal = (state.rent || []).reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
       setText('rentTotalBadge', formatINR(rentTotal));
       setHtml('rentFooterSummary', `Total Living Burn: <strong>${formatINR(rentTotal)}</strong>`);
 
-      // 5. EMI Total Burn & Total Debt Pending
+      // 8. EMI Total Burn & Total Debt Pending
       const emiTotal = (state.emis || []).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
       const emiPending = (state.emis || []).reduce((sum, e) => sum + ((Number(e.amount) || 0) * (Number(e.emisLeft) || 0)), 0);
       setText('emiTotalBadge', formatINR(emiTotal));
       setText('emiPendingTotal', formatINR(emiPending));
       setHtml('emiFooterSummary', `Total Monthly EMIs: <strong>${formatINR(emiTotal)}</strong> • Total Debt Pending: <strong style="color: var(--accent);">${formatINR(emiPending)}</strong>`);
 
-      // 6. Extras Total Burn
+      // 9. Extras Total Burn
       const extraTotal = (state.extras || []).reduce((sum, ex) => sum + (Number(ex.amount) || 0), 0);
       setText('extraTotalBadge', formatINR(extraTotal));
       setHtml('extraFooterSummary', `Total Extras Burn: <strong>${formatINR(extraTotal)}</strong>`);
 
-      // 7. Custom Sections Total
+      // 10. Custom Sections Total
       let customTotal = 0;
       if (state.customSections && state.customSections.length > 0) {
         state.customSections.forEach(sec => {
@@ -1668,7 +2043,7 @@
       }
 
       // Totals & Surplus
-      const totalBurn = suppMonthlyTotal + foodMonthlyTotal + rentTotal + emiTotal + extraTotal + customTotal;
+      const totalBurn = suppMonthlyTotal + foodMonthlyTotal + cosmeticsMonthlyTotal + medicationMonthlyTotal + commuteMonthlyTotal + rentTotal + emiTotal + extraTotal + customTotal;
       const surplus = income - totalBurn;
 
       setText('totalExp', formatINR(totalBurn));
@@ -1693,6 +2068,9 @@
 
       const totalItemCount = (state.supplements ? state.supplements.length : 0) + 
         (state.food ? state.food.length : 0) + 
+        (state.cosmetics ? state.cosmetics.length : 0) + 
+        (state.medication ? state.medication.length : 0) + 
+        (state.commute ? state.commute.length : 0) + 
         (state.rent ? state.rent.length : 0) + 
         (state.emis ? state.emis.length : 0) + 
         (state.extras ? state.extras.length : 0) + 
