@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Custom Dynamic Budget & Nutrition Engine by Ravi Teja Bitra. Live expense calculation, supplements cost-per-serving, custom sections, and browser persistence.">
+  <title>Budget & Nutrition Engine | Ravi Teja Bitra</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  
+  <style>
+    /* ── Scoped Styles for Dynamic Engine ─────────────────────────── */
+    :root {
+      --card-bg: #18191c;
+      --card-bg-elevated: #202226;
+      --border-subtle: #27282d;
+      --border-focus: #e05a47;
+      --accent-cyan: #38bdf8;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --accent-amber: #f59e0b;
+      --accent-purple: #a855f7;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    .engine-main {
+      padding-top: calc(var(--nav-height) + 20px);
+      padding-bottom: 80px;
+    }
+
+    .page-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .header-actions-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    /* ── Action Buttons ─────────────────────────────────────────────── */
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 16px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+      background: var(--card-bg);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn-action:hover {
+      border-color: var(--theme-color);
+      color: var(--theme-color);
+      transform: translateY(-1px);
+    }
+    .btn-action.btn-primary {
+      background: var(--theme-color);
+      color: #fff;
+      border-color: var(--theme-color);
+    }
+    .btn-action.btn-primary:hover {
+      background: var(--theme-hover);
+      border-color: var(--theme-hover);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(224, 90, 71, 0.35);
+    }
+    .btn-action.btn-ghost-danger:hover {
+      border-color: var(--accent-red);
+      color: var(--accent-red);
+    }
+
+    /* ── Top Metric KPI Cards ───────────────────────────────────────── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 900px) {
+      .kpi-grid { grid-template-columns: 1fr; }
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+    }
+    .kpi-card:hover {
+      border-color: rgba(224, 90, 71, 0.4);
+    }
+    .kpi-card.highlight-surplus {
+      border-left: 3px solid var(--accent-green);
+    }
+    .kpi-card.highlight-deficit {
+      border-left: 3px solid var(--accent-red);
+    }
+
+    .kpi-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .kpi-value-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .kpi-val {
+      font-family: var(--font-mono);
+      font-size: clamp(1.8rem, 3.2vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: var(--text-primary);
+    }
+    .kpi-val.surplus-positive {
+      color: var(--accent-green);
+    }
+    .kpi-val.surplus-negative {
+      color: var(--accent-red);
+    }
+
+    .kpi-subtext {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 8px;
+    }
+
+    /* Income Card Steppers */
+    .income-input-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 4px 12px;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+    .income-input-container:focus-within {
+      border-color: var(--theme-color);
+      box-shadow: 0 0 0 2px rgba(224, 90, 71, 0.15);
+    }
+    .income-currency-sym {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: var(--theme-color);
+    }
+    .income-input {
+      font-family: var(--font-mono);
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      background: transparent;
+      border: none;
+      outline: none;
+      width: 100%;
+    }
+
+    .quick-step-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .step-pill {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      padding: 3px 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .step-pill:hover {
+      border-color: var(--theme-color);
+      color: var(--theme-color);
+      background: var(--theme-glow);
+    }
+
+    /* ── Allocation Visualizer Card ─────────────────────────────────── */
+    .allocation-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 32px;
+    }
+    .allocation-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+    .multi-progress-bar {
+      width: 100%;
+      height: 12px;
+      background: #0d0e10;
+      border-radius: 999px;
+      overflow: hidden;
+      display: flex;
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 14px;
+    }
+    .bar-segment {
+      height: 100%;
+      transition: width 0.4s ease;
+      position: relative;
+    }
+    .allocation-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.8rem;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-secondary);
+    }
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* ── Section Container & Cards ─────────────────────────────────── */
+    .sections-container {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .section-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .section-card:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .section-header-bar {
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.015);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .section-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1 1 240px;
+    }
+
+    .section-emoji-btn {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .section-emoji-btn:hover {
+      border-color: var(--theme-color);
+    }
+
+    .section-title-input {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 4px 8px;
+      outline: none;
+      transition: all 0.15s ease;
+      width: 100%;
+      max-width: 380px;
+    }
+    .section-title-input:hover {
+      border-color: rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .section-title-input:focus {
+      border-color: var(--theme-color);
+      background: var(--bg-primary);
+    }
+
+    .section-meta-badges {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .section-total-badge {
+      font-family: var(--font-mono);
+      color: var(--theme-color);
+      background: var(--theme-glow);
+      border: 1px solid rgba(224, 90, 71, 0.25);
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+    .section-item-count {
+      color: var(--text-muted);
+    }
+
+    .section-ctrls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-icon {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.15s;
+    }
+    .btn-icon:hover {
+      background: var(--bg-primary);
+      border-color: var(--border-subtle);
+      color: var(--text-primary);
+    }
+    .btn-icon.danger:hover {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: var(--accent-red);
+      color: var(--accent-red);
+    }
+
+    /* ── Table & Items Layout ───────────────────────────────────────── */
+    .section-body {
+      padding: 0;
+    }
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .engine-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .engine-table th {
+      padding: 12px 16px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .engine-table td {
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      vertical-align: middle;
+    }
+    .engine-table tr:last-child td {
+      border-bottom: none;
+    }
+    .engine-table tr:hover td {
+      background: rgba(255, 255, 255, 0.012);
+    }
+
+    /* Inputs inside table */
+    .cell-input {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: var(--text-primary);
+      font-size: 0.88rem;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.15s;
+    }
+    .cell-input:focus {
+      border-color: var(--theme-color);
+    }
+
+    /* Stepper Number Component */
+    .stepper-wrap {
+      display: inline-flex;
+      align-items: center;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      overflow: hidden;
+      width: 100%;
+      max-width: 160px;
+      transition: border-color 0.15s;
+    }
+    .stepper-wrap:focus-within {
+      border-color: var(--theme-color);
+    }
+    .stepper-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: none;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.95rem;
+      width: 30px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s, color 0.15s;
+      flex-shrink: 0;
+    }
+    .stepper-btn:hover {
+      background: rgba(224, 90, 71, 0.2);
+      color: var(--theme-color);
+    }
+    .stepper-btn:active {
+      background: var(--theme-color);
+      color: #fff;
+    }
+    .stepper-input {
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      background: transparent;
+      border: none;
+      outline: none;
+      text-align: center;
+      width: 100%;
+      padding: 6px 2px;
+      min-width: 50px;
+    }
+
+    .cps-tag {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--accent-cyan);
+      white-space: nowrap;
+    }
+    .cps-empty {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    /* Table Quick Step Pills */
+    .row-quick-adjust {
+      display: flex;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .row-pill {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 1px 5px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 3px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .row-pill:hover {
+      border-color: var(--theme-color);
+      color: var(--theme-color);
+      background: var(--theme-glow);
+    }
+
+    /* Section Footer Bar */
+    .section-footer-bar {
+      padding: 14px 20px;
+      background: rgba(0, 0, 0, 0.15);
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .empty-section-state {
+      padding: 32px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+
+    /* ── Add New Section Prompt Area ───────────────────────────────── */
+    .add-section-card {
+      border: 2px dashed var(--border-subtle);
+      border-radius: 10px;
+      padding: 24px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.01);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .add-section-card:hover {
+      border-color: var(--theme-color);
+      background: var(--theme-glow);
+      transform: translateY(-2px);
+    }
+    .add-section-btn-text {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--theme-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* ── Modal & Toast ─────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-box {
+      background: #18191c;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 28px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      transform: translateY(20px);
+      transition: transform 0.2s ease;
+    }
+    .modal-overlay.active .modal-box {
+      transform: translateY(0);
+    }
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .modal-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .toast-notice {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1c1d21;
+      border: 1px solid var(--theme-color);
+      color: var(--text-primary);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .toast-notice.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* ── Mobile Optimization ───────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .engine-table th:nth-child(4),
+      .engine-table td:nth-child(4) {
+        display: none; /* Hide note column on small phones */
+      }
+      .page-header-row {
+        flex-direction: column;
+      }
+      .header-actions-group {
+        width: 100%;
+      }
+      .btn-action {
+        flex: 1 1 auto;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header id="header">
+    <div class="container nav-content">
+      <a href="index.html" class="logo">Ravi<span>.</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html#about">Profile</a></li>
+        <li><a href="index.html#activities">Activities</a></li>
+        <li><a href="tracker.html" class="active" style="color: var(--theme-color);">Engine / Tracker</a></li>
+        <li><a href="index.html#connect">Connect</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="container engine-main">
+    
+    <!-- Top Nav Back Link -->
+    <a href="index.html" class="back-btn">← Back to Home</a>
+
+    <!-- Page Header & Action Bar -->
+    <div class="page-header-row">
+      <div>
+        <div class="hero-eyebrow">CUSTOM DYNAMIC ENGINE</div>
+        <h1 class="hero-title" style="margin-bottom: 8px;">Budget & Nutrition <span class="accent">Engine.</span></h1>
+        <p class="hero-bio" style="font-size: 0.95rem; max-width: 680px;">
+          100% dynamic tracker. Create arbitrary sections on any given day, increment or decrement amounts with fast steppers, and monitor your monthly burn & liquid surplus in real time. Automatically auto-saves in your browser.
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="header-actions-group">
+        <button class="btn-action btn-primary" onclick="openNewSectionModal()">+ Add Section</button>
+        <button class="btn-action" onclick="exportDataJson()" title="Download JSON backup">Export JSON</button>
+        <button class="btn-action" onclick="openImportModal()" title="Import from JSON">Import</button>
+        <button class="btn-action btn-ghost-danger" onclick="confirmReset()" title="Reset to default template">Reset</button>
+      </div>
+    </div>
+
+    <!-- ── KPI Summary Cards ─────────────────────────────────────────── -->
+    <div class="kpi-grid">
+      
+      <!-- Card 1: Monthly Income -->
+      <div class="kpi-card">
+        <div>
+          <div class="kpi-label">
+            <span>Monthly Income</span>
+            <span style="color: var(--theme-color);">Cash Inflow</span>
+          </div>
+          <div class="income-input-container">
+            <span class="income-currency-sym">₹</span>
+            <input type="number" id="incomeInput" class="income-input" value="67000" min="0" step="500" oninput="handleIncomeChange(this.value)">
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size: 0.68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">Quick Adjust</div>
+          <div class="quick-step-pills">
+            <button class="step-pill" onclick="adjustIncome(-5000)">-5K</button>
+            <button class="step-pill" onclick="adjustIncome(-1000)">-1K</button>
+            <button class="step-pill" onclick="adjustIncome(-500)">-500</button>
+            <button class="step-pill" onclick="adjustIncome(500)">+500</button>
+            <button class="step-pill" onclick="adjustIncome(1000)">+1K</button>
+            <button class="step-pill" onclick="adjustIncome(5000)">+5K</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Total Monthly Burn -->
+      <div class="kpi-card">
+        <div>
+          <div class="kpi-label">
+            <span>Total Monthly Burn</span>
+            <span style="color: var(--text-muted);">Across All Sections</span>
+          </div>
+          <div class="kpi-val" id="totalBurnVal">₹0</div>
+        </div>
+        <div class="kpi-subtext" id="burnMetaSubtext">
+          0 sections • 0 active items
+        </div>
+      </div>
+
+      <!-- Card 3: Pure Liquid Surplus -->
+      <div class="kpi-card highlight-surplus" id="surplusCard">
+        <div>
+          <div class="kpi-label">
+            <span>Pure Liquid Surplus</span>
+            <span id="savingsRateBadge" style="font-family: var(--font-mono); font-weight: 700;">+0.0%</span>
+          </div>
+          <div class="kpi-val surplus-positive" id="surplusVal">₹0</div>
+        </div>
+        <div class="kpi-subtext" id="surplusSubtext">
+          Surplus available for savings or discretionary spending
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Segmented Burn Allocation Bar ─────────────────────────────── -->
+    <div class="allocation-card">
+      <div class="allocation-header">
+        <span>Income Allocation Breakdown</span>
+        <span id="allocationPercentSummary" style="font-family: var(--font-mono); color: var(--text-secondary);">100% Accounted</span>
+      </div>
+      <div class="multi-progress-bar" id="allocationBar">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="allocation-legend" id="allocationLegend">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- ── Dynamic Sections Container ────────────────────────────────── -->
+    <div class="sections-container" id="sectionsContainer">
+      <!-- Section cards injected dynamically via JavaScript -->
+    </div>
+
+    <!-- Bottom Add Section Banner -->
+    <div class="add-section-card" onclick="openNewSectionModal()">
+      <div class="add-section-btn-text">
+        <span style="font-size: 1.25rem;">+</span> Create Another Custom Section
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-socials">
+        <a href="https://www.strava.com/athletes/ravitejabitra" target="_blank" rel="noopener noreferrer" class="social-link">Strava</a>
+        <a href="https://www.instagram.com/raviteja_bitra" target="_blank" rel="noopener noreferrer" class="social-link">Instagram</a>
+        <a href="https://www.youtube.com/@Raviteja_Bitra" target="_blank" rel="noopener noreferrer" class="social-link">YouTube</a>
+      </div>
+      <p class="copyright">&copy; 2026 Ravi Teja Bitra</p>
+    </div>
+  </footer>
+
+  <!-- ── Modal: Add New Custom Section ─────────────────────────────── -->
+  <div class="modal-overlay" id="newSectionModal">
+    <div class="modal-box">
+      <div class="modal-title">Create Custom Section</div>
+      <p class="modal-subtitle">
+        Add any category you need on any given day. You can change the name, emoji, and items at any time.
+      </p>
+
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">Section Icon / Emoji</label>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button type="button" class="section-emoji-btn" onclick="selectModalEmoji('💊')">💊</button>
+          <button type="button" class="section-emoji-btn" onclick="selectModalEmoji('🏠')">🏠</button>
+          <button type="button" class="section-emoji-btn" onclick="selectModalEmoji('🏃')">🏃</button>
+          <button type="button" class="section-emoji-btn" onclick="selectModalEmoji('💳')">💳</button>
+          <button type="button" class="section-emoji-btn" onclick="selectModalEmoji('🛒')">🛒</button>
+          <button type="button" class="section-emoji-btn" onclick="selectModalEmoji('📈')">📈</button>
+          <button type="button" class="section-emoji-btn" onclick="selectModalEmoji('⚡')">⚡</button>
+          <button type="button" class="section-emoji-btn" onclick="selectModalEmoji('✈️')">✈️</button>
+          <input type="text" id="modalEmojiInput" value="📦" maxlength="4" style="width: 50px; text-align: center; font-size: 1.1rem; background: var(--bg-primary); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); outline: none;">
+        </div>
+      </div>
+
+      <div style="margin-bottom: 24px;">
+        <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">Section Title</label>
+        <input type="text" id="modalTitleInput" placeholder="e.g. Subscriptions, Diet & Groceries, Fuel" class="cell-input" style="font-size: 1rem; padding: 10px 12px;">
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn-action" onclick="closeModal('newSectionModal')">Cancel</button>
+        <button class="btn-action btn-primary" onclick="confirmCreateSection()">Create Section</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal: Import JSON ─────────────────────────────────────────── -->
+  <div class="modal-overlay" id="importModal">
+    <div class="modal-box">
+      <div class="modal-title">Import Backup JSON</div>
+      <p class="modal-subtitle">
+        Paste your saved JSON data below, or pick a file from your computer.
+      </p>
+
+      <div style="margin-bottom: 14px;">
+        <input type="file" id="jsonFileInput" accept=".json" onchange="handleFileSelect(event)" style="font-size: 0.85rem; color: var(--text-muted);">
+      </div>
+
+      <textarea id="importJsonTextarea" placeholder="Paste JSON string here..." class="cell-input" style="font-family: var(--font-mono); font-size: 0.78rem; height: 140px; margin-bottom: 20px; resize: vertical;"></textarea>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn-action" onclick="closeModal('importModal')">Cancel</button>
+        <button class="btn-action btn-primary" onclick="confirmImportJson()">Restore Data</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-notice" id="toastNotice">Saved</div>
+
+  <!-- ── JavaScript Engine ─────────────────────────────────────────── -->
+  <script>
+    const STORAGE_KEY = 'raviteja_engine_state_v2';
+
+    // Section Accent Palette for Bar & Visualizer
+    const PALETTE = [
+      '#e05a47', // Terracotta Vermillion
+      '#38bdf8', // Sky Blue
+      '#a855f7', // Purple
+      '#f59e0b', // Amber
+      '#10b981', // Emerald
+      '#ec4899', // Pink
+      '#6366f1', // Indigo
+      '#14b8a6', // Teal
+      '#84cc16'  // Lime
+    ];
+
+    // Default Starting Template
+    const DEFAULT_TEMPLATE = {
+      income: 67000,
+      sections: [
+        {
+          id: 'sec_supps',
+          title: 'Supplements & Nutrition',
+          emoji: '💊',
+          collapsed: false,
+          items: [
+            { id: 101, name: 'Impact Whey Protein Isolate', price: 2800, servings: 30, note: '1kg tub (25g protein/scoop)' },
+            { id: 102, name: 'Creatine Monohydrate (Creapure)', price: 899, servings: 83, note: '250g jar (3g/serving)' },
+            { id: 103, name: 'Daily Multivitamins & Minerals', price: 550, servings: 60, note: '2 months supply' },
+            { id: 104, name: 'Triple Strength Fish Oil Omega-3', price: 750, servings: 60, note: '60 enteric softgels' }
+          ]
+        },
+        {
+          id: 'sec_commitments',
+          title: 'Monthly Commitments & Fixed Living',
+          emoji: '🏠',
+          collapsed: false,
+          items: [
+            { id: 201, name: 'House Rent', price: 20000, servings: 0, note: 'Due 1st of month' },
+            { id: 202, name: 'Fibe EMI / Loan', price: 12500, servings: 0, note: 'Auto-debit' },
+            { id: 203, name: 'Groceries & High-Protein Meal Prep', price: 8000, servings: 0, note: 'Chicken, eggs, veggies' },
+            { id: 204, name: 'Fiber Internet & Utilities', price: 1500, servings: 0, note: 'WiFi, Electricity, Water' }
+          ]
+        },
+        {
+          id: 'sec_running',
+          title: 'Running & Training Gear',
+          emoji: '🏃',
+          collapsed: false,
+          items: [
+            { id: 301, name: 'Race Registrations & Half Marathon Events', price: 2500, servings: 0, note: 'Ballari, DNMR, Green BLR' },
+            { id: 302, name: 'Fast&Up Energy Gels & Hydration', price: 1200, servings: 20, note: 'Race-day fuel' }
+          ]
+        }
+      ]
+    };
+
+    // Active State
+    let appState = loadState();
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && Array.isArray(parsed.sections)) {
+            return parsed;
+          }
+        }
+      } catch (e) {
+        console.warn('Could not parse saved storage:', e);
+      }
+      return JSON.parse(JSON.stringify(DEFAULT_TEMPLATE));
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        console.error('Storage save error:', e);
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotice');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    function formatINR(val) {
+      const num = Math.round(Number(val) || 0);
+      return '₹' + num.toLocaleString('en-IN');
+    }
+
+    // ── Income Controls ──────────────────────────────────────────────
+    function handleIncomeChange(val) {
+      appState.income = Math.max(0, Number(val) || 0);
+      saveState();
+      recalculate();
+    }
+
+    function adjustIncome(delta) {
+      const current = Number(appState.income) || 0;
+      appState.income = Math.max(0, current + delta);
+      document.getElementById('incomeInput').value = appState.income;
+      saveState();
+      recalculate();
+      showToast(`Income: ${formatINR(appState.income)}`);
+    }
+
+    // ── Section & Item Operations ────────────────────────────────────
+    function updateSectionTitle(secId, title) {
+      const sec = appState.sections.find(s => s.id === secId);
+      if (sec) {
+        sec.title = title.trim() || 'Untitled Section';
+        saveState();
+        recalculate();
+      }
+    }
+
+    function toggleSectionCollapse(secId) {
+      const sec = appState.sections.find(s => s.id === secId);
+      if (sec) {
+        sec.collapsed = !sec.collapsed;
+        saveState();
+        renderSections();
+      }
+    }
+
+    function moveSection(secId, direction) {
+      const idx = appState.sections.findIndex(s => s.id === secId);
+      if (idx === -1) return;
+      const targetIdx = idx + direction;
+      if (targetIdx < 0 || targetIdx >= appState.sections.length) return;
+
+      const temp = appState.sections[idx];
+      appState.sections[idx] = appState.sections[targetIdx];
+      appState.sections[targetIdx] = temp;
+
+      saveState();
+      render();
+    }
+
+    function deleteSection(secId) {
+      const sec = appState.sections.find(s => s.id === secId);
+      const name = sec ? sec.title : 'this section';
+      if (confirm(`Are you sure you want to delete "${name}" and all its items?`)) {
+        appState.sections = appState.sections.filter(s => s.id !== secId);
+        saveState();
+        render();
+        showToast(`Deleted section`);
+      }
+    }
+
+    function addItemToSection(secId) {
+      const sec = appState.sections.find(s => s.id === secId);
+      if (sec) {
+        sec.items.push({
+          id: Date.now() + Math.floor(Math.random() * 1000),
+          name: '',
+          price: 0,
+          servings: 0,
+          note: ''
+        });
+        sec.collapsed = false; // Expand if collapsed
+        saveState();
+        renderSections();
+        recalculate();
+
+        // Focus new item input
+        setTimeout(() => {
+          const inputs = document.querySelectorAll(`[data-sec-id="${secId}"] .item-name-input`);
+          if (inputs.length > 0) inputs[inputs.length - 1].focus();
+        }, 50);
+      }
+    }
+
+    function deleteItem(secId, itemId) {
+      const sec = appState.sections.find(s => s.id === secId);
+      if (sec) {
+        sec.items = sec.items.filter(i => i.id !== itemId);
+        saveState();
+        renderSections();
+        recalculate();
+      }
+    }
+
+    function updateItemField(secId, itemId, field, val) {
+      const sec = appState.sections.find(s => s.id === secId);
+      if (sec) {
+        const item = sec.items.find(i => i.id === itemId);
+        if (item) {
+          if (field === 'price' || field === 'servings') {
+            item[field] = Math.max(0, Number(val) || 0);
+          } else {
+            item[field] = val;
+          }
+          saveState();
+          recalculate();
+          updateSectionMeta(secId);
+        }
+      }
+    }
+
+    function stepItemField(secId, itemId, field, delta) {
+      const sec = appState.sections.find(s => s.id === secId);
+      if (sec) {
+        const item = sec.items.find(i => i.id === itemId);
+        if (item) {
+          const current = Number(item[field]) || 0;
+          item[field] = Math.max(0, current + delta);
+          saveState();
+          
+          // Update DOM directly for smooth typing
+          const inputEl = document.querySelector(`[data-sec-id="${secId}"] [data-item-id="${itemId}"][data-field="${field}"]`);
+          if (inputEl) inputEl.value = item[field];
+
+          // Update cost per serving cell if price or servings adjusted
+          updateItemRowCalculations(secId, itemId, item);
+          updateSectionMeta(secId);
+          recalculate();
+        }
+      }
+    }
+
+    function updateItemRowCalculations(secId, itemId, item) {
+      const cpsEl = document.querySelector(`[data-sec-id="${secId}"] [data-cps-item-id="${itemId}"]`);
+      if (cpsEl) {
+        if (item.servings > 0 && item.price > 0) {
+          const cps = (item.price / item.servings).toFixed(2);
+          cpsEl.className = 'cps-tag';
+          cpsEl.innerHTML = `₹${cps}<span style="font-size: 0.65rem; color: var(--text-muted); font-weight: normal;"> / unit</span>`;
+        } else {
+          cpsEl.className = 'cps-empty';
+          cpsEl.innerText = '—';
+        }
+      }
+    }
+
+    function updateSectionMeta(secId) {
+      const sec = appState.sections.find(s => s.id === secId);
+      if (!sec) return;
+      const total = sec.items.reduce((sum, i) => sum + (Number(i.price) || 0), 0);
+      const badge = document.querySelector(`[data-sec-id="${secId}"] .section-total-badge`);
+      if (badge) badge.innerText = formatINR(total);
+      const countEl = document.querySelector(`[data-sec-id="${secId}"] .section-item-count`);
+      if (countEl) countEl.innerText = `${sec.items.length} ${sec.items.length === 1 ? 'item' : 'items'}`;
+    }
+
+    // ── Modal Handling ───────────────────────────────────────────────
+    let selectedModalEmoji = '📦';
+
+    function openNewSectionModal() {
+      selectedModalEmoji = '📦';
+      document.getElementById('modalEmojiInput').value = selectedModalEmoji;
+      document.getElementById('modalTitleInput').value = '';
+      document.getElementById('newSectionModal').classList.add('active');
+      setTimeout(() => document.getElementById('modalTitleInput').focus(), 80);
+    }
+
+    function selectModalEmoji(emoji) {
+      selectedModalEmoji = emoji;
+      document.getElementById('modalEmojiInput').value = emoji;
+    }
+
+    function confirmCreateSection() {
+      const titleInput = document.getElementById('modalTitleInput');
+      const emojiInput = document.getElementById('modalEmojiInput');
+      const title = titleInput.value.trim() || 'New Custom Section';
+      const emoji = emojiInput.value.trim() || '📦';
+
+      const newSec = {
+        id: 'sec_' + Date.now(),
+        title: title,
+        emoji: emoji,
+        collapsed: false,
+        items: [
+          { id: Date.now() + 1, name: '', price: 0, servings: 0, note: '' }
+        ]
+      };
+
+      appState.sections.push(newSec);
+      saveState();
+      closeModal('newSectionModal');
+      render();
+      showToast(`Created "${title}"`);
+
+      // Scroll to newly added section
+      setTimeout(() => {
+        const el = document.querySelector(`[data-sec-id="${newSec.id}"]`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+
+    function openImportModal() {
+      document.getElementById('importJsonTextarea').value = '';
+      document.getElementById('jsonFileInput').value = '';
+      document.getElementById('importModal').classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    function handleFileSelect(evt) {
+      const file = evt.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById('importJsonTextarea').value = e.target.result;
+        };
+        reader.readAsText(file);
+      }
+    }
+
+    function confirmImportJson() {
+      const raw = document.getElementById('importJsonTextarea').value.trim();
+      if (!raw) {
+        alert('Please paste JSON or choose a valid backup file.');
+        return;
+      }
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.sections)) {
+          appState = parsed;
+          saveState();
+          closeModal('importModal');
+          render();
+          showToast('Data successfully restored!');
+        } else {
+          alert('Invalid format: JSON must contain a "sections" array.');
+        }
+      } catch (err) {
+        alert('Could not parse JSON: ' + err.message);
+      }
+    }
+
+    function exportDataJson() {
+      const jsonStr = JSON.stringify(appState, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const dateStr = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `raviteja_engine_backup_${dateStr}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Downloaded JSON backup!');
+    }
+
+    function confirmReset() {
+      if (confirm('Reset to standard starter template? This will overwrite existing custom sections. (You can Export JSON first to keep a backup).')) {
+        appState = JSON.parse(JSON.stringify(DEFAULT_TEMPLATE));
+        saveState();
+        render();
+        showToast('Reset to default template');
+      }
+    }
+
+    // ── Main Rendering ───────────────────────────────────────────────
+    function renderSections() {
+      const container = document.getElementById('sectionsContainer');
+      container.innerHTML = '';
+
+      if (appState.sections.length === 0) {
+        container.innerHTML = `
+          <div class="empty-section-state" style="background: var(--card-bg); border: 1px solid var(--border-subtle); border-radius: 10px;">
+            <div style="font-size: 2rem; margin-bottom: 8px;">📋</div>
+            <div style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">No Sections Active</div>
+            <p style="color: var(--text-muted); margin-bottom: 16px;">Create your first custom section to start tracking expenses, supplements, or commitments.</p>
+            <button class="btn-action btn-primary" onclick="openNewSectionModal()">+ Create Custom Section</button>
+          </div>
+        `;
+        return;
+      }
+
+      appState.sections.forEach((sec, idx) => {
+        const secTotal = sec.items.reduce((s, i) => s + (Number(i.price) || 0), 0);
+        const card = document.createElement('div');
+        card.className = 'section-card';
+        card.setAttribute('data-sec-id', sec.id);
+
+        let tableRowsHTML = '';
+        if (sec.items.length === 0) {
+          tableRowsHTML = `
+            <tr>
+              <td colspan="5" class="empty-section-state">
+                No items in this section yet. Click "+ Add Item" below.
+              </td>
+            </tr>
+          `;
+        } else {
+          sec.items.forEach(item => {
+            const hasCps = item.servings > 0 && item.price > 0;
+            const cps = hasCps ? (item.price / item.servings).toFixed(2) : 0;
+
+            tableRowsHTML += `
+              <tr>
+                <!-- Item Name -->
+                <td style="width: 34%;">
+                  <input type="text" class="cell-input item-name-input" placeholder="e.g. Item name or service" value="${escapeHtml(item.name)}" oninput="updateItemField('${sec.id}', ${item.id}, 'name', this.value)">
+                </td>
+
+                <!-- Amount (₹) with Stepper -->
+                <td style="width: 26%;">
+                  <div class="stepper-wrap">
+                    <button type="button" class="stepper-btn" onclick="stepItemField('${sec.id}', ${item.id}, 'price', -100)" title="Decrease ₹100">-</button>
+                    <input type="number" class="stepper-input" data-item-id="${item.id}" data-field="price" value="${item.price || 0}" min="0" step="100" oninput="updateItemField('${sec.id}', ${item.id}, 'price', this.value)">
+                    <button type="button" class="stepper-btn" onclick="stepItemField('${sec.id}', ${item.id}, 'price', 100)" title="Increase ₹100">+</button>
+                  </div>
+                  <div class="row-quick-adjust">
+                    <span class="row-pill" onclick="stepItemField('${sec.id}', ${item.id}, 'price', -500)">-500</span>
+                    <span class="row-pill" onclick="stepItemField('${sec.id}', ${item.id}, 'price', 500)">+500</span>
+                    <span class="row-pill" onclick="stepItemField('${sec.id}', ${item.id}, 'price', 1000)">+1k</span>
+                  </div>
+                </td>
+
+                <!-- Servings / Qty with Stepper -->
+                <td style="width: 20%;">
+                  <div class="stepper-wrap" style="max-width: 120px;">
+                    <button type="button" class="stepper-btn" onclick="stepItemField('${sec.id}', ${item.id}, 'servings', -1)" title="Decrease 1">-</button>
+                    <input type="number" class="stepper-input" data-item-id="${item.id}" data-field="servings" value="${item.servings || 0}" min="0" step="1" oninput="updateItemField('${sec.id}', ${item.id}, 'servings', this.value)" placeholder="0">
+                    <button type="button" class="stepper-btn" onclick="stepItemField('${sec.id}', ${item.id}, 'servings', 1)" title="Increase 1">+</button>
+                  </div>
+                  <div class="row-quick-adjust">
+                    <span class="row-pill" onclick="stepItemField('${sec.id}', ${item.id}, 'servings', 5)">+5</span>
+                    <span class="row-pill" onclick="stepItemField('${sec.id}', ${item.id}, 'servings', 10)">+10</span>
+                  </div>
+                </td>
+
+                <!-- Calculated Cost/Serving -->
+                <td style="width: 14%;">
+                  <div data-cps-item-id="${item.id}" class="${hasCps ? 'cps-tag' : 'cps-empty'}">
+                    ${hasCps ? `₹${cps}<span style="font-size: 0.65rem; color: var(--text-muted); font-weight: normal;"> / unit</span>` : '—'}
+                  </div>
+                </td>
+
+                <!-- Delete Action -->
+                <td style="width: 6%; text-align: right;">
+                  <button type="button" class="btn-icon danger" onclick="deleteItem('${sec.id}', ${item.id})" title="Delete item">✕</button>
+                </td>
+              </tr>
+            `;
+          });
+        }
+
+        card.innerHTML = `
+          <!-- Section Header -->
+          <div class="section-header-bar">
+            <div class="section-title-wrap">
+              <div class="section-emoji-btn" onclick="promptChangeEmoji('${sec.id}')" title="Click to change icon">${sec.emoji || '📦'}</div>
+              <input type="text" class="section-title-input" value="${escapeHtml(sec.title)}" onchange="updateSectionTitle('${sec.id}', this.value)" placeholder="Section Title">
+            </div>
+
+            <div class="section-meta-badges">
+              <span class="section-item-count">${sec.items.length} ${sec.items.length === 1 ? 'item' : 'items'}</span>
+              <span class="section-total-badge">${formatINR(secTotal)}</span>
+            </div>
+
+            <div class="section-ctrls">
+              <button type="button" class="btn-icon" onclick="moveSection('${sec.id}', -1)" title="Move section up" ${idx === 0 ? 'disabled style="opacity: 0.3;"' : ''}>↑</button>
+              <button type="button" class="btn-icon" onclick="moveSection('${sec.id}', 1)" title="Move section down" ${idx === appState.sections.length - 1 ? 'disabled style="opacity: 0.3;"' : ''}>↓</button>
+              <button type="button" class="btn-icon" onclick="toggleSectionCollapse('${sec.id}')" title="${sec.collapsed ? 'Expand' : 'Collapse'}">
+                ${sec.collapsed ? '▼' : '▲'}
+              </button>
+              <button type="button" class="btn-icon danger" onclick="deleteSection('${sec.id}')" title="Delete entire section">✕</button>
+            </div>
+          </div>
+
+          <!-- Section Body (Table) -->
+          <div class="section-body" style="display: ${sec.collapsed ? 'none' : 'block'};">
+            <div class="table-responsive">
+              <table class="engine-table">
+                <thead>
+                  <tr>
+                    <th>Item Description</th>
+                    <th>Total Price (₹)</th>
+                    <th>Servings / Units</th>
+                    <th>Cost / Serving</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${tableRowsHTML}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Section Footer -->
+            <div class="section-footer-bar">
+              <button class="btn-action" style="font-size: 0.78rem; padding: 6px 12px;" onclick="addItemToSection('${sec.id}')">
+                + Add Item
+              </button>
+              <div style="font-size: 0.82rem; color: var(--text-secondary); font-family: var(--font-mono);">
+                Section Subtotal: <strong style="color: var(--text-primary);">${formatINR(secTotal)}</strong>
+              </div>
+            </div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function promptChangeEmoji(secId) {
+      const sec = appState.sections.find(s => s.id === secId);
+      if (!sec) return;
+      const newEmoji = prompt('Enter an emoji/icon for this section:', sec.emoji || '📦');
+      if (newEmoji !== null && newEmoji.trim()) {
+        sec.emoji = newEmoji.trim();
+        saveState();
+        render();
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // ── Calculations & Summary ───────────────────────────────────────
+    function recalculate() {
+      const income = Number(appState.income) || 0;
+      let totalBurn = 0;
+      let totalItems = 0;
+
+      const sectionTotals = appState.sections.map((sec, i) => {
+        const sum = sec.items.reduce((s, it) => s + (Number(it.price) || 0), 0);
+        totalBurn += sum;
+        totalItems += sec.items.length;
+        return {
+          id: sec.id,
+          title: sec.title,
+          emoji: sec.emoji,
+          total: sum,
+          color: PALETTE[i % PALETTE.length]
+        };
+      });
+
+      const surplus = income - totalBurn;
+      const savingsRate = income > 0 ? ((surplus / income) * 100).toFixed(1) : '0.0';
+
+      // Update KPI DOM
+      document.getElementById('totalBurnVal').innerText = formatINR(totalBurn);
+      document.getElementById('burnMetaSubtext').innerText = 
+        `${appState.sections.length} ${appState.sections.length === 1 ? 'section' : 'sections'} • ${totalItems} active ${totalItems === 1 ? 'item' : 'items'}`;
+
+      const surplusCard = document.getElementById('surplusCard');
+      const surplusVal = document.getElementById('surplusVal');
+      const savingsRateBadge = document.getElementById('savingsRateBadge');
+      const surplusSubtext = document.getElementById('surplusSubtext');
+
+      if (surplus >= 0) {
+        surplusCard.className = 'kpi-card highlight-surplus';
+        surplusVal.className = 'kpi-val surplus-positive';
+        surplusVal.innerText = '+' + formatINR(surplus);
+        savingsRateBadge.style.color = 'var(--accent-green)';
+        savingsRateBadge.innerText = `+${savingsRate}% saved`;
+        surplusSubtext.innerText = 'Liquid capital available for investments or discretionary pool';
+      } else {
+        surplusCard.className = 'kpi-card highlight-deficit';
+        surplusVal.className = 'kpi-val surplus-negative';
+        surplusVal.innerText = formatINR(surplus);
+        savingsRateBadge.style.color = 'var(--accent-red)';
+        savingsRateBadge.innerText = `${savingsRate}% deficit`;
+        surplusSubtext.innerText = `Burn exceeds income by ${formatINR(Math.abs(surplus))} this month`;
+      }
+
+      // Multi-Segment Allocation Bar
+      const allocBar = document.getElementById('allocationBar');
+      const allocLegend = document.getElementById('allocationLegend');
+      const allocSummary = document.getElementById('allocationPercentSummary');
+
+      allocBar.innerHTML = '';
+      allocLegend.innerHTML = '';
+
+      const baseDenominator = Math.max(income, totalBurn, 1);
+      const burnPctOfIncome = income > 0 ? Math.min(100, Math.round((totalBurn / income) * 100)) : 100;
+      allocSummary.innerText = `${burnPctOfIncome}% Burn Rate • ${Math.max(0, 100 - burnPctOfIncome)}% Surplus`;
+
+      sectionTotals.forEach(sec => {
+        if (sec.total > 0) {
+          const widthPct = ((sec.total / baseDenominator) * 100).toFixed(1);
+          
+          // Segment
+          const seg = document.createElement('div');
+          seg.className = 'bar-segment';
+          seg.style.width = `${widthPct}%`;
+          seg.style.background = sec.color;
+          seg.title = `${sec.emoji} ${sec.title}: ${formatINR(sec.total)} (${widthPct}%)`;
+          allocBar.appendChild(seg);
+
+          // Legend
+          const leg = document.createElement('div');
+          leg.className = 'legend-item';
+          leg.innerHTML = `
+            <div class="legend-dot" style="background: ${sec.color};"></div>
+            <span>${sec.emoji} ${sec.title}: <strong>${formatINR(sec.total)}</strong> (${widthPct}%)</span>
+          `;
+          allocLegend.appendChild(leg);
+        }
+      });
+
+      // Surplus segment if positive
+      if (surplus > 0 && income > 0) {
+        const surplusPct = ((surplus / baseDenominator) * 100).toFixed(1);
+        const segSurplus = document.createElement('div');
+        segSurplus.className = 'bar-segment';
+        segSurplus.style.width = `${surplusPct}%`;
+        segSurplus.style.background = 'var(--accent-green)';
+        segSurplus.title = `Surplus: ${formatINR(surplus)} (${surplusPct}%)`;
+        allocBar.appendChild(segSurplus);
+
+        const legSurplus = document.createElement('div');
+        legSurplus.className = 'legend-item';
+        legSurplus.innerHTML = `
+          <div class="legend-dot" style="background: var(--accent-green);"></div>
+          <span>🌱 Liquid Surplus: <strong>${formatINR(surplus)}</strong> (${surplusPct}%)</span>
+        `;
+        allocLegend.appendChild(legSurplus);
+      }
+    }
+
+    function render() {
+      document.getElementById('incomeInput').value = appState.income || 0;
+      renderSections();
+      recalculate();
+    }
+
+    // Initialize on DOM load
+    document.addEventListener('DOMContentLoaded', () => {
+      render();
+    });
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
