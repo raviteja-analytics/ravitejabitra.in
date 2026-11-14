@@ -32,7 +32,7 @@
   }
   
   .tracker-main {
-    max-width: 960px; 
+    max-width: 980px; 
     margin: 0 auto; 
     padding: 24px 20px;
     padding-top: calc(var(--nav-height) + 20px);
@@ -139,6 +139,40 @@
     background: rgba(56, 189, 248, 0.15);
   }
   
+  /* Schedule Pills for Veg vs Non-Veg Days */
+  .sched-pill {
+    padding: 2px 6px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    transition: 0.15s;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .sched-pill:hover {
+    color: var(--text);
+    border-color: var(--accent);
+  }
+  .sched-pill.active {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .sched-pill.active-nonveg {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: var(--red);
+    color: #fca5a5;
+  }
+  .sched-pill.active-veg {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: var(--green);
+    color: #86efac;
+  }
+
   /* Buttons */
   button { 
     cursor: pointer; 
@@ -193,7 +227,7 @@
   table { 
     width: 100%; 
     border-collapse: collapse; 
-    min-width: 640px; 
+    min-width: 660px; 
   }
   th, td { 
     text-align: left; 
@@ -203,7 +237,7 @@
   }
   th { 
     color: var(--muted); 
-    font-size: 0.78rem; 
+    font-size: 0.76rem; 
     text-transform: uppercase; 
     letter-spacing: 0.05em; 
     font-weight: 700;
@@ -258,6 +292,7 @@
     border-top: 1px dashed var(--border);
     font-size: 0.85rem;
     color: var(--muted);
+    flex-wrap: wrap;
   }
   .section-footer-summary strong {
     font-family: var(--font-mono);
@@ -359,6 +394,41 @@
       </div>
     </div>
 
+    <!-- ── COMBINED DAILY NUTRITION & FUEL CARD ──────────────────────── -->
+    <div class="card" style="border-left: 4px solid var(--accent); background: linear-gradient(135deg, rgba(56, 189, 248, 0.04) 0%, rgba(30, 41, 59, 1) 100%);">
+      <div class="flex-between" style="margin-bottom: 14px;">
+        <div>
+          <div style="font-size: 0.76rem; font-weight: 700; text-transform: uppercase; color: var(--accent); letter-spacing: 0.06em;">DAILY NUTRITION & FUEL SUMMARY</div>
+          <h3 style="margin-top: 2px;">Combined Daily Fuel Burn (Supplements + Food)</h3>
+          <span style="font-size: 0.82rem; color: var(--muted);">Combined cost per day to run your daily fitness nutrition and whole-food diet</span>
+        </div>
+        <div style="text-align: right;">
+          <span class="summary-val text-accent" id="combinedDailyVal">₹0</span>
+          <span style="font-size: 0.85rem; color: var(--muted); display: block;">per day (~<span id="combinedMonthlyVal">₹0</span>/mo)</span>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; padding-top: 14px; border-top: 1px solid var(--border);">
+        <div style="background: var(--bg); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border);">
+          <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">💊 Supplements Fuel</div>
+          <div style="font-size: 1.25rem; font-weight: 800; font-family: var(--font-mono); color: var(--text); margin-top: 4px;" id="suppDailySum">₹0 / day</div>
+          <div style="font-size: 0.76rem; color: var(--muted); margin-top: 2px;" id="suppMonthlyEquiv">₹0 / month</div>
+        </div>
+
+        <div style="background: var(--bg); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border);">
+          <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">🍗 Whole Food & Diet</div>
+          <div style="font-size: 1.25rem; font-weight: 800; font-family: var(--font-mono); color: var(--green); margin-top: 4px;" id="foodDailySum">₹0 / day</div>
+          <div style="font-size: 0.76rem; color: var(--muted); margin-top: 2px;" id="foodMonthlyEquiv">₹0 / month</div>
+        </div>
+
+        <div style="background: var(--bg); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border);">
+          <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">⚖️ Veg vs Non-Veg Schedule</div>
+          <div style="font-size: 0.85rem; font-weight: 700; color: var(--text); margin-top: 6px;" id="dietSplitText">Non-Veg Day: ₹0 • Veg Day: ₹0</div>
+          <div style="font-size: 0.72rem; color: var(--muted); margin-top: 2px;">Calculated on scheduled days</div>
+        </div>
+      </div>
+    </div>
+
     <!-- ── SECTION 1: Supplements & Nutrition ──────────────────────── -->
     <div class="card">
       <div class="flex-between">
@@ -377,11 +447,33 @@
         </table>
       </div>
       <div class="section-footer-summary" id="suppFooterSummary">
-        Total Supplements Burn: <strong>₹0</strong>
+        Total Supplements Burn: <strong>₹0</strong> • Daily Supplements: <strong style="color: var(--accent);" id="suppDailyFooter">₹0/day</strong>
       </div>
     </div>
 
-    <!-- ── SECTION 2: House Rent & Fixed Living ────────────────────── -->
+    <!-- ── SECTION 2: Food & Diet (Daily, Veg & Non-Veg) ─────────── -->
+    <div class="card">
+      <div class="flex-between">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h3>Food & Whole-Diet Fuel</h3>
+            <span class="section-badge" id="foodTotalBadge">₹0</span>
+          </div>
+          <span style="font-size: 0.8rem; color: var(--muted);">Tracks Eggs & Chicken on Non-Veg days, Paneer & Tofu on Veg days, and Daily staples</span>
+        </div>
+        <button class="btn-add" onclick="addFoodItem()">+ Add Food Item</button>
+      </div>
+      <div class="table-wrapper">
+        <table id="foodTable">
+          <!-- Rendered via JS -->
+        </table>
+      </div>
+      <div class="section-footer-summary" id="foodFooterSummary">
+        Total Food Monthly Burn: <strong>₹0</strong> • Avg Daily: <strong style="color: var(--green);" id="foodDailyFooter">₹0/day</strong>
+      </div>
+    </div>
+
+    <!-- ── SECTION 3: House Rent & Fixed Living ────────────────────── -->
     <div class="card">
       <div class="flex-between">
         <div>
@@ -403,7 +495,7 @@
       </div>
     </div>
 
-    <!-- ── SECTION 3: Loans & EMIs ─────────────────────────────────── -->
+    <!-- ── SECTION 4: Loans & EMIs ─────────────────────────────────── -->
     <div class="card">
       <div class="flex-between">
         <div>
@@ -425,7 +517,7 @@
       </div>
     </div>
 
-    <!-- ── SECTION 4: Extra Expenses (Running, Gear, Misc) ─────────── -->
+    <!-- ── SECTION 5: Extra Expenses (Running, Gear, Misc) ─────────── -->
     <div class="card">
       <div class="flex-between">
         <div>
@@ -523,6 +615,11 @@
       { id: 3, name: 'Daily Multivitamins', price: 550, servings: 60, perDay: 1 },
       { id: 4, name: 'Fish Oil Omega-3', price: 750, servings: 60, perDay: 1 }
     ],
+    food: [
+      { id: 401, name: 'Eggs (Tray of 30)', price: 210, servings: 30, perDay: 4, daysPerWeek: 4, schedule: 'nonveg' },
+      { id: 402, name: 'Chicken Breast (1kg pack)', price: 300, servings: 4, perDay: 1, daysPerWeek: 4, schedule: 'nonveg' },
+      { id: 403, name: 'Paneer / Tofu (200g pack)', price: 120, servings: 1, perDay: 1, daysPerWeek: 3, schedule: 'veg' }
+    ],
     rent: [
       { id: 11, name: 'House Rent', amount: 20000 },
       { id: 12, name: 'Maintenance & Water', amount: 1500 }
@@ -544,6 +641,21 @@
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && typeof parsed.income !== 'undefined') {
+          // CRITICAL: NEVER WIPE OR OVERWRITE USER'S EXISTING DATA!
+          if (!parsed.supplements) parsed.supplements = [];
+          if (!parsed.rent) parsed.rent = [];
+          if (!parsed.emis) parsed.emis = [];
+          if (!parsed.extras) parsed.extras = [];
+          if (!parsed.customSections) parsed.customSections = [];
+          
+          // Seamlessly initialize food section if not present
+          if (!parsed.food) {
+            parsed.food = [
+              { id: 401, name: 'Eggs (Tray of 30)', price: 210, servings: 30, perDay: 4, daysPerWeek: 4, schedule: 'nonveg' },
+              { id: 402, name: 'Chicken Breast (1kg pack)', price: 300, servings: 4, perDay: 1, daysPerWeek: 4, schedule: 'nonveg' },
+              { id: 403, name: 'Paneer / Tofu (200g pack)', price: 120, servings: 1, perDay: 1, daysPerWeek: 3, schedule: 'veg' }
+            ];
+          }
           return parsed;
         }
       }
@@ -626,7 +738,87 @@
     if(daysEl) daysEl.innerText = days > 0 ? `(${days} days)` : '';
   }
 
-  // ── Section 2: Rent & Living Handlers ─────────────────────────────
+  // ── Section 2: Food & Diet Handlers (Daily / Veg / Non-Veg) ────────
+  function addFoodItem() {
+    state.food.push({
+      id: Date.now(),
+      name: '',
+      price: 0,
+      servings: 1,
+      perDay: 1,
+      daysPerWeek: 4,
+      schedule: 'nonveg'
+    });
+    render();
+  }
+
+  function updateFood(id, field, val) {
+    const f = state.food.find(x => x.id === id);
+    if (f) {
+      if (field === 'name' || field === 'schedule') {
+        f[field] = val;
+      } else {
+        f[field] = Math.max(0, Number(val) || 0);
+      }
+      saveLocal();
+      calculate();
+      updateFoodRowCalculations(id, f);
+    }
+  }
+
+  function stepFood(id, field, delta) {
+    const f = state.food.find(x => x.id === id);
+    if (f) {
+      if (field === 'daysPerWeek') {
+        f.daysPerWeek = Math.min(7, Math.max(1, (Number(f.daysPerWeek) || 0) + delta));
+      } else {
+        f[field] = Math.max(0, (Number(f[field]) || 0) + delta);
+      }
+      const input = document.getElementById(`food_${field}_${id}`);
+      if (input) input.value = f[field];
+      saveLocal();
+      calculate();
+      updateFoodRowCalculations(id, f);
+    }
+  }
+
+  function setFoodSchedule(id, days, schedName) {
+    const f = state.food.find(x => x.id === id);
+    if (f) {
+      f.daysPerWeek = days;
+      f.schedule = schedName;
+      saveLocal();
+      calculate();
+      render(); // re-render to update active pill highlight
+    }
+  }
+
+  function removeFood(id) {
+    state.food = state.food.filter(x => x.id !== id);
+    render();
+  }
+
+  function updateFoodRowCalculations(id, f) {
+    const cpsEl = document.getElementById(`food_cps_${id}`);
+    const cpdEl = document.getElementById(`food_cpd_${id}`);
+    const monthEl = document.getElementById(`food_month_${id}`);
+
+    const servings = Number(f.servings) || 0;
+    const price = Number(f.price) || 0;
+    const perDay = Number(f.perDay) || 1;
+    const daysPerWeek = typeof f.daysPerWeek !== 'undefined' ? Number(f.daysPerWeek) : 7;
+
+    const cps = servings > 0 ? (price / servings) : 0;
+    const costOnActiveDay = cps * perDay;
+    const effectiveDailyCost = (costOnActiveDay * daysPerWeek) / 7;
+    const monthlyCost = effectiveDailyCost * 30;
+
+    if (cpsEl) cpsEl.innerText = `₹${cps.toFixed(2)}`;
+    if (cpdEl) cpdEl.innerHTML = `₹${effectiveDailyCost.toFixed(2)}<span style="font-size: 0.68rem; color: var(--muted); display: block;">(₹${costOnActiveDay.toFixed(0)} on active day)</span>`;
+    if (monthEl) monthEl.innerText = formatINR(monthlyCost);
+  }
+
+  // ── Section 3: Rent & Living Handlers ─────────────────────────────
   function addRentItem() {
     state.rent.push({ id: Date.now(), name: '', amount: 0 });
     render();
@@ -657,7 +849,7 @@
     render();
   }
 
-  // ── Section 3: Loans & EMIs Handlers ──────────────────────────────
+  // ── Section 4: Loans & EMIs Handlers ──────────────────────────────
   function addEmiItem() {
     state.emis.push({ id: Date.now(), name: '', amount: 0, emisLeft: 6 });
     render();
@@ -696,7 +888,7 @@
     if(pendingEl) pendingEl.innerText = formatINR(pending);
   }
 
-  // ── Section 4: Extra Expenses Handlers ────────────────────────────
+  // ── Section 5: Extra Expenses Handlers ────────────────────────────
   function addExtraItem() {
     state.extras.push({ id: Date.now(), name: '', amount: 0 });
     render();
@@ -764,6 +956,14 @@
       state.customSections = state.customSections.filter(s => s.id !== secId);
       saveLocal();
       render();
+    }
+  }
+
+  function updateCustomSectionTitle(secId, val) {
+    const sec = state.customSections.find(s => s.id === secId);
+    if(sec) {
+      sec.title = val.trim() || 'Untitled Section';
+      saveLocal();
     }
   }
 
@@ -843,7 +1043,7 @@
 
   // ── Global Operations: Reset, Export, Import ──────────────────────
   function clearAllData() {
-    if(confirm("Are you sure you want to reset all data back to the default template?")) {
+    if(confirm("Are you sure you want to reset all data back to the default template? (Export JSON first if you want to keep a copy).")) {
       state = JSON.parse(JSON.stringify(DEFAULT_DATA));
       saveLocal();
       render();
@@ -893,7 +1093,7 @@
 
     // 1. Render Supplements Table
     const suppTbody = document.getElementById('suppTable');
-    if (state.supplements.length === 0) {
+    if (!state.supplements || state.supplements.length === 0) {
       suppTbody.innerHTML = '<tr><td colspan="7" class="empty-state">No supplements added yet. Click "+ Add Supplement" to begin.</td></tr>';
     } else {
       suppTbody.innerHTML = `
@@ -956,9 +1156,95 @@
       `;
     }
 
-    // 2. Render Rent & Fixed Living Table
+    // 2. Render Food & Diet Table (Eggs, Chicken, Paneer, Tofu)
+    const foodTbody = document.getElementById('foodTable');
+    if (!state.food || state.food.length === 0) {
+      foodTbody.innerHTML = '<tr><td colspan="9" class="empty-state">No food items added yet. Click "+ Add Food Item" to track your eggs, chicken, paneer, and diet.</td></tr>';
+    } else {
+      foodTbody.innerHTML = `
+        <thead>
+          <tr>
+            <th style="width: 25%">Food / Diet Item</th>
+            <th style="width: 17%">Pack Price (₹)</th>
+            <th style="width: 11%">Servings in Pack</th>
+            <th style="width: 11%">Intake / Day</th>
+            <th style="width: 17%">Days Eaten / Week</th>
+            <th style="width: 8%">Cost / Serv</th>
+            <th style="width: 11%">Daily Avg</th>
+            <th style="width: 9%">Monthly (₹)</th>
+            <th style="width: 4%"></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${state.food.map(f => {
+            const servings = Number(f.servings) || 0;
+            const price = Number(f.price) || 0;
+            const perDay = Number(f.perDay) || 1;
+            const daysPerWeek = typeof f.daysPerWeek !== 'undefined' ? Number(f.daysPerWeek) : 7;
+            const sched = f.schedule || 'daily';
+
+            const cps = servings > 0 ? (price / servings) : 0;
+            const costOnActiveDay = cps * perDay;
+            const effectiveDailyCost = (costOnActiveDay * daysPerWeek) / 7;
+            const monthlyCost = effectiveDailyCost * 30;
+
+            return `<tr>
+              <td>
+                <input type="text" placeholder="e.g. Eggs, Chicken, Paneer" value="${escapeHtml(f.name)}" oninput="updateFood(${f.id}, 'name', this.value)">
+              </td>
+              <td>
+                <div class="stepper-box">
+                  <button class="stepper-btn" onclick="stepFood(${f.id}, 'price', -50)">−</button>
+                  <input type="number" id="food_price_${f.id}" placeholder="Price" value="${f.price || 0}" oninput="updateFood(${f.id}, 'price', this.value)">
+                  <button class="stepper-btn" onclick="stepFood(${f.id}, 'price', 50)">+</button>
+                </div>
+              </td>
+              <td>
+                <div class="stepper-box">
+                  <button class="stepper-btn" onclick="stepFood(${f.id}, 'servings', -1)">−</button>
+                  <input type="number" id="food_servings_${f.id}" placeholder="Servings" value="${f.servings || 0}" oninput="updateFood(${f.id}, 'servings', this.value)">
+                  <button class="stepper-btn" onclick="stepFood(${f.id}, 'servings', 1)">+</button>
+                </div>
+              </td>
+              <td>
+                <div class="stepper-box">
+                  <button class="stepper-btn" onclick="stepFood(${f.id}, 'perDay', -1)">−</button>
+                  <input type="number" id="food_perDay_${f.id}" placeholder="1" value="${f.perDay || 1}" oninput="updateFood(${f.id}, 'perDay', this.value)">
+                  <button class="stepper-btn" onclick="stepFood(${f.id}, 'perDay', 1)">+</button>
+                </div>
+              </td>
+              <td>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <div class="stepper-box" style="max-width: 90px;">
+                    <button class="stepper-btn" onclick="stepFood(${f.id}, 'daysPerWeek', -1)">−</button>
+                    <input type="number" id="food_daysPerWeek_${f.id}" value="${daysPerWeek}" min="1" max="7" oninput="updateFood(${f.id}, 'daysPerWeek', this.value)">
+                    <button class="stepper-btn" onclick="stepFood(${f.id}, 'daysPerWeek', 1)">+</button>
+                  </div>
+                  <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                    <span class="sched-pill ${daysPerWeek === 7 ? 'active' : ''}" onclick="setFoodSchedule(${f.id}, 7, 'daily')" title="Consumed every day">Daily</span>
+                    <span class="sched-pill ${daysPerWeek === 4 && sched === 'nonveg' ? 'active-nonveg' : ''}" onclick="setFoodSchedule(${f.id}, 4, 'nonveg')" title="Non-Veg days (e.g. 4 days/week)">Non-Veg (4d)</span>
+                    <span class="sched-pill ${daysPerWeek === 3 && sched === 'veg' ? 'active-veg' : ''}" onclick="setFoodSchedule(${f.id}, 3, 'veg')" title="Veg days (e.g. 3 days/week)">Veg (3d)</span>
+                  </div>
+                </div>
+              </td>
+              <td class="text-accent" id="food_cps_${f.id}">₹${cps.toFixed(2)}</td>
+              <td id="food_cpd_${f.id}">
+                <span class="text-accent" style="color: var(--green);">₹${effectiveDailyCost.toFixed(2)}</span>
+                <span style="font-size: 0.68rem; color: var(--muted); display: block;">(₹${costOnActiveDay.toFixed(0)} on active day)</span>
+              </td>
+              <td class="text-accent" id="food_month_${f.id}">${formatINR(monthlyCost)}</td>
+              <td style="text-align: right;">
+                <button class="btn-del" onclick="removeFood(${f.id})" title="Delete item">✕</button>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      `;
+    }
+
+    // 3. Render Rent & Fixed Living Table
     const rentTbody = document.getElementById('rentTable');
-    if (state.rent.length === 0) {
+    if (!state.rent || state.rent.length === 0) {
       rentTbody.innerHTML = '<tr><td colspan="3" class="empty-state">No rent/living items added. Click "+ Add Living Expense" to begin.</td></tr>';
     } else {
       rentTbody.innerHTML = `
@@ -989,9 +1275,9 @@
       `;
     }
 
-    // 3. Render Loans & EMIs Table
+    // 4. Render Loans & EMIs Table
     const emiTbody = document.getElementById('emiTable');
-    if (state.emis.length === 0) {
+    if (!state.emis || state.emis.length === 0) {
       emiTbody.innerHTML = '<tr><td colspan="5" class="empty-state">No EMIs added. Click "+ Add EMI" to begin.</td></tr>';
     } else {
       emiTbody.innerHTML = `
@@ -1035,9 +1321,9 @@
       `;
     }
 
-    // 4. Render Extra Expenses Table
+    // 5. Render Extra Expenses Table
     const extraTbody = document.getElementById('extraTable');
-    if (state.extras.length === 0) {
+    if (!state.extras || state.extras.length === 0) {
       extraTbody.innerHTML = '<tr><td colspan="3" class="empty-state">No extras added. Click "+ Add Extra" to track running gear, registrations, or one-off items.</td></tr>';
     } else {
       extraTbody.innerHTML = `
@@ -1068,7 +1354,7 @@
       `;
     }
 
-    // 5. Render Dynamic Custom Sections
+    // 6. Render Dynamic Custom Sections (PRESERVED IN FULL)
     const customContainer = document.getElementById('customSectionsContainer');
     customContainer.innerHTML = '';
 
@@ -1168,7 +1454,7 @@
           <div class="flex-between">
             <div>
               <div style="display: flex; align-items: center; gap: 8px;">
-                <h3>${escapeHtml(sec.title)}</h3>
+                <input type="text" value="${escapeHtml(sec.title)}" oninput="updateCustomSectionTitle('${sec.id}', this.value)" style="background: transparent; border: 1px solid transparent; font-size: 1.15rem; font-weight: 700; color: var(--text); padding: 2px 6px; border-radius: 4px; outline: none; width: auto; max-width: 320px;" onfocus="this.style.borderColor='var(--accent)';" onblur="this.style.borderColor='transparent';" title="Click to rename section">
                 <span class="section-badge">${formatINR(secTotal)}</span>
               </div>
               <span style="font-size: 0.8rem; color: var(--muted); text-transform: capitalize;">Custom ${sec.type} section</span>
@@ -1223,30 +1509,96 @@
   function calculate() {
     const income = Number(state.income) || 0;
 
-    // 1. Supplements Monthly Burn
-    const suppTotal = state.supplements.reduce((sum, s) => sum + (Number(s.price) || 0), 0);
-    document.getElementById('suppTotalBadge').innerText = formatINR(suppTotal);
-    document.getElementById('suppFooterSummary').innerHTML = `Total Supplements Burn: <strong>${formatINR(suppTotal)}</strong>`;
+    // 1. Supplements Daily & Monthly
+    let suppDailyTotal = 0;
+    const suppMonthlyTotal = (state.supplements || []).reduce((sum, s) => {
+      const servings = Number(s.servings) || 0;
+      const price = Number(s.price) || 0;
+      const perDay = Number(s.perDay) || 1;
+      if (servings > 0 && price > 0) {
+        suppDailyTotal += (price / servings) * perDay;
+      }
+      return sum + price;
+    }, 0);
 
-    // 2. Rent Total Burn
-    const rentTotal = state.rent.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+    document.getElementById('suppTotalBadge').innerText = formatINR(suppMonthlyTotal);
+    document.getElementById('suppFooterSummary').innerHTML = 
+      `Total Supplements Burn: <strong>${formatINR(suppMonthlyTotal)}</strong> • Daily Supplements: <strong style="color: var(--accent);">${formatINR(suppDailyTotal)}/day</strong>`;
+
+    // 2. Food Daily, Monthly, and Veg vs Non-Veg Days
+    let foodDailyTotal = 0;
+    let foodMonthlyTotal = 0;
+    let nonVegDayActiveFoodSum = 0;
+    let vegDayActiveFoodSum = 0;
+
+    (state.food || []).forEach(f => {
+      const servings = Number(f.servings) || 0;
+      const price = Number(f.price) || 0;
+      const perDay = Number(f.perDay) || 1;
+      const daysPerWeek = typeof f.daysPerWeek !== 'undefined' ? Number(f.daysPerWeek) : 7;
+      const sched = f.schedule || 'daily';
+
+      const cps = servings > 0 ? (price / servings) : 0;
+      const costOnActiveDay = cps * perDay;
+      const effectiveDailyCost = (costOnActiveDay * daysPerWeek) / 7;
+      const monthlyCost = effectiveDailyCost * 30;
+
+      foodDailyTotal += effectiveDailyCost;
+      foodMonthlyTotal += monthlyCost;
+
+      if (sched === 'nonveg') {
+        nonVegDayActiveFoodSum += costOnActiveDay;
+      } else if (sched === 'veg') {
+        vegDayActiveFoodSum += costOnActiveDay;
+      } else {
+        // Daily staples eaten both on veg and non-veg days
+        nonVegDayActiveFoodSum += costOnActiveDay;
+        vegDayActiveFoodSum += costOnActiveDay;
+      }
+    });
+
+    document.getElementById('foodTotalBadge').innerText = formatINR(foodMonthlyTotal);
+    document.getElementById('foodFooterSummary').innerHTML = 
+      `Total Food Monthly Burn: <strong>${formatINR(foodMonthlyTotal)}</strong> • Avg Daily: <strong style="color: var(--green);">₹${foodDailyTotal.toFixed(2)}/day</strong>`;
+    document.getElementById('foodDailyFooter').innerText = `₹${foodDailyTotal.toFixed(2)}/day`;
+
+    // 3. Combined Daily Nutrition Card (Supplements + Food)
+    const combinedDaily = suppDailyTotal + foodDailyTotal;
+    const combinedMonthly = combinedDaily * 30;
+
+    document.getElementById('combinedDailyVal').innerText = `₹${combinedDaily.toFixed(2)}`;
+    document.getElementById('combinedMonthlyVal').innerText = formatINR(combinedMonthly);
+
+    document.getElementById('suppDailySum').innerText = `₹${suppDailyTotal.toFixed(2)} / day`;
+    document.getElementById('suppMonthlyEquiv').innerText = `~${formatINR(suppDailyTotal * 30)} / month`;
+
+    document.getElementById('foodDailySum').innerText = `₹${foodDailyTotal.toFixed(2)} / day`;
+    document.getElementById('foodMonthlyEquiv').innerText = `~${formatINR(foodMonthlyTotal)} / month`;
+
+    const nonVegFullDaily = suppDailyTotal + nonVegDayActiveFoodSum;
+    const vegFullDaily = suppDailyTotal + vegDayActiveFoodSum;
+    document.getElementById('dietSplitText').innerText = 
+      `Non-Veg Day: ₹${nonVegFullDaily.toFixed(0)} • Veg Day: ₹${vegFullDaily.toFixed(0)}`;
+
+    // 4. Rent Total Burn
+    const rentTotal = (state.rent || []).reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
     document.getElementById('rentTotalBadge').innerText = formatINR(rentTotal);
     document.getElementById('rentFooterSummary').innerHTML = `Total Living Burn: <strong>${formatINR(rentTotal)}</strong>`;
 
-    // 3. EMI Total Burn & Total Debt Pending
-    const emiTotal = state.emis.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
-    const emiPending = state.emis.reduce((sum, e) => sum + ((Number(e.amount) || 0) * (Number(e.emisLeft) || 0)), 0);
+    // 5. EMI Total Burn & Total Debt Pending
+    const emiTotal = (state.emis || []).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+    const emiPending = (state.emis || []).reduce((sum, e) => sum + ((Number(e.amount) || 0) * (Number(e.emisLeft) || 0)), 0);
     document.getElementById('emiTotalBadge').innerText = formatINR(emiTotal);
     document.getElementById('emiPendingTotal').innerText = formatINR(emiPending);
     document.getElementById('emiFooterSummary').innerHTML = 
       `Total Monthly EMIs: <strong>${formatINR(emiTotal)}</strong> • Total Debt Pending: <strong style="color: var(--accent);">${formatINR(emiPending)}</strong>`;
 
-    // 4. Extras Total Burn
-    const extraTotal = state.extras.reduce((sum, ex) => sum + (Number(ex.amount) || 0), 0);
+    // 6. Extras Total Burn
+    const extraTotal = (state.extras || []).reduce((sum, ex) => sum + (Number(ex.amount) || 0), 0);
     document.getElementById('extraTotalBadge').innerText = formatINR(extraTotal);
     document.getElementById('extraFooterSummary').innerHTML = `Total Extras Burn: <strong>${formatINR(extraTotal)}</strong>`;
 
-    // 5. Custom Sections Total
+    // 7. Custom Sections Total
     let customTotal = 0;
     if (state.customSections && state.customSections.length > 0) {
       state.customSections.forEach(sec => {
@@ -1259,7 +1611,7 @@
     }
 
     // Totals & Surplus
-    const totalBurn = suppTotal + rentTotal + emiTotal + extraTotal + customTotal;
+    const totalBurn = suppMonthlyTotal + foodMonthlyTotal + rentTotal + emiTotal + extraTotal + customTotal;
     const surplus = income - totalBurn;
 
     document.getElementById('totalExp').innerText = formatINR(totalBurn);
@@ -1278,7 +1630,11 @@
       rateEl.style.color = 'var(--red)';
     }
 
-    const totalItemCount = state.supplements.length + state.rent.length + state.emis.length + state.extras.length + 
+    const totalItemCount = (state.supplements ? state.supplements.length : 0) + 
+      (state.food ? state.food.length : 0) + 
+      (state.rent ? state.rent.length : 0) + 
+      (state.emis ? state.emis.length : 0) + 
+      (state.extras ? state.extras.length : 0) + 
       (state.customSections ? state.customSections.reduce((s, c) => s + (c.items ? c.items.length : 0), 0) : 0);
     document.getElementById('burnMeta').innerText = `${totalItemCount} items across active sections`;
   }
