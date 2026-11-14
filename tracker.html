@@ -31,10 +31,62 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
   
+  /* Harmonized Header Nav matching tracker theme and exact alignment */
+  header {
+    background: rgba(15, 23, 42, 0.88) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
   .container.nav-content,
   .footer-inner {
     max-width: 1560px !important;
     width: 95% !important;
+    padding: 0 16px !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text) !important;
+    text-decoration: none;
+  }
+  .logo span {
+    color: var(--accent) !important;
+  }
+
+  .nav-links {
+    display: flex !important;
+    width: auto !important;
+    gap: 28px !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    list-style: none !important;
+  }
+  .nav-links a {
+    font-size: 0.74rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.12em !important;
+    color: var(--muted) !important;
+    padding: 6px 0 !important;
+    position: relative !important;
+    transition: color 0.2s ease !important;
+  }
+  .nav-links a:hover,
+  .nav-links a.active {
+    color: var(--text) !important;
+  }
+  .nav-links a.active::after {
+    background: var(--accent) !important;
+    width: 100% !important;
   }
 
   .tracker-main {
@@ -43,6 +95,27 @@
     margin: 0 auto; 
     padding: 24px 16px 80px;
     padding-top: calc(var(--nav-height) + 20px);
+  }
+
+  .back-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 5px 12px;
+    border-radius: 6px;
+    margin-bottom: 14px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  .back-pill:hover {
+    color: var(--text);
+    border-color: var(--accent);
+    background: rgba(56, 189, 248, 0.08);
   }
 
   .card { 
@@ -388,9 +461,10 @@
     <div class="container nav-content">
       <a href="index.html" class="logo">Ravi<span>.</span></a>
       <ul class="nav-links">
-        <li><a href="index.html#about">Profile</a></li>
+        <li><a href="links.html">Registrations</a></li>
+        <li><a href="index.html#chapter">About</a></li>
         <li><a href="index.html#activities">Activities</a></li>
-        <li><a href="tracker.html" class="active" style="color: var(--accent);">Engine / Tracker</a></li>
+        <li><a href="tracker.html" class="active">Engine</a></li>
         <li><a href="index.html#connect">Connect</a></li>
       </ul>
     </div>
@@ -398,20 +472,21 @@
 
   <main class="tracker-main">
     
-    <!-- Top Back Link -->
-    <a href="index.html" class="back-btn">← Back to Home</a>
-
-    <!-- Top Title & Global Actions -->
-    <div class="flex-between" style="margin-bottom: 20px;">
-      <div>
-        <h2>Custom Budget & Nutrition Engine</h2>
-        <p class="subtitle">Fully dynamic tracker. Your entries auto-save in your browser.</p>
-      </div>
-      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <button class="btn-outline" onclick="openCustomSectionModal()">+ Add New Section</button>
-        <button class="btn-outline" onclick="exportDataJson()">Export JSON</button>
-        <button class="btn-outline" onclick="openImportModal()">Import</button>
-        <button class="btn-outline danger" onclick="clearAllData()">Reset All</button>
+    <!-- Top Header: Back Link + Title & Global Actions -->
+    <div style="margin-bottom: 24px;">
+      <a href="index.html" class="back-pill">← Back to Portfolio</a>
+      
+      <div class="flex-between" style="align-items: flex-end; margin-top: 4px;">
+        <div>
+          <h2 style="font-size: 1.65rem; font-weight: 800; letter-spacing: -0.025em; color: var(--text);">Custom Budget & Nutrition Engine</h2>
+          <p class="subtitle" style="font-size: 0.88rem; color: var(--muted); margin-top: 4px;">Real-time personal finance & athletic nutrition engine. Auto-saves locally in your browser.</p>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="btn-outline" onclick="openCustomSectionModal()">+ Add New Section</button>
+          <button class="btn-outline" onclick="exportDataJson()">Export JSON</button>
+          <button class="btn-outline" onclick="openImportModal()">Import</button>
+          <button class="btn-outline danger" onclick="clearAllData()">Reset All</button>
+        </div>
       </div>
     </div>
 
