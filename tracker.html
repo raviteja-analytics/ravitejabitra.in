@@ -637,11 +637,63 @@
 
   function loadSavedState() {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      let saved = localStorage.getItem(STORAGE_KEY);
+      
+      // Auto-migrate from any older storage keys if present
+      if (!saved) {
+        const v2 = localStorage.getItem('raviteja_engine_state_v2');
+        if (v2) {
+          saved = v2;
+        } else {
+          const dynSupps = localStorage.getItem('dyn_supps');
+          const dynExps = localStorage.getItem('dyn_exps');
+          const dynInc = localStorage.getItem('dyn_inc');
+          if (dynSupps || dynExps || dynInc) {
+            const migrated = JSON.parse(JSON.stringify(DEFAULT_DATA));
+            if (dynInc) migrated.income = Number(dynInc) || 67000;
+            if (dynSupps) {
+              const parsedSupps = JSON.parse(dynSupps);
+              if (Array.isArray(parsedSupps) && parsedSupps.length > 0) {
+                migrated.supplements = parsedSupps.map(s => ({
+                  id: s.id || Date.now() + Math.random(),
+                  name: s.name || '',
+                  price: Number(s.price) || 0,
+                  servings: Number(s.servings) || 30,
+                  perDay: Number(s.perDay) || 1
+                }));
+              }
+            }
+            if (dynExps) {
+              const parsedExps = JSON.parse(dynExps);
+              if (Array.isArray(parsedExps) && parsedExps.length > 0) {
+                migrated.rent = parsedExps.map(e => ({
+                  id: e.id || Date.now() + Math.random(),
+                  name: e.name || '',
+                  amount: Number(e.amount) || 0
+                }));
+              }
+            }
+            return migrated;
+          }
+        }
+      }
+
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed.income !== 'undefined') {
-          // CRITICAL: NEVER WIPE OR OVERWRITE USER'S EXISTING DATA!
+        if (parsed && typeof parsed === 'object') {
+          // Check if parsed has any items at all
+          const hasSupps = Array.isArray(parsed.supplements) && parsed.supplements.length > 0;
+          const hasFood = Array.isArray(parsed.food) && parsed.food.length > 0;
+          const hasRent = Array.isArray(parsed.rent) && parsed.rent.length > 0;
+          const hasEmis = Array.isArray(parsed.emis) && parsed.emis.length > 0;
+          const hasExtras = Array.isArray(parsed.extras) && parsed.extras.length > 0;
+          const hasCustom = Array.isArray(parsed.customSections) && parsed.customSections.length > 0;
+
+          // If completely empty across all sections, populate defaults so user never sees blank cards
+          if (!hasSupps && !hasFood && !hasRent && !hasEmis && !hasExtras && !hasCustom) {
+            return JSON.parse(JSON.stringify(DEFAULT_DATA));
+          }
+
           if (!parsed.supplements) parsed.supplements = [];
           if (!parsed.rent) parsed.rent = [];
           if (!parsed.emis) parsed.emis = [];
@@ -649,12 +701,11 @@
           if (!parsed.customSections) parsed.customSections = [];
           
           // Seamlessly initialize food section if not present
-          if (!parsed.food) {
-            parsed.food = [
-              { id: 401, name: 'Eggs (Tray of 30)', price: 210, servings: 30, perDay: 4, daysPerWeek: 4, schedule: 'nonveg' },
-              { id: 402, name: 'Chicken Breast (1kg pack)', price: 300, servings: 4, perDay: 1, daysPerWeek: 4, schedule: 'nonveg' },
-              { id: 403, name: 'Paneer / Tofu (200g pack)', price: 120, servings: 1, perDay: 1, daysPerWeek: 3, schedule: 'veg' }
-            ];
+          if (!parsed.food || !Array.isArray(parsed.food) || parsed.food.length === 0) {
+            parsed.food = JSON.parse(JSON.stringify(DEFAULT_DATA.food));
+          }
+          if (typeof parsed.income === 'undefined') {
+            parsed.income = 67000;
           }
           return parsed;
         }
@@ -1505,142 +1556,159 @@
     calculate();
   }
 
+  // Safe DOM Helper Functions
+  function setText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.innerText = text;
+  }
+  function setHtml(id, html) {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  }
+
   // ── Calculation Engine ────────────────────────────────────────────
   function calculate() {
-    const income = Number(state.income) || 0;
+    try {
+      const income = Number(state.income) || 0;
 
-    // 1. Supplements Daily & Monthly
-    let suppDailyTotal = 0;
-    const suppMonthlyTotal = (state.supplements || []).reduce((sum, s) => {
-      const servings = Number(s.servings) || 0;
-      const price = Number(s.price) || 0;
-      const perDay = Number(s.perDay) || 1;
-      if (servings > 0 && price > 0) {
-        suppDailyTotal += (price / servings) * perDay;
-      }
-      return sum + price;
-    }, 0);
+      // 1. Supplements Daily & Monthly
+      let suppDailyTotal = 0;
+      const suppMonthlyTotal = (state.supplements || []).reduce((sum, s) => {
+        const servings = Number(s.servings) || 0;
+        const price = Number(s.price) || 0;
+        const perDay = Number(s.perDay) || 1;
+        if (servings > 0 && price > 0) {
+          suppDailyTotal += (price / servings) * perDay;
+        }
+        return sum + price;
+      }, 0);
 
-    document.getElementById('suppTotalBadge').innerText = formatINR(suppMonthlyTotal);
-    document.getElementById('suppFooterSummary').innerHTML = 
-      `Total Supplements Burn: <strong>${formatINR(suppMonthlyTotal)}</strong> • Daily Supplements: <strong style="color: var(--accent);">${formatINR(suppDailyTotal)}/day</strong>`;
+      setText('suppTotalBadge', formatINR(suppMonthlyTotal));
+      setHtml('suppFooterSummary', `Total Supplements Burn: <strong>${formatINR(suppMonthlyTotal)}</strong> • Daily Supplements: <strong style="color: var(--accent);">${formatINR(suppDailyTotal)}/day</strong>`);
 
-    // 2. Food Daily, Monthly, and Veg vs Non-Veg Days
-    let foodDailyTotal = 0;
-    let foodMonthlyTotal = 0;
-    let nonVegDayActiveFoodSum = 0;
-    let vegDayActiveFoodSum = 0;
+      // 2. Food Daily, Monthly, and Veg vs Non-Veg Days
+      let foodDailyTotal = 0;
+      let foodMonthlyTotal = 0;
+      let nonVegDayActiveFoodSum = 0;
+      let vegDayActiveFoodSum = 0;
 
-    (state.food || []).forEach(f => {
-      const servings = Number(f.servings) || 0;
-      const price = Number(f.price) || 0;
-      const perDay = Number(f.perDay) || 1;
-      const daysPerWeek = typeof f.daysPerWeek !== 'undefined' ? Number(f.daysPerWeek) : 7;
-      const sched = f.schedule || 'daily';
+      (state.food || []).forEach(f => {
+        const servings = Number(f.servings) || 0;
+        const price = Number(f.price) || 0;
+        const perDay = Number(f.perDay) || 1;
+        const daysPerWeek = typeof f.daysPerWeek !== 'undefined' ? Number(f.daysPerWeek) : 7;
+        const sched = f.schedule || 'daily';
 
-      const cps = servings > 0 ? (price / servings) : 0;
-      const costOnActiveDay = cps * perDay;
-      const effectiveDailyCost = (costOnActiveDay * daysPerWeek) / 7;
-      const monthlyCost = effectiveDailyCost * 30;
+        const cps = servings > 0 ? (price / servings) : 0;
+        const costOnActiveDay = cps * perDay;
+        const effectiveDailyCost = (costOnActiveDay * daysPerWeek) / 7;
+        const monthlyCost = effectiveDailyCost * 30;
 
-      foodDailyTotal += effectiveDailyCost;
-      foodMonthlyTotal += monthlyCost;
+        foodDailyTotal += effectiveDailyCost;
+        foodMonthlyTotal += monthlyCost;
 
-      if (sched === 'nonveg') {
-        nonVegDayActiveFoodSum += costOnActiveDay;
-      } else if (sched === 'veg') {
-        vegDayActiveFoodSum += costOnActiveDay;
-      } else {
-        // Daily staples eaten both on veg and non-veg days
-        nonVegDayActiveFoodSum += costOnActiveDay;
-        vegDayActiveFoodSum += costOnActiveDay;
-      }
-    });
-
-    document.getElementById('foodTotalBadge').innerText = formatINR(foodMonthlyTotal);
-    document.getElementById('foodFooterSummary').innerHTML = 
-      `Total Food Monthly Burn: <strong>${formatINR(foodMonthlyTotal)}</strong> • Avg Daily: <strong style="color: var(--green);">₹${foodDailyTotal.toFixed(2)}/day</strong>`;
-    document.getElementById('foodDailyFooter').innerText = `₹${foodDailyTotal.toFixed(2)}/day`;
-
-    // 3. Combined Daily Nutrition Card (Supplements + Food)
-    const combinedDaily = suppDailyTotal + foodDailyTotal;
-    const combinedMonthly = combinedDaily * 30;
-
-    document.getElementById('combinedDailyVal').innerText = `₹${combinedDaily.toFixed(2)}`;
-    document.getElementById('combinedMonthlyVal').innerText = formatINR(combinedMonthly);
-
-    document.getElementById('suppDailySum').innerText = `₹${suppDailyTotal.toFixed(2)} / day`;
-    document.getElementById('suppMonthlyEquiv').innerText = `~${formatINR(suppDailyTotal * 30)} / month`;
-
-    document.getElementById('foodDailySum').innerText = `₹${foodDailyTotal.toFixed(2)} / day`;
-    document.getElementById('foodMonthlyEquiv').innerText = `~${formatINR(foodMonthlyTotal)} / month`;
-
-    const nonVegFullDaily = suppDailyTotal + nonVegDayActiveFoodSum;
-    const vegFullDaily = suppDailyTotal + vegDayActiveFoodSum;
-    document.getElementById('dietSplitText').innerText = 
-      `Non-Veg Day: ₹${nonVegFullDaily.toFixed(0)} • Veg Day: ₹${vegFullDaily.toFixed(0)}`;
-
-    // 4. Rent Total Burn
-    const rentTotal = (state.rent || []).reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
-    document.getElementById('rentTotalBadge').innerText = formatINR(rentTotal);
-    document.getElementById('rentFooterSummary').innerHTML = `Total Living Burn: <strong>${formatINR(rentTotal)}</strong>`;
-
-    // 5. EMI Total Burn & Total Debt Pending
-    const emiTotal = (state.emis || []).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
-    const emiPending = (state.emis || []).reduce((sum, e) => sum + ((Number(e.amount) || 0) * (Number(e.emisLeft) || 0)), 0);
-    document.getElementById('emiTotalBadge').innerText = formatINR(emiTotal);
-    document.getElementById('emiPendingTotal').innerText = formatINR(emiPending);
-    document.getElementById('emiFooterSummary').innerHTML = 
-      `Total Monthly EMIs: <strong>${formatINR(emiTotal)}</strong> • Total Debt Pending: <strong style="color: var(--accent);">${formatINR(emiPending)}</strong>`;
-
-    // 6. Extras Total Burn
-    const extraTotal = (state.extras || []).reduce((sum, ex) => sum + (Number(ex.amount) || 0), 0);
-    document.getElementById('extraTotalBadge').innerText = formatINR(extraTotal);
-    document.getElementById('extraFooterSummary').innerHTML = `Total Extras Burn: <strong>${formatINR(extraTotal)}</strong>`;
-
-    // 7. Custom Sections Total
-    let customTotal = 0;
-    if (state.customSections && state.customSections.length > 0) {
-      state.customSections.forEach(sec => {
-        if(sec.items) {
-          sec.items.forEach(it => {
-            customTotal += (sec.type === 'nutrition' ? (Number(it.price) || 0) : (Number(it.amount) || 0));
-          });
+        if (sched === 'nonveg') {
+          nonVegDayActiveFoodSum += costOnActiveDay;
+        } else if (sched === 'veg') {
+          vegDayActiveFoodSum += costOnActiveDay;
+        } else {
+          // Daily staples eaten both on veg and non-veg days
+          nonVegDayActiveFoodSum += costOnActiveDay;
+          vegDayActiveFoodSum += costOnActiveDay;
         }
       });
+
+      setText('foodTotalBadge', formatINR(foodMonthlyTotal));
+      setHtml('foodFooterSummary', `Total Food Monthly Burn: <strong>${formatINR(foodMonthlyTotal)}</strong> • Avg Daily: <strong style="color: var(--green);">₹${foodDailyTotal.toFixed(2)}/day</strong>`);
+
+      // 3. Combined Daily Nutrition Card (Supplements + Food)
+      const combinedDaily = suppDailyTotal + foodDailyTotal;
+      const combinedMonthly = combinedDaily * 30;
+
+      setText('combinedDailyVal', `₹${combinedDaily.toFixed(2)}`);
+      setText('combinedMonthlyVal', formatINR(combinedMonthly));
+
+      setText('suppDailySum', `₹${suppDailyTotal.toFixed(2)} / day`);
+      setText('suppMonthlyEquiv', `~${formatINR(suppDailyTotal * 30)} / month`);
+
+      setText('foodDailySum', `₹${foodDailyTotal.toFixed(2)} / day`);
+      setText('foodMonthlyEquiv', `~${formatINR(foodMonthlyTotal)} / month`);
+
+      const nonVegFullDaily = suppDailyTotal + nonVegDayActiveFoodSum;
+      const vegFullDaily = suppDailyTotal + vegDayActiveFoodSum;
+      setText('dietSplitText', `Non-Veg Day: ₹${nonVegFullDaily.toFixed(0)} • Veg Day: ₹${vegFullDaily.toFixed(0)}`);
+
+      // 4. Rent Total Burn
+      const rentTotal = (state.rent || []).reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+      setText('rentTotalBadge', formatINR(rentTotal));
+      setHtml('rentFooterSummary', `Total Living Burn: <strong>${formatINR(rentTotal)}</strong>`);
+
+      // 5. EMI Total Burn & Total Debt Pending
+      const emiTotal = (state.emis || []).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+      const emiPending = (state.emis || []).reduce((sum, e) => sum + ((Number(e.amount) || 0) * (Number(e.emisLeft) || 0)), 0);
+      setText('emiTotalBadge', formatINR(emiTotal));
+      setText('emiPendingTotal', formatINR(emiPending));
+      setHtml('emiFooterSummary', `Total Monthly EMIs: <strong>${formatINR(emiTotal)}</strong> • Total Debt Pending: <strong style="color: var(--accent);">${formatINR(emiPending)}</strong>`);
+
+      // 6. Extras Total Burn
+      const extraTotal = (state.extras || []).reduce((sum, ex) => sum + (Number(ex.amount) || 0), 0);
+      setText('extraTotalBadge', formatINR(extraTotal));
+      setHtml('extraFooterSummary', `Total Extras Burn: <strong>${formatINR(extraTotal)}</strong>`);
+
+      // 7. Custom Sections Total
+      let customTotal = 0;
+      if (state.customSections && state.customSections.length > 0) {
+        state.customSections.forEach(sec => {
+          if (sec.items) {
+            sec.items.forEach(it => {
+              customTotal += (sec.type === 'nutrition' ? (Number(it.price) || 0) : (Number(it.amount) || 0));
+            });
+          }
+        });
+      }
+
+      // Totals & Surplus
+      const totalBurn = suppMonthlyTotal + foodMonthlyTotal + rentTotal + emiTotal + extraTotal + customTotal;
+      const surplus = income - totalBurn;
+
+      setText('totalExp', formatINR(totalBurn));
+
+      const surpEl = document.getElementById('surplus');
+      if (surpEl) {
+        surpEl.innerText = (surplus >= 0 ? '+' : '') + formatINR(surplus);
+        surpEl.className = surplus >= 0 ? 'summary-val text-green' : 'summary-val text-red';
+      }
+
+      const savingsRate = income > 0 ? ((surplus / income) * 100).toFixed(1) : 0;
+      const rateEl = document.getElementById('surplusRate');
+      if (rateEl) {
+        if (surplus >= 0) {
+          rateEl.innerText = `Savings Rate: ${savingsRate}% of income preserved`;
+          rateEl.style.color = 'var(--muted)';
+        } else {
+          rateEl.innerText = `Deficit: Burn exceeds income by ${formatINR(Math.abs(surplus))}`;
+          rateEl.style.color = 'var(--red)';
+        }
+      }
+
+      const totalItemCount = (state.supplements ? state.supplements.length : 0) + 
+        (state.food ? state.food.length : 0) + 
+        (state.rent ? state.rent.length : 0) + 
+        (state.emis ? state.emis.length : 0) + 
+        (state.extras ? state.extras.length : 0) + 
+        (state.customSections ? state.customSections.reduce((s, c) => s + (c.items ? c.items.length : 0), 0) : 0);
+      setText('burnMeta', `${totalItemCount} items across active sections`);
+    } catch (err) {
+      console.error('Calculation error:', err);
     }
-
-    // Totals & Surplus
-    const totalBurn = suppMonthlyTotal + foodMonthlyTotal + rentTotal + emiTotal + extraTotal + customTotal;
-    const surplus = income - totalBurn;
-
-    document.getElementById('totalExp').innerText = formatINR(totalBurn);
-
-    const surpEl = document.getElementById('surplus');
-    surpEl.innerText = (surplus >= 0 ? '+' : '') + formatINR(surplus);
-    surpEl.className = surplus >= 0 ? 'summary-val text-green' : 'summary-val text-red';
-
-    const savingsRate = income > 0 ? ((surplus / income) * 100).toFixed(1) : 0;
-    const rateEl = document.getElementById('surplusRate');
-    if (surplus >= 0) {
-      rateEl.innerText = `Savings Rate: ${savingsRate}% of income preserved`;
-      rateEl.style.color = 'var(--muted)';
-    } else {
-      rateEl.innerText = `Deficit: Burn exceeds income by ${formatINR(Math.abs(surplus))}`;
-      rateEl.style.color = 'var(--red)';
-    }
-
-    const totalItemCount = (state.supplements ? state.supplements.length : 0) + 
-      (state.food ? state.food.length : 0) + 
-      (state.rent ? state.rent.length : 0) + 
-      (state.emis ? state.emis.length : 0) + 
-      (state.extras ? state.extras.length : 0) + 
-      (state.customSections ? state.customSections.reduce((s, c) => s + (c.items ? c.items.length : 0), 0) : 0);
-    document.getElementById('burnMeta').innerText = `${totalItemCount} items across active sections`;
   }
 
   // Initialize
-  render();
+  try {
+    render();
+  } catch (err) {
+    console.error('Render error:', err);
+  }
 </script>
 <script src="app.js"></script>
 </body>
