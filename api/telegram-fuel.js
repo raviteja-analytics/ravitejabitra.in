@@ -245,13 +245,80 @@ Return ONLY a raw, valid JSON object (no markdown, no backticks) with this schem
   return JSON.parse(cleaned);
 }
 
+function parsePantryRows(rawPantry) {
+  if (!Array.isArray(rawPantry) || rawPantry.length === 0) return [];
+  const result = [];
+  const firstObj = rawPantry[0];
+  const keys = Object.keys(firstObj);
+  const isCustomHeader = !keys.includes("Item Name") && !keys.includes("itemName");
+
+  if (isCustomHeader) {
+    const vitalsMatch0 = (keys[10] || "").match(/\[Vitals:\s*(.*?)\]/i);
+    result.push({
+      itemName: keys[0] || "Peanut Butter",
+      brand: keys[1] || "",
+      servingUnit: keys[2] || "1 serving",
+      servingWeight: keys[3] || "",
+      calories: Number(keys[4]) || 0,
+      protein: Number(keys[5]) || 0,
+      carbs: Number(keys[6]) || 0,
+      fats: Number(keys[7]) || 0,
+      fiber: Number(keys[8]) || 0,
+      sugar: Number(keys[9]) || 0,
+      vitals: vitalsMatch0 ? vitalsMatch0[1] : "",
+      aliases: (keys[10] || "").replace(/\[Vitals:\s*.*?\]/i, '').trim()
+    });
+
+    rawPantry.forEach((row, idx) => {
+      const vals = Object.values(row);
+      const rawAliases = String(vals[10] || "");
+      const vitalsMatch = rawAliases.match(/\[Vitals:\s*(.*?)\]/i);
+      result.push({
+        itemName: String(vals[0] || "Item"),
+        brand: String(vals[1] || ""),
+        servingUnit: String(vals[2] || "1 serving"),
+        servingWeight: String(vals[3] || ""),
+        calories: Number(vals[4]) || 0,
+        protein: Number(vals[5]) || 0,
+        carbs: Number(vals[6]) || 0,
+        fats: Number(vals[7]) || 0,
+        fiber: Number(vals[8]) || 0,
+        sugar: Number(vals[9]) || 0,
+        vitals: vitalsMatch ? vitalsMatch[1] : "",
+        aliases: rawAliases.replace(/\[Vitals:\s*.*?\]/i, '').trim()
+      });
+    });
+  } else {
+    rawPantry.forEach((item, idx) => {
+      const rawAliases = item["Aliases"] || item.aliases || "";
+      const match = rawAliases.match(/\[Vitals:\s*(.*?)\]/i);
+      result.push({
+        itemName: item["Item Name"] || item.itemName || "Item",
+        brand: item["Brand"] || item.brand || "",
+        servingUnit: item["Serving Unit"] || item.servingUnit || "1 serving",
+        servingWeight: item["Serving Weight (g/ml)"] || item.servingWeight || "",
+        calories: Number(item["Calories (kcal)"] || item.calories) || 0,
+        protein: Number(item["Protein (g)"] || item.protein) || 0,
+        carbs: Number(item["Carbs (g)"] || item.carbs) || 0,
+        fats: Number(item["Fats (g)"] || item.fats) || 0,
+        fiber: Number(item["Fiber (g)"] || item.fiber) || 0,
+        sugar: Number(item["Sugar (g)"] || item.sugar) || 0,
+        vitals: match ? match[1] : "",
+        aliases: rawAliases.replace(/\[Vitals:\s*.*?\]/i, '').trim()
+      });
+    });
+  }
+
+  return result;
+}
+
 // Fetch Pantry Catalog from Google Sheet
 async function getPantryCatalog() {
   try {
     const res = await fetch(`${GOOGLE_SCRIPT_URL}?sheet=catalog`);
     if (!res.ok) return [];
     const items = await res.json();
-    return Array.isArray(items) ? items : [];
+    return parsePantryRows(items);
   } catch (err) {
     console.error("Error fetching pantry catalog:", err);
     return [];
