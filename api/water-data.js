@@ -98,19 +98,67 @@ export default async function handler(req, res) {
     const todayLogs = cleanedLogs.filter(l => l.date === todayStr);
     const todayTotal = todayLogs.reduce((sum, l) => sum + l.amount, 0);
 
-    // Group previous days for history/streak
-    const historyMap = {};
+    // Group previous days for comprehensive historical analytics
+    const dayMap = {};
     cleanedLogs.forEach(l => {
-      if (!historyMap[l.date]) {
-        historyMap[l.date] = 0;
+      if (!dayMap[l.date]) {
+        dayMap[l.date] = {
+          date: l.date,
+          total: 0,
+          logs: []
+        };
       }
-      historyMap[l.date] += l.amount;
+      dayMap[l.date].total += l.amount;
+      dayMap[l.date].logs.push(l);
     });
 
-    const history = Object.keys(historyMap).sort().map(d => ({
-      date: d,
-      total: historyMap[d],
-      metGoal: historyMap[d] >= DAILY_GOAL_ML
+    const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const dayShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    const dayWiseHistory = Object.keys(dayMap).sort().reverse().map(d => {
+      const item = dayMap[d];
+      const dateObj = new Date(d + "T00:00:00Z");
+      const dayName = !isNaN(dateObj.getTime()) ? dayNames[dateObj.getUTCDay()] : "";
+      const dayAbbr = !isNaN(dateObj.getTime()) ? dayShort[dateObj.getUTCDay()] : "";
+      const pct = Math.min(100, Math.round((item.total / DAILY_GOAL_ML) * 100));
+
+      return {
+        date: d,
+        dayName,
+        dayAbbr,
+        total: item.total,
+        pct,
+        metGoal: item.total >= DAILY_GOAL_ML,
+        sipsCount: item.logs.length,
+        logs: [...item.logs].reverse()
+      };
+    });
+
+    // 7-Day & Lifetime Analytics
+    const totalMlAllTime = dayWiseHistory.reduce((s, d) => s + d.total, 0);
+    const daysLoggedCount = dayWiseHistory.length;
+    const avgDailyMl = daysLoggedCount > 0 ? Math.round(totalMlAllTime / daysLoggedCount) : 0;
+    const daysGoalMetCount = dayWiseHistory.filter(d => d.metGoal).length;
+    const bestDay = dayWiseHistory.length > 0 ? [...dayWiseHistory].sort((a, b) => b.total - a.total)[0] : null;
+
+    // Monthly Grouping
+    const monthlyMap = {};
+    dayWiseHistory.forEach(d => {
+      const ym = d.date.substring(0, 7); // e.g. "2026-11"
+      if (!monthlyMap[ym]) {
+        monthlyMap[ym] = { month: ym, totalMl: 0, daysCount: 0, daysMet: 0 };
+      }
+      monthlyMap[ym].totalMl += d.total;
+      monthlyMap[ym].daysCount++;
+      if (d.metGoal) monthlyMap[ym].daysMet++;
+    });
+
+    const monthlyHistory = Object.keys(monthlyMap).sort().reverse().map(m => ({
+      month: m,
+      totalLiters: Math.round((monthlyMap[m].totalMl / 1000) * 10) / 10,
+      daysCount: monthlyMap[m].daysCount,
+      daysMet: monthlyMap[m].daysMet,
+      avgDailyMl: Math.round(monthlyMap[m].totalMl / monthlyMap[m].daysCount)
     }));
 
     return res.status(200).json({
@@ -118,7 +166,15 @@ export default async function handler(req, res) {
       todayStr,
       todayTotal,
       todayLogs,
-      history,
+      dayWiseHistory,
+      monthlyHistory,
+      analytics: {
+        totalLiters: Math.round((totalMlAllTime / 1000) * 10) / 10,
+        daysLogged: daysLoggedCount,
+        avgDailyMl,
+        daysGoalMet: daysGoalMetCount,
+        bestDay: bestDay ? { date: bestDay.date, total: bestDay.total } : null
+      },
       allLogsCount: cleanedLogs.length
     });
   } catch (err) {

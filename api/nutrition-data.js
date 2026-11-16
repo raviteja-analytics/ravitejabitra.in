@@ -195,12 +195,82 @@ export default async function handler(req, res) {
       calories: Math.round(todayLogs.reduce((sum, l) => sum + l.calories, 0))
     };
 
+    // 6. Day-Wise Historical Tracking
+    const dayMap = {};
+    cleanedLogs.forEach(l => {
+      if (!dayMap[l.date]) {
+        dayMap[l.date] = {
+          date: l.date,
+          protein: 0,
+          carbs: 0,
+          fats: 0,
+          fiber: 0,
+          sugar: 0,
+          calories: 0,
+          logs: []
+        };
+      }
+      dayMap[l.date].protein += l.protein;
+      dayMap[l.date].carbs += l.carbs;
+      dayMap[l.date].fats += l.fats;
+      dayMap[l.date].fiber += l.fiber;
+      dayMap[l.date].sugar += l.sugar;
+      dayMap[l.date].calories += l.calories;
+      dayMap[l.date].logs.push(l);
+    });
+
+    const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const dayShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    const dayWiseHistory = Object.keys(dayMap).sort().reverse().map(d => {
+      const item = dayMap[d];
+      const dateObj = new Date(d + "T00:00:00Z");
+      const dayName = !isNaN(dateObj.getTime()) ? dayNames[dateObj.getUTCDay()] : "";
+      const dayAbbr = !isNaN(dateObj.getTime()) ? dayShort[dateObj.getUTCDay()] : "";
+
+      return {
+        date: d,
+        dayName,
+        dayAbbr,
+        protein: Math.round(item.protein * 10) / 10,
+        carbs: Math.round(item.carbs * 10) / 10,
+        fats: Math.round(item.fats * 10) / 10,
+        fiber: Math.round(item.fiber * 10) / 10,
+        sugar: Math.round(item.sugar * 10) / 10,
+        calories: Math.round(item.calories),
+        metProteinGoal: item.protein >= DAILY_TARGETS.protein,
+        mealsCount: item.logs.length,
+        logs: [...item.logs].reverse()
+      };
+    });
+
+    // Monthly Analytics
+    const monthlyMap = {};
+    dayWiseHistory.forEach(d => {
+      const ym = d.date.substring(0, 7);
+      if (!monthlyMap[ym]) {
+        monthlyMap[ym] = { month: ym, totalCalories: 0, totalProtein: 0, daysCount: 0 };
+      }
+      monthlyMap[ym].totalCalories += d.calories;
+      monthlyMap[ym].totalProtein += d.protein;
+      monthlyMap[ym].daysCount++;
+    });
+
+    const monthlyHistory = Object.keys(monthlyMap).sort().reverse().map(m => ({
+      month: m,
+      avgDailyProtein: Math.round(monthlyMap[m].totalProtein / monthlyMap[m].daysCount),
+      avgDailyCalories: Math.round(monthlyMap[m].totalCalories / monthlyMap[m].daysCount),
+      daysCount: monthlyMap[m].daysCount
+    }));
+
     return res.status(200).json({
       todayStr,
       targets: DAILY_TARGETS,
       todayTotals,
       todayLogs,
-      pantry
+      pantry,
+      dayWiseHistory,
+      monthlyHistory
     });
 
   } catch (err) {

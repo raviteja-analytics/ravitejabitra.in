@@ -907,6 +907,152 @@
       transform: translateY(-2px);
       box-shadow: 0 8px 24px rgba(2, 132, 199, 0.6);
     }
+
+    /* View Switcher Pills */
+    .view-switcher-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .view-pill-btn {
+      background: rgba(16, 24, 46, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 700;
+      padding: 10px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      backdrop-filter: blur(8px);
+    }
+    .view-pill-btn:hover {
+      color: var(--text);
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.1);
+      transform: translateY(-1px);
+    }
+    .view-pill-btn.active {
+      color: #ffffff;
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.9), rgba(56, 189, 248, 0.9));
+      border-color: #38bdf8;
+      box-shadow: 0 4px 18px rgba(56, 189, 248, 0.35);
+    }
+
+    /* History Grid & Charts */
+    .history-analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 26px;
+    }
+    @media(max-width: 768px) {
+      .history-analytics-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .hist-stat-card {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hist-stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--accent), transparent);
+    }
+    .hist-stat-val {
+      font-size: 1.85rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      margin-top: 6px;
+    }
+
+    /* Weekly Bar Visualizer */
+    .weekly-bars-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      height: 200px;
+      padding-top: 30px;
+      padding-bottom: 10px;
+      position: relative;
+      margin-top: 10px;
+    }
+    .target-line {
+      position: absolute;
+      top: 30px;
+      left: 0; right: 0;
+      border-top: 2px dashed rgba(56, 189, 248, 0.4);
+      display: flex;
+      justify-content: flex-end;
+    }
+    .target-tag {
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      color: var(--accent);
+      background: rgba(15, 23, 42, 0.85);
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-top: -12px;
+      font-weight: 700;
+    }
+    .bar-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: flex-end;
+      padding: 0 6px;
+    }
+    .bar-fill {
+      width: 100%;
+      max-width: 44px;
+      border-radius: 8px 8px 3px 3px;
+      background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+      transition: height 1s cubic-bezier(0.34, 1.4, 0.64, 1);
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+      position: relative;
+    }
+    .bar-fill.met-goal {
+      background: linear-gradient(180deg, #34d399 0%, #059669 100%);
+      box-shadow: 0 0 18px rgba(52, 211, 153, 0.45);
+    }
+    .bar-label-day {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+    .bar-label-ml {
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 2px;
+    }
+
+    /* Day History Accordion */
+    .day-card {
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 18px 22px;
+      margin-bottom: 14px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .day-card:hover {
+      border-color: rgba(56, 189, 248, 0.3);
+      background: rgba(56, 189, 248, 0.04);
+    }
   </style>
 </head>
 <body>
@@ -958,8 +1104,18 @@
       </div>
     </div>
 
-    <!-- Main Dashboard Grid -->
-    <div class="dashboard-grid">
+    <!-- View Switcher: Live Bowl vs History & Analytics -->
+    <div class="view-switcher-row">
+      <button class="view-pill-btn active" id="btnViewLive" onclick="switchWaterTab('live')">
+        <span>🌊</span> Today's Hydro Bowl
+      </button>
+      <button class="view-pill-btn" id="btnViewHistory" onclick="switchWaterTab('history')">
+        <span>📊</span> History & Analytics
+      </button>
+    </div>
+
+    <!-- ── VIEW 1: TODAY'S LIVE BOWL ─────────────────────────────── -->
+    <div id="waterLiveView" class="dashboard-grid">
 
       <!-- LEFT: The Epic Anime Hydro Sphere -->
       <div class="anime-card bowl-stage">
@@ -1067,6 +1223,89 @@
           <div style="text-align: center; padding: 42px 20px; color: var(--muted); font-size: 0.88rem; font-style: italic;">
             Waiting for your first sip today!<br>
             Text <code>300 ml</code> to <a href="https://t.me/raviteja_water_bot" target="_blank" style="color: var(--accent); font-weight: 700;">@raviteja_water_bot</a> on Telegram.
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ── VIEW 2: HISTORICAL ANALYTICS & TRENDS ─────────────────── -->
+    <div id="waterHistoryView" style="display: none;">
+      
+      <!-- Top Analytics KPI Grid -->
+      <div class="history-analytics-grid">
+        <div class="hist-stat-card">
+          <div class="mini-label"><span>💧</span> Total Hydration</div>
+          <div class="hist-stat-val" id="histTotalLiters" style="color: #38bdf8;">0 L</div>
+          <div class="mini-sub" id="histDaysLogged">0 days recorded</div>
+        </div>
+
+        <div class="hist-stat-card">
+          <div class="mini-label"><span>⚡</span> Daily Average</div>
+          <div class="hist-stat-val" id="histAvgDaily" style="color: #34d399;">0 ml</div>
+          <div class="mini-sub">Average per active day</div>
+        </div>
+
+        <div class="hist-stat-card">
+          <div class="mini-label"><span>🏆</span> 4L Goals Met</div>
+          <div class="hist-stat-val" id="histGoalsMet" style="color: #fbbf24;">0 days</div>
+          <div class="mini-sub" id="histSuccessRate">0% hit rate</div>
+        </div>
+
+        <div class="hist-stat-card">
+          <div class="mini-label"><span>🌟</span> All-Time Best Day</div>
+          <div class="hist-stat-val" id="histBestDayVal" style="color: #a78bfa;">0 ml</div>
+          <div class="mini-sub" id="histBestDayDate">No data yet</div>
+        </div>
+      </div>
+
+      <!-- Weekly 7-Day Visualizer Card -->
+      <div class="anime-card" style="margin-bottom: 24px;">
+        <div class="timeline-header">
+          <div class="timeline-title">
+            <span>📈 Recent Daily Hydration (vs 4,000 ML Target)</span>
+          </div>
+          <span style="font-size: 0.74rem; color: var(--muted); font-family: var(--font-mono);">4,000 ml goal line</span>
+        </div>
+
+        <div class="weekly-bars-container" id="weeklyBarsContainer">
+          <div class="target-line">
+            <span class="target-tag">4,000 ML TARGET</span>
+          </div>
+          <div id="barsWrapper" style="display: flex; width: 100%; height: 100%; justify-content: space-around;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Split: Monthly Summary & Detailed Day-by-Day Logs -->
+      <div style="display: grid; grid-template-columns: 0.7fr 1.3fr; gap: 24px;">
+        
+        <!-- Left: Monthly Summaries -->
+        <div class="anime-card" style="height: fit-content;">
+          <div class="timeline-header">
+            <div class="timeline-title">
+              <span>📅 Monthly Breakdown</span>
+            </div>
+          </div>
+          <div id="monthlyListContainer">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Right: Day-by-Day Historical Log Accordion -->
+        <div class="anime-card">
+          <div class="timeline-header">
+            <div class="timeline-title">
+              <span>📜 Day-by-Day Log Archive</span>
+            </div>
+            <span id="histDaysCountBadge" style="font-size: 0.74rem; color: var(--accent); font-family: var(--font-mono); font-weight: 700;">
+              0 days
+            </span>
+          </div>
+          <div id="dayLogsAccordion">
+            <!-- Rendered dynamically -->
           </div>
         </div>
 
@@ -1443,6 +1682,154 @@
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
+    // Switch View between Live Bowl and History
+    let currentWaterTab = 'live';
+    function switchWaterTab(tab) {
+      currentWaterTab = tab;
+      const liveView = document.getElementById('waterLiveView');
+      const histView = document.getElementById('waterHistoryView');
+      const btnLive = document.getElementById('btnViewLive');
+      const btnHist = document.getElementById('btnViewHistory');
+
+      if (tab === 'history') {
+        liveView.style.display = 'none';
+        histView.style.display = 'block';
+        btnLive.classList.remove('active');
+        btnHist.classList.add('active');
+      } else {
+        liveView.style.display = 'grid';
+        histView.style.display = 'none';
+        btnLive.classList.add('active');
+        btnHist.classList.remove('active');
+      }
+    }
+
+    // Render Historical Analytics, Weekly Bars & Day Accordion
+    function renderHistoricalAnalytics(data) {
+      if (!data) return;
+      const analytics = data.analytics || {};
+      const history = data.dayWiseHistory || [];
+      const monthly = data.monthlyHistory || [];
+
+      // 1. KPI Cards
+      document.getElementById('histTotalLiters').innerText = `${analytics.totalLiters || 0} L`;
+      document.getElementById('histDaysLogged').innerText = `${analytics.daysLogged || 0} active day${analytics.daysLogged === 1 ? '' : 's'}`;
+      document.getElementById('histAvgDaily').innerText = `${(analytics.avgDailyMl || 0).toLocaleString()} ml`;
+      document.getElementById('histGoalsMet').innerText = `${analytics.daysGoalMet || 0} day${analytics.daysGoalMet === 1 ? '' : 's'}`;
+      
+      const rate = analytics.daysLogged > 0 ? Math.round(((analytics.daysGoalMet || 0) / analytics.daysLogged) * 100) : 0;
+      document.getElementById('histSuccessRate').innerText = `${rate}% target compliance`;
+
+      if (analytics.bestDay) {
+        document.getElementById('histBestDayVal').innerText = `${analytics.bestDay.total.toLocaleString()} ml`;
+        document.getElementById('histBestDayDate').innerText = analytics.bestDay.date;
+      }
+
+      // 2. Weekly 7-Day Visualizer
+      const barsWrapper = document.getElementById('barsWrapper');
+      if (history.length === 0) {
+        barsWrapper.innerHTML = `<div style="color: var(--muted); font-size: 0.85rem; padding: 40px; text-align: center;">No history recorded yet. Send your first water sip on Telegram!</div>`;
+      } else {
+        // Last 7 active days chronologically
+        const recentDays = [...history.slice(0, 7)].reverse();
+        barsWrapper.innerHTML = recentDays.map(d => {
+          const heightPct = Math.max(8, Math.min(100, Math.round((d.total / DAILY_GOAL_ML) * 100)));
+          return `
+            <div class="bar-column">
+              <div class="bar-fill ${d.metGoal ? 'met-goal' : ''}" style="height: ${heightPct}%;" title="${d.date} (${d.dayName || ''}): ${d.total.toLocaleString()} ml"></div>
+              <div class="bar-label-day">${d.dayAbbr || d.date.slice(5)}</div>
+              <div class="bar-label-ml">${d.total.toLocaleString()}</div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 3. Monthly Breakdown
+      const monthlyContainer = document.getElementById('monthlyListContainer');
+      if (monthly.length === 0) {
+        monthlyContainer.innerHTML = `<div style="color: var(--muted); font-size: 0.85rem; padding: 20px;">No monthly data yet.</div>`;
+      } else {
+        monthlyContainer.innerHTML = monthly.map(m => {
+          const monthName = formatMonthLabel(m.month);
+          return `
+            <div style="background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 14px; margin-bottom: 10px;">
+              <div style="font-weight: 800; font-size: 0.95rem; color: #ffffff;">${monthName}</div>
+              <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.78rem; color: var(--muted);">
+                <span>Total Inflow:</span>
+                <span style="color: var(--accent); font-weight: 700; font-family: var(--font-mono);">${m.totalLiters} L</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-top: 4px; font-size: 0.78rem; color: var(--muted);">
+                <span>Daily Avg:</span>
+                <span style="color: #34d399; font-weight: 700; font-family: var(--font-mono);">${m.avgDailyMl.toLocaleString()} ml</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-top: 4px; font-size: 0.78rem; color: var(--muted);">
+                <span>4L Days Met:</span>
+                <span style="color: #fbbf24; font-weight: 700; font-family: var(--font-mono);">${m.daysMet} of ${m.daysCount} days</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 4. Day-by-Day Historical Accordion
+      const accordion = document.getElementById('dayLogsAccordion');
+      const countBadge = document.getElementById('histDaysCountBadge');
+      countBadge.innerText = `${history.length} day${history.length === 1 ? '' : 's'}`;
+
+      if (history.length === 0) {
+        accordion.innerHTML = `<div style="color: var(--muted); font-size: 0.85rem; padding: 30px; text-align: center;">No days recorded yet.</div>`;
+      } else {
+        accordion.innerHTML = history.map((d, idx) => `
+          <div class="day-card" onclick="toggleDayAccordion('day_details_${idx}')">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-weight: 800; font-size: 0.95rem; color: #ffffff;">${d.date} • ${d.dayName || 'Day'}</div>
+                <div style="font-size: 0.76rem; color: var(--muted); margin-top: 2px;">${d.sipsCount} sip${d.sipsCount === 1 ? '' : 's'} logged</div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 1.15rem; font-weight: 800; font-family: var(--font-mono); color: ${d.metGoal ? '#34d399' : '#38bdf8'};">
+                  ${d.total.toLocaleString()} ml
+                </div>
+                <div style="font-size: 0.72rem; color: ${d.metGoal ? '#34d399' : 'var(--muted)'}; font-weight: 700;">
+                  ${d.metGoal ? '🎉 4L Achieved!' : `${d.pct}% of goal`}
+                </div>
+              </div>
+            </div>
+
+            <!-- Expandable Sips Details -->
+            <div id="day_details_${idx}" style="display: ${idx === 0 ? 'block' : 'none'}; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+              <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px;">
+                Sips on this day:
+              </div>
+              <div style="display: grid; gap: 6px;">
+                ${(d.logs || []).map(l => `
+                  <div style="display: flex; justify-content: space-between; font-size: 0.78rem; background: rgba(16, 24, 46, 0.6); padding: 6px 10px; border-radius: 6px;">
+                    <span style="color: var(--muted);">${l.time || 'Logged'} • <i>${escapeHtml(l.rawMessage || '')}</i></span>
+                    <span style="color: #38bdf8; font-weight: 700; font-family: var(--font-mono);">+${l.amount} ml</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function toggleDayAccordion(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+      }
+    }
+
+    function formatMonthLabel(ym) {
+      if (!ym) return "Month";
+      const [year, month] = ym.split('-');
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const mIdx = parseInt(month, 10) - 1;
+      return `${months[mIdx] || month} ${year}`;
+    }
+
     // Fetch Live Water Data from Vercel API
     async function fetchLiveWaterData(isManual = false) {
       try {
@@ -1476,6 +1863,7 @@
         }
 
         renderLogFeed(logs, Math.max(0, logs.length - lastSeenCount));
+        renderHistoricalAnalytics(data);
 
         // Save new seen total
         localStorage.setItem(LAST_SEEN_TOTAL_KEY, serverTotal);

@@ -491,6 +491,85 @@
       transform: translateY(-2px);
       box-shadow: 0 8px 24px rgba(2, 132, 199, 0.6);
     }
+
+    /* View Switcher Pills */
+    .view-switcher-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .view-pill-btn {
+      background: rgba(16, 24, 46, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 700;
+      padding: 10px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      backdrop-filter: blur(8px);
+    }
+    .view-pill-btn:hover {
+      color: var(--text);
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.1);
+      transform: translateY(-1px);
+    }
+    .view-pill-btn.active {
+      color: #ffffff;
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.9), rgba(251, 191, 36, 0.9));
+      border-color: #fbbf24;
+      box-shadow: 0 4px 18px rgba(251, 191, 36, 0.35);
+    }
+
+    .hist-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    @media(max-width: 768px) {
+      .hist-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .hist-card {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hist-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, #fbbf24, #38bdf8);
+    }
+    .hist-val {
+      font-size: 1.85rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      margin-top: 6px;
+    }
+
+    .hist-day-row {
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 18px 22px;
+      margin-bottom: 14px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .hist-day-row:hover {
+      border-color: rgba(251, 191, 36, 0.35);
+      background: rgba(251, 191, 36, 0.04);
+    }
   </style>
 </head>
 <body>
@@ -534,8 +613,21 @@
       </div>
     </div>
 
-    <!-- ── 1. MACRO HERO CARDS ────────────────────────────────────── -->
-    <div class="macro-hero-grid">
+    <!-- View Switcher: Today's Fuel vs History & Trends -->
+    <div class="view-switcher-row">
+      <button class="view-pill-btn active" id="btnFuelLive" onclick="switchFuelTab('live')">
+        <span>⚡</span> Today's Fuel
+      </button>
+      <button class="view-pill-btn" id="btnFuelHistory" onclick="switchFuelTab('history')">
+        <span>📊</span> Macro History & Trends
+      </button>
+    </div>
+
+    <!-- ── VIEW 1: TODAY'S LIVE FUEL DASHBOARD ───────────────────── -->
+    <div id="fuelLiveView">
+
+      <!-- ── 1. MACRO HERO CARDS ────────────────────────────────────── -->
+      <div class="macro-hero-grid">
       
       <!-- Protein Ring -->
       <div class="macro-ring-card">
@@ -633,6 +725,80 @@
       </div>
 
     </div>
+    <!-- ── END VIEW 1: TODAY'S LIVE FUEL DASHBOARD ────────────────── -->
+
+    <!-- ── VIEW 2: HISTORICAL ANALYTICS & TRENDS ───────────────────── -->
+    <div id="fuelHistoryView" style="display: none;">
+      
+      <!-- Top Analytics KPI Grid -->
+      <div class="hist-kpi-grid">
+        <div class="hist-card">
+          <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); display: flex; align-items: center; gap: 6px;">
+            <span>🥩</span> Daily Avg Protein
+          </div>
+          <div class="hist-val" id="histAvgProtein" style="color: var(--protein-color);">0 g</div>
+          <div style="font-size: 0.74rem; color: var(--muted); margin-top: 4px;">Target: 150g / day</div>
+        </div>
+
+        <div class="hist-card">
+          <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); display: flex; align-items: center; gap: 6px;">
+            <span>🔥</span> Daily Avg Calories
+          </div>
+          <div class="hist-val" id="histAvgCalories" style="color: var(--calories-color);">0 kcal</div>
+          <div style="font-size: 0.74rem; color: var(--muted); margin-top: 4px;">Target: 2,100 kcal</div>
+        </div>
+
+        <div class="hist-card">
+          <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); display: flex; align-items: center; gap: 6px;">
+            <span>🎯</span> Protein Goals Met
+          </div>
+          <div class="hist-val" id="histProteinGoalsMet" style="color: #fbbf24;">0 days</div>
+          <div style="font-size: 0.74rem; color: var(--muted); margin-top: 4px;" id="histProteinSuccessRate">0% hit rate</div>
+        </div>
+
+        <div class="hist-card">
+          <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); display: flex; align-items: center; gap: 6px;">
+            <span>🗓️</span> Days Tracked
+          </div>
+          <div class="hist-val" id="histDaysTracked" style="color: #38bdf8;">0 days</div>
+          <div style="font-size: 0.74rem; color: var(--muted); margin-top: 4px;">Recorded intake</div>
+        </div>
+      </div>
+
+      <!-- Split: Monthly Breakdown & Day-by-Day Historical Log -->
+      <div style="display: grid; grid-template-columns: 0.75fr 1.25fr; gap: 24px; margin-bottom: 24px;">
+        
+        <!-- Left: Monthly Summary -->
+        <div class="fuel-card" style="height: fit-content;">
+          <div class="section-title-row">
+            <div class="section-title">
+              <span>📅 Monthly Fuel Overview</span>
+            </div>
+          </div>
+          <div id="fuelMonthlyContainer">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Right: Day-by-Day Meal Accordion -->
+        <div class="fuel-card">
+          <div class="section-title-row">
+            <div class="section-title">
+              <span>📜 Day-by-Day Fuel History</span>
+            </div>
+            <span id="histDaysCountBadge" style="font-family: var(--font-mono); font-size: 0.74rem; color: var(--accent); font-weight: 700;">
+              0 days
+            </span>
+          </div>
+          <div id="fuelDayLogsAccordion">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+    <!-- ── END VIEW 2: HISTORICAL ANALYTICS & TRENDS ───────────────── -->
 
     <!-- Bottom Telegram Banner -->
     <div class="bot-sync-footer-card">
@@ -770,6 +936,9 @@
           }).join('');
         }
 
+        // 4. Render Historical Analytics & Day Logs
+        renderNutritionHistory(data);
+
         if (isManual) {
           const btn = event?.target?.closest('button');
           if (btn) {
@@ -781,6 +950,160 @@
       } catch (err) {
         console.error("Fetch error:", err);
       }
+    }
+
+    // View Switcher: Today's Fuel vs History
+    function switchFuelTab(tab) {
+      const liveView = document.getElementById('fuelLiveView');
+      const histView = document.getElementById('fuelHistoryView');
+      const btnLive = document.getElementById('btnFuelLive');
+      const btnHist = document.getElementById('btnFuelHistory');
+
+      if (tab === 'history') {
+        liveView.style.display = 'none';
+        histView.style.display = 'block';
+        btnLive.classList.remove('active');
+        btnHist.classList.add('active');
+      } else {
+        liveView.style.display = 'block';
+        histView.style.display = 'none';
+        btnLive.classList.add('active');
+        btnHist.classList.remove('active');
+      }
+    }
+
+    // Render Nutrition History View
+    function renderNutritionHistory(data) {
+      if (!data) return;
+      const history = data.dayWiseHistory || [];
+      const monthly = data.monthlyHistory || [];
+      const targets = data.targets || { protein: 150, calories: 2100 };
+
+      // Calculate aggregates
+      const daysCount = history.length;
+      let totalProtein = 0;
+      let totalCalories = 0;
+      let goalsMet = 0;
+
+      history.forEach(d => {
+        totalProtein += (d.protein || 0);
+        totalCalories += (d.calories || 0);
+        if (d.metProteinGoal || d.protein >= targets.protein) {
+          goalsMet++;
+        }
+      });
+
+      const avgProtein = daysCount > 0 ? Math.round(totalProtein / daysCount) : 0;
+      const avgCalories = daysCount > 0 ? Math.round(totalCalories / daysCount) : 0;
+      const successRate = daysCount > 0 ? Math.round((goalsMet / daysCount) * 100) : 0;
+
+      // KPIs
+      const elAvgP = document.getElementById('histAvgProtein');
+      const elAvgCal = document.getElementById('histAvgCalories');
+      const elGoals = document.getElementById('histProteinGoalsMet');
+      const elDays = document.getElementById('histDaysTracked');
+      const elRate = document.getElementById('histProteinSuccessRate');
+
+      if (elAvgP) elAvgP.innerText = `${avgProtein} g`;
+      if (elAvgCal) elAvgCal.innerText = `${avgCalories.toLocaleString()} kcal`;
+      if (elGoals) elGoals.innerText = `${goalsMet} day${goalsMet === 1 ? '' : 's'}`;
+      if (elDays) elDays.innerText = `${daysCount} day${daysCount === 1 ? '' : 's'}`;
+      if (elRate) elRate.innerText = `${successRate}% goal compliance`;
+
+      // Monthly Breakdown
+      const monthlyContainer = document.getElementById('fuelMonthlyContainer');
+      if (monthlyContainer) {
+        if (monthly.length === 0) {
+          monthlyContainer.innerHTML = `<div style="color: var(--muted); font-size: 0.85rem; padding: 20px;">No monthly fuel data yet.</div>`;
+        } else {
+          monthlyContainer.innerHTML = monthly.map(m => `
+            <div style="background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 14px; margin-bottom: 10px;">
+              <div style="font-weight: 800; font-size: 0.95rem; color: #ffffff;">${formatMonthLabel(m.month)}</div>
+              <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.78rem; color: var(--muted);">
+                <span>Daily Avg Protein:</span>
+                <span style="color: var(--protein-color); font-weight: 700; font-family: var(--font-mono);">${m.avgDailyProtein} g</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-top: 4px; font-size: 0.78rem; color: var(--muted);">
+                <span>Daily Avg Calories:</span>
+                <span style="color: var(--calories-color); font-weight: 700; font-family: var(--font-mono);">${(m.avgDailyCalories || 0).toLocaleString()} kcal</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-top: 4px; font-size: 0.78rem; color: var(--muted);">
+                <span>Days Tracked:</span>
+                <span style="color: #38bdf8; font-weight: 700; font-family: var(--font-mono);">${m.daysCount} days (${m.daysProteinMet} hit 150g)</span>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      // Day-by-Day Historical Accordion
+      const accordion = document.getElementById('fuelDayLogsAccordion');
+      const badge = document.getElementById('histDaysCountBadge');
+      if (badge) badge.innerText = `${daysCount} day${daysCount === 1 ? '' : 's'}`;
+
+      if (accordion) {
+        if (history.length === 0) {
+          accordion.innerHTML = `<div style="color: var(--muted); font-size: 0.85rem; padding: 30px; text-align: center;">No days recorded yet. Send your first meal log to @raviteja_fuel_bot!</div>`;
+        } else {
+          accordion.innerHTML = history.map((d, idx) => `
+            <div class="hist-day-row" onclick="toggleFuelDayAccordion('fuel_day_${idx}')">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-weight: 800; font-size: 0.95rem; color: #ffffff;">${d.date} • ${d.dayName || 'Day'}</div>
+                  <div style="font-size: 0.76rem; color: var(--muted); margin-top: 2px;">
+                    ${(d.logs || []).length} meal entry${(d.logs || []).length === 1 ? '' : 'ies'}
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-size: 1.15rem; font-weight: 800; font-family: var(--font-mono); color: var(--protein-color);">
+                    ${d.protein || 0}g <span style="font-size: 0.75rem; color: var(--muted);">P</span>
+                  </div>
+                  <div style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--calories-color); font-weight: 700;">
+                    ${(d.calories || 0).toLocaleString()} kcal
+                  </div>
+                </div>
+              </div>
+
+              <!-- Expandable Food Logs for this Day -->
+              <div id="fuel_day_${idx}" style="display: ${idx === 0 ? 'block' : 'none'}; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px;">
+                  Meals & Intakes Logged:
+                </div>
+                <div style="display: grid; gap: 8px;">
+                  ${(d.logs || []).map(l => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(16, 24, 46, 0.6); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.04);">
+                      <div>
+                        <div style="font-weight: 700; font-size: 0.82rem; color: #ffffff;">${escapeHtml(l.brand && l.brand !== 'Whole Food' ? l.brand + ' ' : '')}${escapeHtml(l.itemName || 'Meal')}</div>
+                        <div style="font-size: 0.72rem; color: var(--muted); margin-top: 2px;">${l.time || 'Logged'} • ${l.quantity || 1} ${escapeHtml(l.servingUnit || 'serving')}</div>
+                        ${l.vitals ? `<div style="font-size: 0.7rem; color: #c084fc; font-weight: 700; margin-top: 3px;">💊 ${escapeHtml(l.vitals)}</div>` : ''}
+                      </div>
+                      <div style="display: flex; gap: 6px; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700;">
+                        ${l.protein > 0 ? `<span style="background: rgba(248, 113, 113, 0.15); color: var(--protein-color); padding: 2px 6px; border-radius: 4px;">+${l.protein}g P</span>` : ''}
+                        ${l.calories > 0 ? `<span style="background: rgba(251, 191, 36, 0.15); color: var(--calories-color); padding: 2px 6px; border-radius: 4px;">+${l.calories} kcal</span>` : ''}
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+    }
+
+    function toggleFuelDayAccordion(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+      }
+    }
+
+    function formatMonthLabel(ym) {
+      if (!ym) return "Month";
+      const [year, month] = ym.split('-');
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const mIdx = parseInt(month, 10) - 1;
+      return `${months[mIdx] || month} ${year}`;
     }
 
     // Ambient Stars
