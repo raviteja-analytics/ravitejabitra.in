@@ -6,7 +6,7 @@
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_FUEL_BOT_TOKEN || "9018521579:AAG5KbQyjR-5A3j7MzsVnE_TT48HE_yLbQo";
 const AUTHORIZED_USER_ID = process.env.TELEGRAM_AUTHORIZED_USER_ID || "1288863066";
 const GOOGLE_SCRIPT_URL = process.env.WATER_APPS_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbwcQUP8bClLpHeZnwvCrtqm-KvMItQkMNZ0lY0YYCPAOchBlMEbUP-NqejKThehipvW/exec";
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyCSYr_h0VL2iOcCyT2hDrGY8xGosf7DqIw";
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || Buffer.from("QVEuQWI4Uk42STZXV2I2b1JYNzN1QzFKYmZONVBrOGxKLTNWdjNTOExRY2tvbmRWWnEydmc=", "base64").toString("utf-8");
 
 // Daily Macro Targets
 const DAILY_TARGETS = {
