@@ -3,47 +3,79 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Ravi Teja Bitra — Live Hydro Bowl & Water Intake Tracker synced with Telegram.">
-  <title>Hydro Bowl 🌊 | Live Water Tracker — Ravi Teja Bitra</title>
+  <meta name="description" content="Ravi Teja Bitra — Anime Hydro Bowl & Water Intake Tracker synced with Telegram.">
+  <title>Hydro Bowl 🌊 | Anime Water Tracker — Ravi Teja Bitra</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 
   <style>
     :root {
-      --bg: #0b1120;
-      --card: #141f36;
-      --card-border: rgba(56, 189, 248, 0.15);
+      --bg: #070b16;
+      --bg-card: rgba(16, 24, 46, 0.78);
+      --border-card: rgba(56, 189, 248, 0.18);
+      --border-card-hover: rgba(56, 189, 248, 0.45);
       --text: #f8fafc;
       --muted: #94a3b8;
       --accent: #38bdf8;
-      --water-blue: #0284c7;
-      --water-deep: #0369a1;
-      --water-light: #38bdf8;
-      --water-glow: rgba(56, 189, 248, 0.4);
+      --accent-glow: rgba(56, 189, 248, 0.35);
+      --pink: #f472b6;
+      --pink-glow: rgba(244, 114, 182, 0.3);
+      --purple: #a855f7;
+      --green: #34d399;
+      --water-top: #38bdf8;
+      --water-mid: #0284c7;
+      --water-deep: #0f4c81;
       --font-mono: 'JetBrains Mono', monospace;
       --font-display: 'Fraunces', serif;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
     body {
       background: var(--bg);
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(56, 189, 248, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 85% 75%, rgba(168, 85, 247, 0.07) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(2, 132, 199, 0.04) 0%, transparent 60%);
       color: var(--text);
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       min-height: 100vh;
       overflow-x: hidden;
-      padding-bottom: 80px;
+      padding-bottom: 90px;
     }
 
-    /* Harmonized Header Nav matching tracker theme */
+    /* Ambient Floating Anime Star Particles */
+    .bg-particles {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .star-dot {
+      position: absolute;
+      background: #38bdf8;
+      border-radius: 50%;
+      opacity: 0.25;
+      animation: floatStar 8s ease-in-out infinite;
+    }
+    @keyframes floatStar {
+      0%, 100% { transform: translateY(0) scale(1); opacity: 0.2; }
+      50% { transform: translateY(-25px) scale(1.4); opacity: 0.6; }
+    }
+
+    /* Header Nav */
     header {
-      background: rgba(11, 17, 32, 0.92) !important;
-      backdrop-filter: blur(16px) !important;
-      -webkit-backdrop-filter: blur(16px) !important;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+      background: rgba(7, 11, 22, 0.88) !important;
+      backdrop-filter: blur(18px) !important;
+      -webkit-backdrop-filter: blur(18px) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+      position: fixed !important;
+      top: 0; left: 0; width: 100%; z-index: 100;
     }
 
     .container.nav-content {
@@ -57,8 +89,8 @@
     }
 
     .logo {
-      font-family: 'Fraunces', serif;
-      font-size: 1.35rem;
+      font-family: var(--font-display);
+      font-size: 1.4rem;
       font-weight: 700;
       letter-spacing: -0.02em;
       color: var(--text) !important;
@@ -69,7 +101,7 @@
     .nav-links {
       display: flex !important;
       width: auto !important;
-      gap: 28px !important;
+      gap: 26px !important;
       justify-content: flex-end !important;
       align-items: center !important;
       list-style: none !important;
@@ -83,6 +115,7 @@
       padding: 6px 0 !important;
       position: relative !important;
       transition: color 0.2s ease !important;
+      text-decoration: none;
     }
     .nav-links a:hover,
     .nav-links a.active {
@@ -93,7 +126,8 @@
       position: absolute;
       bottom: 0; left: 0;
       width: 100%; height: 2px;
-      background: var(--accent) !important;
+      background: linear-gradient(90deg, #38bdf8, #a855f7) !important;
+      border-radius: 2px;
     }
 
     /* Main Container */
@@ -102,7 +136,9 @@
       width: 94%;
       margin: 0 auto;
       padding: 24px 16px;
-      padding-top: calc(var(--nav-height) + 24px);
+      padding-top: 96px;
+      position: relative;
+      z-index: 1;
     }
 
     .back-pill {
@@ -115,7 +151,7 @@
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.08);
       padding: 5px 12px;
-      border-radius: 6px;
+      border-radius: 8px;
       margin-bottom: 16px;
       text-decoration: none;
       transition: all 0.2s ease;
@@ -123,15 +159,88 @@
     .back-pill:hover {
       color: var(--text);
       border-color: var(--accent);
-      background: rgba(56, 189, 248, 0.08);
+      background: rgba(56, 189, 248, 0.1);
+      transform: translateX(-2px);
     }
 
-    /* Hero / Dashboard Grid */
+    /* Page Header */
+    .page-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .anime-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(168, 85, 247, 0.12));
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .page-title {
+      font-size: 2.35rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      font-family: var(--font-display);
+      background: linear-gradient(135deg, #ffffff 40%, #bae6fd 80%, #7dd3fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .page-subtitle {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-top: 4px;
+    }
+
+    /* Top Control Bar */
+    .controls-cluster {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .ctrl-pill-btn {
+      background: rgba(16, 24, 46, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      backdrop-filter: blur(8px);
+    }
+    .ctrl-pill-btn:hover {
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.12);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.2);
+    }
+    .ctrl-pill-btn.active-sound {
+      border-color: #34d399;
+      color: #34d399;
+      background: rgba(52, 211, 153, 0.1);
+    }
+
+    /* Dashboard Layout */
     .dashboard-grid {
       display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
+      grid-template-columns: 1.18fr 0.82fr;
       gap: 28px;
-      margin-top: 24px;
     }
     @media(max-width: 992px) {
       .dashboard-grid {
@@ -139,389 +248,673 @@
       }
     }
 
-    /* Card Styling */
-    .card {
-      background: var(--card);
-      border: 1px solid var(--card-border);
-      border-radius: 18px;
-      padding: 28px;
-      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4);
+    /* Glass Cards */
+    .anime-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 24px;
+      padding: 30px;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 
+        0 20px 40px -15px rgba(0, 0, 0, 0.5),
+        0 0 25px rgba(56, 189, 248, 0.05);
       position: relative;
       overflow: hidden;
+      transition: border-color 0.3s ease;
+    }
+    .anime-card:hover {
+      border-color: var(--border-card-hover);
     }
 
-    /* ── EPIC BOWL CONTAINER ────────────────────────── */
+    /* ── STAGE 1: THE EPIC ANIME BOWL ──────────────────────────── */
     .bowl-stage {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       position: relative;
-      padding: 30px 20px 20px;
-      min-height: 480px;
+      min-height: 520px;
+      padding-top: 40px;
+      padding-bottom: 40px;
+      background: radial-gradient(circle at 50% 40%, rgba(56, 189, 248, 0.08) 0%, rgba(16, 24, 46, 0.4) 70%, transparent 100%);
     }
 
-    /* Cloud / Pitcher Pour Spout */
-    .pour-spout {
+    /* Cute Floating Pour Spout / Teapot / Cloud */
+    .pour-station {
       position: absolute;
-      top: 15px;
+      top: 18px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
       flex-direction: column;
       align-items: center;
-      z-index: 20;
-      opacity: 0;
-      transition: opacity 0.3s ease;
+      z-index: 30;
       pointer-events: none;
     }
-    .pour-spout.pouring {
-      opacity: 1;
-    }
 
-    .cloud-pitcher {
-      font-size: 3rem;
-      filter: drop-shadow(0 8px 16px rgba(56, 189, 248, 0.4));
-      animation: floatPitcher 2s ease-in-out infinite;
+    .anime-pitcher {
+      font-size: 3.4rem;
+      filter: drop-shadow(0 10px 20px rgba(56, 189, 248, 0.45));
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: inline-block;
+      animation: gentlePitcherHover 3s ease-in-out infinite;
     }
-
-    @keyframes floatPitcher {
+    @keyframes gentlePitcherHover {
       0%, 100% { transform: translateY(0) rotate(0deg); }
-      50% { transform: translateY(-6px) rotate(-5deg); }
+      50% { transform: translateY(-6px) rotate(-4deg); }
+    }
+    .pour-station.pouring .anime-pitcher {
+      transform: rotate(-38deg) translateY(-8px) scale(1.15);
+      animation: none;
     }
 
-    /* The Animated Falling Water Stream */
-    .water-stream {
+    /* Falling Liquid Ribbon */
+    .pour-stream {
       width: 14px;
       height: 0;
-      background: linear-gradient(180deg, #38bdf8 0%, #0284c7 80%, #0369a1 100%);
+      background: linear-gradient(180deg, #7dd3fc 0%, #38bdf8 40%, #0284c7 90%, #0369a1 100%);
       border-radius: 8px;
-      box-shadow: 0 0 16px rgba(56, 189, 248, 0.8);
+      box-shadow: 
+        0 0 20px rgba(56, 189, 248, 0.9),
+        0 0 40px rgba(56, 189, 248, 0.5);
       position: relative;
       overflow: hidden;
-      transition: height 0.3s ease;
+      transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      margin-top: -6px;
     }
-    .water-stream::before {
+    .pour-stream::before {
       content: '';
       position: absolute;
       top: 0; left: 2px; right: 2px; height: 100%;
-      background: repeating-linear-gradient(180deg, rgba(255,255,255,0.8) 0, rgba(255,255,255,0.8) 8px, transparent 8px, transparent 16px);
-      animation: streamFlow 0.3s linear infinite;
+      background: repeating-linear-gradient(180deg, rgba(255,255,255,0.95) 0, rgba(255,255,255,0.95) 10px, transparent 10px, transparent 20px);
+      animation: waterStreamFast 0.22s linear infinite;
     }
-    @keyframes streamFlow {
-      0% { transform: translateY(-16px); }
+    @keyframes waterStreamFast {
+      0% { transform: translateY(-20px); }
       100% { transform: translateY(0); }
     }
 
-    /* Pouring Splash FX */
-    .splash-ring {
+    /* Anime Splash Ring & Droplets */
+    .splash-container {
       position: absolute;
-      bottom: -10px;
+      bottom: -15px;
       left: 50%;
       transform: translateX(-50%);
-      width: 40px;
-      height: 10px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.8);
-      box-shadow: 0 0 15px #38bdf8;
+      width: 80px;
+      height: 25px;
       display: none;
-      animation: splashPulse 0.4s ease-out infinite;
     }
-    @keyframes splashPulse {
-      0% { transform: translateX(-50%) scale(0.6); opacity: 1; }
-      100% { transform: translateX(-50%) scale(1.6); opacity: 0; }
+    .splash-pulse {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 50px; height: 16px;
+      margin-left: -25px; margin-top: -8px;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.95) 0%, rgba(56, 189, 248, 0.7) 60%, transparent 100%);
+      box-shadow: 0 0 25px #38bdf8;
+      animation: splashRipples 0.4s ease-out infinite;
+    }
+    @keyframes splashRipples {
+      0% { transform: scale(0.4); opacity: 1; }
+      100% { transform: scale(2.0); opacity: 0; }
+    }
+    .splash-drop {
+      position: absolute;
+      width: 6px; height: 6px;
+      background: #e0f2fe;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #38bdf8;
+    }
+    .splash-drop.d1 { left: 15px; animation: dropFlyLeft 0.5s ease-out infinite; }
+    .splash-drop.d2 { right: 15px; animation: dropFlyRight 0.5s ease-out infinite; }
+    @keyframes dropFlyLeft {
+      0% { transform: translate(0, 0) scale(1); opacity: 1; }
+      100% { transform: translate(-22px, -35px) scale(0.3); opacity: 0; }
+    }
+    @keyframes dropFlyRight {
+      0% { transform: translate(0, 0) scale(1); opacity: 1; }
+      100% { transform: translate(22px, -35px) scale(0.3); opacity: 0; }
     }
 
-    /* Glass Bowl Construction */
-    .glass-bowl {
-      width: 320px;
-      height: 320px;
-      border-radius: 50%;
+    /* Live Toast Pour Banner */
+    .anime-pour-toast {
+      position: absolute;
+      top: 24px;
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.92), rgba(168, 85, 247, 0.92));
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 30px;
+      padding: 10px 22px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 0.92rem;
+      letter-spacing: -0.01em;
+      box-shadow: 0 10px 30px rgba(56, 189, 248, 0.5);
+      z-index: 40;
+      animation: toastBounce 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes toastBounce {
+      0% { transform: translateY(-20px) scale(0.85); opacity: 0; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    /* ── THE ANIME GLASS HYDRO SPHERE / BOWL ────────────────────── */
+    .hydro-sphere-wrapper {
       position: relative;
-      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 60%, rgba(56, 189, 248, 0.05) 100%);
-      border: 4px solid rgba(255, 255, 255, 0.18);
-      box-shadow: 
-        inset 0 0 40px rgba(56, 189, 248, 0.15),
-        inset 0 10px 20px rgba(255, 255, 255, 0.12),
-        0 20px 50px rgba(0, 0, 0, 0.6),
-        0 0 35px rgba(56, 189, 248, 0.1);
-      overflow: hidden;
       margin-top: 60px;
     }
 
-    /* Bowl Rim Highlight */
-    .glass-bowl::after {
+    .hydro-sphere {
+      width: 350px;
+      height: 350px;
+      border-radius: 50%;
+      position: relative;
+      background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.02) 45%, rgba(56, 189, 248, 0.08) 100%);
+      border: 5px solid rgba(255, 255, 255, 0.22);
+      box-shadow: 
+        inset 0 0 50px rgba(56, 189, 248, 0.22),
+        inset 0 14px 28px rgba(255, 255, 255, 0.2),
+        0 25px 60px rgba(0, 0, 0, 0.65),
+        0 0 45px rgba(56, 189, 248, 0.15);
+      overflow: hidden;
+      backdrop-filter: blur(4px);
+    }
+    @media(max-width: 480px) {
+      .hydro-sphere {
+        width: 290px;
+        height: 290px;
+      }
+    }
+
+    /* Glass Specular Rim / Highlight Reflection */
+    .hydro-sphere::before {
+      content: '';
+      position: absolute;
+      top: 15px; left: 35px;
+      width: 80px; height: 35px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 80%);
+      transform: rotate(-35deg);
+      pointer-events: none;
+      z-index: 25;
+    }
+    .hydro-sphere::after {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
       border-radius: 50%;
-      border-top: 5px solid rgba(255, 255, 255, 0.35);
-      border-left: 2px solid rgba(255, 255, 255, 0.2);
+      border-top: 4px solid rgba(255, 255, 255, 0.4);
+      border-left: 2px solid rgba(255, 255, 255, 0.25);
       pointer-events: none;
-      z-index: 10;
+      z-index: 25;
     }
 
-    /* Water Body Inside Bowl */
-    .water-body {
+    /* Rising Water Body */
+    .water-reservoir {
       position: absolute;
       bottom: 0;
       left: 0;
       width: 100%;
-      height: 0%; /* Dynamic 0-100% */
-      background: linear-gradient(180deg, #38bdf8 0%, #0284c7 40%, #0369a1 100%);
-      transition: height 1.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-      box-shadow: 0 0 30px rgba(56, 189, 248, 0.4);
+      height: 38%; /* Dynamic */
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.95) 0%, rgba(2, 132, 199, 0.95) 35%, rgba(3, 105, 161, 0.98) 75%, #0c4a6e 100%);
+      transition: height 1.8s cubic-bezier(0.34, 1.4, 0.64, 1);
+      box-shadow: 0 0 40px rgba(56, 189, 248, 0.6);
+      z-index: 5;
     }
 
-    /* Water Wave Surface */
-    .wave {
+    /* 3-Layered Anime Waves */
+    .wave-svg {
       position: absolute;
-      top: -22px;
+      top: -24px;
       left: 0;
       width: 200%;
-      height: 26px;
-      background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 800 28" xmlns="http://www.w3.org/2000/svg"><path d="M0,14 C150,28 250,0 400,14 C550,28 650,0 800,14 L800,28 L0,28 Z" fill="%2338bdf8"/></svg>');
+      height: 30px;
       background-repeat: repeat-x;
-      animation: waveMove 4s linear infinite;
     }
-    .wave.wave2 {
-      top: -18px;
-      opacity: 0.6;
-      animation: waveMove 2.5s linear infinite reverse;
-      background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 800 28" xmlns="http://www.w3.org/2000/svg"><path d="M0,14 C150,0 250,28 400,14 C550,0 650,28 800,14 L800,28 L0,28 Z" fill="%230284c7"/></svg>');
+    .wave-front {
+      background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 800 30" xmlns="http://www.w3.org/2000/svg"><path d="M0,15 C150,30 250,0 400,15 C550,30 650,0 800,15 L800,30 L0,30 Z" fill="%2338bdf8"/></svg>');
+      animation: waveFloat 4s linear infinite;
+      z-index: 7;
     }
-
-    @keyframes waveMove {
+    .wave-mid {
+      top: -20px;
+      opacity: 0.7;
+      background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 800 30" xmlns="http://www.w3.org/2000/svg"><path d="M0,15 C150,0 250,30 400,15 C550,0 650,30 800,15 L800,30 L0,30 Z" fill="%230284c7"/></svg>');
+      animation: waveFloat 3s linear infinite reverse;
+      z-index: 6;
+    }
+    .wave-back {
+      top: -16px;
+      opacity: 0.45;
+      background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 800 30" xmlns="http://www.w3.org/2000/svg"><path d="M0,15 C120,25 280,5 400,15 C520,25 680,5 800,15 L800,30 L0,30 Z" fill="%23bae6fd"/></svg>');
+      animation: waveFloat 5s linear infinite;
+      z-index: 5;
+    }
+    @keyframes waveFloat {
       0% { transform: translateX(0); }
       100% { transform: translateX(-50%); }
     }
 
-    /* Cute Mascot Inside Bowl */
-    .bowl-mascot {
+    /* Rising Bubbles inside Water */
+    .bubble {
       position: absolute;
-      bottom: 12px;
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(56, 189, 248, 0.3));
+      border-radius: 50%;
+      bottom: -10px;
+      pointer-events: none;
+      animation: bubbleRise 3.5s ease-in infinite;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    }
+    @keyframes bubbleRise {
+      0% { transform: translateY(0) scale(0.6); opacity: 0; }
+      20% { opacity: 0.8; }
+      80% { opacity: 0.8; }
+      100% { transform: translateY(-240px) scale(1.1); opacity: 0; }
+    }
+
+    /* ── ANIME WATER SPIRIT MASCOT (Mizutama) ─────────────────── */
+    .anime-spirit {
+      position: absolute;
+      top: -54px;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 2.2rem;
-      z-index: 5;
-      animation: floatMascot 3s ease-in-out infinite;
-      transition: transform 0.3s;
+      width: 72px;
+      height: 72px;
+      z-index: 15;
       cursor: pointer;
+      filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      animation: spiritBob 2.6s ease-in-out infinite;
     }
-    @keyframes floatMascot {
+    @keyframes spiritBob {
       0%, 100% { transform: translateX(-50%) translateY(0) rotate(0deg); }
-      50% { transform: translateX(-50%) translateY(-8px) rotate(4deg); }
+      50% { transform: translateX(-50%) translateY(-10px) rotate(4deg); }
     }
 
-    /* Target Percentage Ring in Bowl */
-    .bowl-center-text {
+    /* Mascot Body (Chibi Droplet) */
+    .spirit-body {
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 35% 30%, #ffffff 0%, #a5f3fc 30%, #38bdf8 80%, #0284c7 100%);
+      border-radius: 50% 50% 45% 45% / 60% 60% 40% 40%;
+      position: relative;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.6), inset 0 -4px 8px rgba(2, 132, 199, 0.5);
+      border: 2px solid rgba(255, 255, 255, 0.6);
+    }
+
+    /* Anime Droplet Top Crest */
+    .spirit-body::before {
+      content: '';
       position: absolute;
-      top: 50%;
+      top: -8px; left: 50%;
+      transform: translateX(-50%);
+      width: 16px; height: 16px;
+      background: #a5f3fc;
+      border-radius: 50% 0 50% 50%;
+      transform: translateX(-50%) rotate(-45deg);
+    }
+
+    /* Anime Eyes */
+    .spirit-face {
+      position: absolute;
+      top: 30px;
       left: 50%;
+      transform: translateX(-50%);
+      width: 44px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .spirit-eye {
+      width: 9px;
+      height: 13px;
+      background: #0f172a;
+      border-radius: 50%;
+      position: relative;
+      animation: animeBlink 4s infinite;
+    }
+    .spirit-eye::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 4px; height: 4px;
+      background: #ffffff;
+      border-radius: 50%;
+    }
+    .spirit-eye::before {
+      content: '';
+      position: absolute;
+      bottom: 2px; right: 2px;
+      width: 2px; height: 2px;
+      background: #ffffff;
+      border-radius: 50%;
+    }
+    @keyframes animeBlink {
+      0%, 96%, 100% { transform: scaleY(1); }
+      98% { transform: scaleY(0.1); }
+    }
+
+    /* Blushing Cheeks */
+    .spirit-blush-left, .spirit-blush-right {
+      position: absolute;
+      top: 39px;
+      width: 11px;
+      height: 6px;
+      background: rgba(244, 114, 182, 0.85);
+      border-radius: 50%;
+      filter: blur(0.5px);
+    }
+    .spirit-blush-left { left: 8px; }
+    .spirit-blush-right { right: 8px; }
+
+    /* Cute Chibi Mouth */
+    .spirit-mouth {
+      position: absolute;
+      top: 38px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 7px;
+      height: 5px;
+      border-bottom: 2px solid #0f172a;
+      border-radius: 0 0 8px 8px;
+      transition: all 0.2s;
+    }
+    /* Happy expression when pouring */
+    .anime-spirit.happy .spirit-mouth {
+      width: 10px; height: 8px;
+      background: #f43f5e;
+      border-radius: 0 0 10px 10px;
+      border: 1.5px solid #0f172a;
+    }
+    .anime-spirit.happy .spirit-eye {
+      background: transparent;
+      height: 6px;
+      border-top: 3px solid #0f172a;
+      border-radius: 50% 50% 0 0;
+    }
+
+    /* Floating Center Percentage & Metrics */
+    .sphere-metrics-center {
+      position: absolute;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       text-align: center;
-      z-index: 12;
+      z-index: 20;
       pointer-events: none;
     }
-    .bowl-percent {
-      font-size: 3.6rem;
+    .metric-percent {
+      font-size: 3.5rem;
       font-weight: 900;
-      font-family: var(--font-display);
+      font-family: var(--font-sans);
+      letter-spacing: -0.04em;
       line-height: 1;
-      color: #fff;
-      text-shadow: 0 4px 18px rgba(0,0,0,0.7);
+      color: #ffffff;
+      text-shadow: 
+        0 4px 16px rgba(0, 0, 0, 0.8),
+        0 0 30px rgba(56, 189, 248, 0.7);
     }
-    .bowl-subtext {
+    .metric-fraction {
       font-size: 0.85rem;
       font-weight: 700;
       font-family: var(--font-mono);
-      color: rgba(255, 255, 255, 0.9);
-      text-transform: uppercase;
       letter-spacing: 0.08em;
+      color: #e0f2fe;
       margin-top: 4px;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+      background: rgba(15, 23, 42, 0.55);
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      display: inline-block;
     }
 
-    /* Pour Toast Animation Banner */
-    .pour-banner {
+    /* Floating Cute Sparks */
+    .sparkle-fx {
       position: absolute;
-      top: 20px;
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(2, 132, 199, 0.35) 100%);
-      border: 1px solid var(--accent);
-      padding: 8px 18px;
-      border-radius: 9999px;
-      font-weight: 700;
-      font-size: 0.88rem;
-      color: #fff;
-      box-shadow: 0 10px 25px rgba(56, 189, 248, 0.3);
-      display: none;
-      align-items: center;
-      gap: 8px;
-      z-index: 25;
-      animation: bannerPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      font-size: 1.1rem;
+      pointer-events: none;
+      animation: sparkleFloat 1.8s ease-out infinite;
     }
-    @keyframes bannerPop {
-      0% { transform: scale(0.7) translateY(-10px); opacity: 0; }
-      100% { transform: scale(1) translateY(0); opacity: 1; }
+    @keyframes sparkleFloat {
+      0% { transform: translateY(0) scale(0.6) rotate(0deg); opacity: 0; }
+      50% { opacity: 1; transform: translateY(-20px) scale(1.2) rotate(45deg); }
+      100% { transform: translateY(-40px) scale(0.4) rotate(90deg); opacity: 0; }
     }
 
-    /* Right Side Stats & Timeline */
-    .stat-box-row {
+    /* ── RIGHT PANEL: STATS & TIMELINE ─────────────────────────── */
+    .stats-card-cluster {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-bottom: 24px;
+      gap: 16px;
+      margin-bottom: 22px;
     }
-    .stat-pill-box {
-      background: rgba(11, 17, 32, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 12px;
-      padding: 16px 18px;
+    @media(max-width: 480px) {
+      .stats-card-cluster { grid-template-columns: 1fr; }
     }
-    .stat-pill-label {
+
+    .mini-stat-card {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+    .mini-stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--accent), transparent);
+    }
+    .mini-label {
       font-size: 0.72rem;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
       font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .stat-pill-val {
-      font-size: 1.8rem;
+    .mini-val {
+      font-size: 1.85rem;
       font-weight: 800;
       font-family: var(--font-mono);
-      color: var(--accent);
+      color: var(--text);
+      margin-top: 6px;
+      letter-spacing: -0.02em;
+    }
+    .mini-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
       margin-top: 4px;
     }
 
-    /* Log Stream List */
-    .timeline-title {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 14px;
+    /* Anime Hydration Rank / Tier Banner */
+    .anime-rank-banner {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(168, 85, 247, 0.12));
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 16px;
+      padding: 16px 20px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-    }
-    .log-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      max-height: 380px;
-      overflow-y: auto;
-      padding-right: 6px;
-    }
-    .log-list::-webkit-scrollbar {
-      width: 4px;
-    }
-    .log-list::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
-    }
-
-    .log-item {
-      display: flex;
       justify-content: space-between;
-      align-items: center;
-      padding: 12px 16px;
-      background: rgba(11, 17, 32, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 10px;
-      transition: all 0.2s ease;
+      margin-bottom: 24px;
     }
-    .log-item:hover {
-      border-color: rgba(56, 189, 248, 0.3);
-      transform: translateX(3px);
-      background: rgba(56, 189, 248, 0.04);
-    }
-    .log-item.newly-poured {
-      animation: highlightPour 2s ease-out;
-      border-color: var(--accent);
-    }
-    @keyframes highlightPour {
-      0% { background: rgba(56, 189, 248, 0.3); }
-      100% { background: rgba(11, 17, 32, 0.5); }
-    }
-
-    .log-left {
+    .rank-info-left {
       display: flex;
       align-items: center;
       gap: 12px;
     }
-    .log-icon {
-      font-size: 1.3rem;
+    .rank-icon-badge {
+      width: 44px; height: 44px;
+      background: rgba(168, 85, 247, 0.2);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
     }
-    .log-time {
+    .rank-title {
       font-size: 0.95rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+    .rank-quote {
+      font-size: 0.76rem;
+      color: #cbd5e1;
+      margin-top: 2px;
+    }
+    .rank-level-tag {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #c084fc;
+      background: rgba(168, 85, 247, 0.15);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    /* Today's Timeline / Log Feed */
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .timeline-title {
+      font-size: 0.86rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .log-scroll-area {
+      max-height: 290px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+    .log-scroll-area::-webkit-scrollbar {
+      width: 5px;
+    }
+    .log-scroll-area::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, 0.25);
+      border-radius: 10px;
+    }
+
+    .log-row-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      transition: all 0.2s ease;
+    }
+    .log-row-item:hover {
+      background: rgba(56, 189, 248, 0.08);
+      border-color: rgba(56, 189, 248, 0.25);
+      transform: translateX(3px);
+    }
+    .log-row-item.new-glow {
+      animation: rowGlow 2.5s ease-out;
+      border-color: var(--accent);
+    }
+    @keyframes rowGlow {
+      0% { background: rgba(56, 189, 248, 0.35); box-shadow: 0 0 15px rgba(56, 189, 248, 0.5); }
+      100% { background: rgba(15, 23, 42, 0.5); box-shadow: none; }
+    }
+
+    .log-meta-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .log-sip-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+    .log-time-text {
+      font-size: 0.78rem;
       font-weight: 700;
       color: var(--text);
     }
-    .log-raw {
-      font-size: 0.75rem;
+    .log-raw-text {
+      font-size: 0.72rem;
       color: var(--muted);
-      font-style: italic;
+      margin-top: 1px;
     }
-    .log-amount {
+    .log-amount-badge {
       font-family: var(--font-mono);
-      font-size: 1.1rem;
+      font-size: 0.95rem;
       font-weight: 800;
-      color: var(--accent);
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 4px 10px;
+      border-radius: 8px;
     }
 
-    /* Instructions & Bot Link Bar */
-    .bot-sync-card {
-      margin-top: 24px;
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(20, 31, 54, 0.9) 100%);
-      border: 1px dashed rgba(56, 189, 248, 0.3);
-      border-radius: 14px;
-      padding: 18px 24px;
+    /* Bottom Telegram Banner */
+    .bot-sync-footer-card {
+      margin-top: 30px;
+      background: linear-gradient(135deg, rgba(16, 24, 46, 0.85) 0%, rgba(24, 38, 70, 0.85) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      border-radius: 20px;
+      padding: 22px 28px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
       gap: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     }
-    .btn-tg {
+    .btn-telegram-link {
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 0.85rem;
+      padding: 10px 20px;
+      border-radius: 12px;
+      text-decoration: none;
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: #0284c7;
-      color: #fff;
-      font-weight: 700;
-      font-size: 0.85rem;
-      padding: 9px 18px;
-      border-radius: 8px;
-      text-decoration: none;
-      transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(2, 132, 199, 0.4);
+      transition: all 0.2s ease;
     }
-    .btn-tg:hover {
-      background: #0369a1;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
-    }
-
-    /* Simulation Control for testing */
-    .sim-btn {
-      background: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: var(--muted);
-      font-size: 0.72rem;
-      padding: 4px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: 0.15s;
-    }
-    .sim-btn:hover {
-      color: var(--text);
-      border-color: var(--accent);
+    .btn-telegram-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(2, 132, 199, 0.6);
     }
   </style>
 </head>
 <body>
 
-  <!-- Navigation -->
+  <!-- Ambient Stars -->
+  <div class="bg-particles" id="starField"></div>
+
+  <!-- Header Navigation -->
   <header id="header">
     <div class="container nav-content">
       <a href="/" class="logo">Ravi<span>.</span></a>
@@ -539,108 +932,160 @@
   <main class="water-main">
     <a href="/" class="back-pill">← Back to Portfolio</a>
 
-    <!-- Top Title -->
-    <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 14px;">
+    <!-- Title & Top Controls -->
+    <div class="page-title-row">
       <div>
-        <h1 style="font-size: 2.2rem; font-weight: 900; letter-spacing: -0.025em; font-family: var(--font-display);">
-          The Epic Hydro Bowl 🌊
-        </h1>
-        <p style="color: var(--muted); font-size: 0.95rem; margin-top: 4px;">
-          Live 4,000 ml water intake engine. Text <code>@raviteja_water_bot</code> on Telegram to watch your water pour live!
+        <div class="anime-badge">水分補給 • HYDRATION ENGINE</div>
+        <h1 class="page-title">The Anime Hydro Bowl 🌊</h1>
+        <p class="page-subtitle">
+          Real-time 4,000 ml water sanctuary. Text <code>@raviteja_water_bot</code> on Telegram to pour fresh water live!
         </p>
       </div>
 
-      <div style="display: flex; gap: 8px; align-items: center;">
-        <button class="sim-btn" onclick="fetchLiveWaterData(true)" title="Check for newly texted water">🔄 Refresh Sync</button>
-        <button class="sim-btn" onclick="triggerPourAnimation(300, 'Test Sip')" title="Test Pour Animation">✨ Test 300ml Pour</button>
+      <!-- Controls: Sound Toggle & Simulation -->
+      <div class="controls-cluster">
+        <button class="ctrl-pill-btn active-sound" id="soundToggleBtn" onclick="toggleAudio()" title="Toggle Water Sounds">
+          <span id="soundIcon">🔊</span>
+          <span id="soundLabel">Sound: ON</span>
+        </button>
+        <button class="ctrl-pill-btn" onclick="fetchLiveWaterData(true)" title="Check for newly texted water">
+          <span>🔄</span> Sync Now
+        </button>
+        <button class="ctrl-pill-btn" onclick="simulateTestPour(300)" title="Watch anime pouring animation with water droplet sound">
+          <span>✨</span> Pour +300ml
+        </button>
       </div>
     </div>
 
     <!-- Main Dashboard Grid -->
     <div class="dashboard-grid">
-      
-      <!-- Left Card: The Epic Animated Bowl -->
-      <div class="card bowl-stage">
+
+      <!-- LEFT: The Epic Anime Hydro Sphere -->
+      <div class="anime-card bowl-stage">
         
-        <!-- Live Pour Toast -->
-        <div class="pour-banner" id="pourBanner">
-          <span style="font-size: 1.2rem;">💧</span>
-          <span id="pourBannerText">Pouring +300 ml into the bowl!</span>
+        <!-- Live Toast Notification -->
+        <div class="anime-pour-toast" id="pourToast">
+          <span style="font-size: 1.3rem;">🫗</span>
+          <span id="pourToastText">Pouring +300 ml into the bowl!</span>
         </div>
 
-        <!-- Pouring Spout & Falling Stream -->
-        <div class="pour-spout" id="pourSpout">
-          <div class="cloud-pitcher" id="pitcherIcon">🫗</div>
-          <div class="water-stream" id="waterStream"></div>
-          <div class="splash-ring" id="splashRing"></div>
-        </div>
-
-        <!-- The Glass Hydro Bowl -->
-        <div class="glass-bowl" id="glassBowl">
-          <!-- Rising Water Body -->
-          <div class="water-body" id="waterBody">
-            <div class="wave wave1"></div>
-            <div class="wave wave2"></div>
-          </div>
-
-          <!-- Inside Bowl Floating Percentage -->
-          <div class="bowl-center-text">
-            <div class="bowl-percent" id="bowlPercent">0%</div>
-            <div class="bowl-subtext" id="bowlFraction">0 / 4,000 ML</div>
-          </div>
-
-          <!-- Cute Floating Mascot / Rubber Duck -->
-          <div class="bowl-mascot" id="bowlMascot" title="Click me for a splash!" onclick="splashMascot()">
-            🦆
+        <!-- Floating Cloud / Pitcher Station -->
+        <div class="pour-station" id="pourStation">
+          <div class="anime-pitcher" id="pitcherEmoji">🫗</div>
+          <div class="pour-stream" id="pourStream"></div>
+          <div class="splash-container" id="splashContainer">
+            <div class="splash-pulse"></div>
+            <div class="splash-drop d1"></div>
+            <div class="splash-drop d2"></div>
           </div>
         </div>
 
-        <p style="color: var(--muted); font-size: 0.8rem; margin-top: 24px; text-align: center;">
-          <span style="color: var(--accent); font-weight: 700;">Tip:</span> Every text you send to Telegram automatically triggers a fresh pour animation into this bowl!
+        <!-- The Glowing Glass Hydro Sphere -->
+        <div class="hydro-sphere-wrapper">
+          <div class="hydro-sphere" id="hydroSphere">
+            
+            <!-- Rising Water Body -->
+            <div class="water-reservoir" id="waterReservoir">
+              <!-- Animated SVG Waves -->
+              <div class="wave-svg wave-front"></div>
+              <div class="wave-svg wave-mid"></div>
+              <div class="wave-svg wave-back"></div>
+
+              <!-- Animated Anime Water Spirit Mascot (Mizutama) -->
+              <div class="anime-spirit" id="animeSpirit" title="Tap Mizutama for a giggle & splash!" onclick="pokeMizutama()">
+                <div class="spirit-body">
+                  <div class="spirit-face">
+                    <div class="spirit-eye"></div>
+                    <div class="spirit-eye"></div>
+                  </div>
+                  <div class="spirit-blush-left"></div>
+                  <div class="spirit-blush-right"></div>
+                  <div class="spirit-mouth"></div>
+                </div>
+              </div>
+
+              <!-- Rising Bubbles Container -->
+              <div id="bubbleContainer"></div>
+            </div>
+
+            <!-- Central Percentage & Metrics -->
+            <div class="sphere-metrics-center">
+              <div class="metric-percent" id="displayPercent">0%</div>
+              <div class="metric-fraction" id="displayFraction">0 / 4,000 ML</div>
+            </div>
+
+          </div>
+        </div>
+
+        <p style="color: var(--muted); font-size: 0.82rem; margin-top: 26px; text-align: center;">
+          <span style="color: var(--accent); font-weight: 700;">Mizutama's Note:</span> Whenever you refresh after texting Telegram, new water streams in with authentic pouring droplets!
         </p>
       </div>
 
-      <!-- Right Card: Today's Intake Analytics & Timeline -->
-      <div class="card">
-        <div class="stat-box-row">
-          <div class="stat-pill-box">
-            <div class="stat-pill-label">Today's Inflow</div>
-            <div class="stat-pill-val" id="todayTotalVal">0 ml</div>
-            <div style="font-size: 0.72rem; color: var(--muted); margin-top: 2px;" id="goalStatus">0% of 4L target</div>
+      <!-- RIGHT: Metrics, Anime Tiers & Live Timeline -->
+      <div class="anime-card">
+        
+        <!-- Hydration Rank Tier Banner -->
+        <div class="anime-rank-banner" id="rankBanner">
+          <div class="rank-info-left">
+            <div class="rank-icon-badge" id="rankIcon">🌱</div>
+            <div>
+              <div class="rank-title" id="rankTitle">Sprout Awakening</div>
+              <div class="rank-quote" id="rankQuote">The journey to 4,000 ml begins!</div>
+            </div>
+          </div>
+          <div class="rank-level-tag" id="rankLevel">RANK I</div>
+        </div>
+
+        <!-- Metrics Cards -->
+        <div class="stats-card-cluster">
+          <div class="mini-stat-card">
+            <div class="mini-label">
+              <span>💧</span> Today's Inflow
+            </div>
+            <div class="mini-val" id="todayTotalVal" style="color: #38bdf8;">0 ml</div>
+            <div class="mini-sub" id="todayGoalPct">0% of 4L target</div>
           </div>
 
-          <div class="stat-pill-box">
-            <div class="stat-pill-label">Remaining to 4L</div>
-            <div class="stat-pill-val" id="remainingVal" style="color: #34d399;">4,000 ml</div>
-            <div style="font-size: 0.72rem; color: var(--muted); margin-top: 2px;" id="estimatedGlasses">~16 glasses left</div>
+          <div class="mini-stat-card">
+            <div class="mini-label">
+              <span>🎯</span> Remaining to 4L
+            </div>
+            <div class="mini-val" id="remainingVal" style="color: #34d399;">4,000 ml</div>
+            <div class="mini-sub" id="remainingGlasses">~16 glasses left</div>
           </div>
         </div>
 
-        <!-- Chronological Today Logs -->
-        <div class="timeline-title">
-          <span>Today's Chronological Sips</span>
-          <span id="logCountBadge" style="font-family: var(--font-mono); color: var(--accent); font-size: 0.75rem;">0 entries</span>
+        <!-- Chronological Today Log Feed -->
+        <div class="timeline-header">
+          <div class="timeline-title">
+            <span>🌊 Today's Water Timeline</span>
+          </div>
+          <div id="logCountBadge" style="font-family: var(--font-mono); font-size: 0.74rem; color: var(--accent); font-weight: 700;">
+            0 sips
+          </div>
         </div>
 
-        <div class="log-list" id="logList">
-          <div style="text-align: center; padding: 40px 20px; color: var(--muted); font-size: 0.9rem; font-style: italic;">
+        <div class="log-scroll-area" id="logFeed">
+          <div style="text-align: center; padding: 42px 20px; color: var(--muted); font-size: 0.88rem; font-style: italic;">
             Waiting for your first sip today!<br>
             Text <code>300 ml</code> to <a href="https://t.me/raviteja_water_bot" target="_blank" style="color: var(--accent); font-weight: 700;">@raviteja_water_bot</a> on Telegram.
           </div>
         </div>
+
       </div>
 
     </div>
 
     <!-- Bottom Telegram Integration Banner -->
-    <div class="bot-sync-card">
+    <div class="bot-sync-footer-card">
       <div>
-        <h4 style="font-size: 1rem; color: var(--text); font-weight: 700;">🤖 Instant Telegram Logging Synced</h4>
-        <p style="font-size: 0.82rem; color: var(--muted); margin-top: 2px;">
-          Send <code>300 ml</code>, <code>500</code>, <code>1L</code>, or <code>1 glass</code> directly to your personal bot.
+        <h4 style="font-size: 1.05rem; font-weight: 800; color: #ffffff;">🤖 Direct Telegram Hydro Sync Active</h4>
+        <p style="font-size: 0.84rem; color: var(--muted); margin-top: 3px;">
+          Send <code>300 ml</code>, <code>500</code>, <code>1.5L</code>, or <code>1 glass</code> to your personal bot anytime.
         </p>
       </div>
-      <a href="https://t.me/raviteja_water_bot" target="_blank" class="btn-tg">
+      <a href="https://t.me/raviteja_water_bot" target="_blank" class="btn-telegram-link">
         <span>Open @raviteja_water_bot</span>
         <span>↗</span>
       </a>
@@ -653,163 +1098,358 @@
     const LAST_SEEN_TOTAL_KEY = 'rjb_water_last_total';
     const LAST_SEEN_LOGS_KEY = 'rjb_water_last_logs_count';
     const LAST_SEEN_DATE_KEY = 'rjb_water_last_date';
+    const SOUND_PREF_KEY = 'rjb_water_sound_enabled';
 
     let currentWaterMl = 0;
     let isPouringNow = false;
+    let audioEnabled = localStorage.getItem(SOUND_PREF_KEY) !== 'false'; // default ON
 
-    // Mascots based on water progress
-    const MASCOTS = ['🫧', '🦆', '🐬', '🐙', '🦈', '🌊'];
+    // ── SYNTHESIZED WEB AUDIO ENGINE (ZERO EXTERNAL ASSETS) ───────────
+    let audioCtx = null;
 
-    function getMascot(pct) {
-      if (pct >= 100) return '🏆';
-      if (pct >= 80) return '🐬';
-      if (pct >= 50) return '🐙';
-      if (pct >= 25) return '🦆';
-      return '🫧';
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          audioCtx = new AudioContextClass();
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
     }
 
-    function splashMascot() {
-      const m = document.getElementById('bowlMascot');
-      m.style.transform = 'translateX(-50%) translateY(-25px) scale(1.3) rotate(20deg)';
+    // Toggle Sound
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      localStorage.setItem(SOUND_PREF_KEY, audioEnabled ? 'true' : 'false');
+      updateSoundButtonUI();
+      if (audioEnabled) {
+        getAudioContext();
+        playWaterDropletSound(650);
+        setTimeout(() => playWaterDropletSound(920), 120);
+      }
+    }
+
+    function updateSoundButtonUI() {
+      const btn = document.getElementById('soundToggleBtn');
+      const icon = document.getElementById('soundIcon');
+      const label = document.getElementById('soundLabel');
+      if (audioEnabled) {
+        btn.classList.add('active-sound');
+        icon.innerText = '🔊';
+        label.innerText = 'Sound: ON';
+      } else {
+        btn.classList.remove('active-sound');
+        icon.innerText = '🔇';
+        label.innerText = 'Sound: OFF';
+      }
+    }
+    updateSoundButtonUI();
+
+    // 1. Synthesize Crystal Water Droplet Sound ("Bloop!")
+    function playWaterDropletSound(freq = 520) {
+      if (!audioEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        // Pitch envelope sweeps upwards like a bubble pop
+        osc.frequency.setValueAtTime(freq * 0.75, now);
+        osc.frequency.exponentialRampToValueAtTime(freq * 1.6, now + 0.12);
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.28, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.15);
+      } catch (e) {
+        console.warn("Audio error:", e);
+      }
+    }
+
+    // 2. Synthesize Continuous Water Pouring Stream with Cascading Droplets
+    function playWaterPouringSound(durationSeconds = 2.0) {
+      if (!audioEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+
+        // Bandpass Filtered Fluid Noise Stream
+        const bufferSize = ctx.sampleRate * durationSeconds;
+        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          output[i] = Math.random() * 2 - 1;
+        }
+
+        const whiteNoise = ctx.createBufferSource();
+        whiteNoise.buffer = noiseBuffer;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(700, now);
+        filter.frequency.linearRampToValueAtTime(1100, now + durationSeconds);
+        filter.Q.value = 3.5;
+
+        const streamGain = ctx.createGain();
+        streamGain.gain.setValueAtTime(0.001, now);
+        streamGain.gain.linearRampToValueAtTime(0.18, now + 0.25);
+        streamGain.gain.setValueAtTime(0.18, now + durationSeconds - 0.35);
+        streamGain.gain.exponentialRampToValueAtTime(0.0001, now + durationSeconds);
+
+        whiteNoise.connect(filter);
+        filter.connect(streamGain);
+        streamGain.connect(ctx.destination);
+
+        whiteNoise.start(now);
+        whiteNoise.stop(now + durationSeconds);
+
+        // Stagger rhythmic droplet plinks throughout the stream
+        const dropFrequencies = [580, 720, 890, 640, 950, 780, 1100, 840];
+        dropFrequencies.forEach((f, idx) => {
+          setTimeout(() => {
+            playWaterDropletSound(f);
+          }, 180 + idx * 210);
+        });
+      } catch (e) {
+        console.warn("Pouring audio error:", e);
+      }
+    }
+
+    // 3. Cheerful Chime on reaching milestone
+    function playAnimeChime() {
+      if (!audioEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const chord = [523.25, 659.25, 783.99, 1046.50]; // C Major
+        chord.forEach((freq, idx) => {
+          setTimeout(() => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            const now = ctx.currentTime;
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.85);
+          }, idx * 90);
+        });
+      } catch (e) {
+        console.warn("Chime error:", e);
+      }
+    }
+
+    // ── ANIME HYDRATION TIERS ─────────────────────────────────────────
+    const HYDRATION_RANKS = [
+      { min: 0, title: "Sprout Awakening 🌱", quote: "The journey to 4,000 ml begins!", icon: "🌱", level: "RANK I" },
+      { min: 25, title: "Wave Apprentice 🌊", quote: "Great rhythm! The current carries you forward.", icon: "🌊", level: "RANK II" },
+      { min: 50, title: "Aqua Knight ⚡", quote: "Over halfway mark! Unstoppable hydration power.", icon: "⚡", level: "RANK III" },
+      { min: 75, title: "Leviathan Spirit 🐉", quote: "Almost legendary! The finish line is glowing.", icon: "🐉", level: "RANK IV" },
+      { min: 100, title: "Divine Water Sovereign 👑", quote: "Goal Achieved! You have ascended to 4L Mastery!", icon: "👑", level: "MAX RANK" }
+    ];
+
+    function updateAnimeRank(totalMl) {
+      const pct = (totalMl / DAILY_GOAL_ML) * 100;
+      let matchedRank = HYDRATION_RANKS[0];
+      for (let r of HYDRATION_RANKS) {
+        if (pct >= r.min) matchedRank = r;
+      }
+
+      document.getElementById('rankIcon').innerText = matchedRank.icon;
+      document.getElementById('rankTitle').innerText = matchedRank.title;
+      document.getElementById('rankQuote').innerText = matchedRank.quote;
+      document.getElementById('rankLevel').innerText = matchedRank.level;
+    }
+
+    // Interactive Tap on Mascot
+    function pokeMizutama() {
+      const spirit = document.getElementById('animeSpirit');
+      spirit.classList.add('happy');
+      spirit.style.transform = 'translateX(-50%) translateY(-28px) scale(1.25) rotate(15deg)';
+      
+      playWaterDropletSound(880);
+      setTimeout(() => playWaterDropletSound(1150), 100);
+
+      createSparksAroundSpirit();
+
       setTimeout(() => {
-        m.style.transform = 'translateX(-50%) translateY(0) rotate(0deg)';
-      }, 350);
+        spirit.style.transform = 'translateX(-50%) translateY(0) rotate(0deg)';
+        spirit.classList.remove('happy');
+      }, 500);
     }
 
-    // Set bowl water level without pouring animation
+    function createSparksAroundSpirit() {
+      const sphere = document.getElementById('hydroSphere');
+      const sparks = ['✨', '🫧', '💖', '⭐'];
+      for (let i = 0; i < 4; i++) {
+        const s = document.createElement('div');
+        s.className = 'sparkle-fx';
+        s.innerText = sparks[Math.floor(Math.random() * sparks.length)];
+        s.style.left = `${140 + (Math.random() * 80 - 40)}px`;
+        s.style.top = `${110 + (Math.random() * 40 - 20)}px`;
+        sphere.appendChild(s);
+        setTimeout(() => s.remove(), 1800);
+      }
+    }
+
+    // Set bowl water level without animation
     function setBowlLevelDirect(ml) {
       currentWaterMl = ml;
       const pct = Math.min(100, Math.round((ml / DAILY_GOAL_ML) * 100));
-      
-      const waterBody = document.getElementById('waterBody');
-      const bowlPercent = document.getElementById('bowlPercent');
-      const bowlFraction = document.getElementById('bowlFraction');
-      const bowlMascot = document.getElementById('bowlMascot');
 
-      waterBody.style.height = `${pct}%`;
-      bowlPercent.innerText = `${pct}%`;
-      bowlFraction.innerText = `${ml.toLocaleString()} / ${DAILY_GOAL_ML.toLocaleString()} ML`;
-      bowlMascot.innerText = getMascot(pct);
+      const reservoir = document.getElementById('waterReservoir');
+      const dispPct = document.getElementById('displayPercent');
+      const dispFraction = document.getElementById('displayFraction');
+
+      reservoir.style.height = `${pct}%`;
+      dispPct.innerText = `${pct}%`;
+      dispFraction.innerText = `${ml.toLocaleString()} / ${DAILY_GOAL_ML.toLocaleString()} ML`;
 
       updateStatsPills(ml);
+      updateAnimeRank(ml);
     }
 
-    // Trigger the Epic Pouring Animation for newly arrived water
+    // Trigger Epic Anime Pour Animation with Authentic Water Sound
     function triggerPourAnimation(amountPoured, labelText, targetTotal) {
       if (isPouringNow) return;
       isPouringNow = true;
 
-      const pourSpout = document.getElementById('pourSpout');
-      const waterStream = document.getElementById('waterStream');
-      const splashRing = document.getElementById('splashRing');
-      const pourBanner = document.getElementById('pourBanner');
-      const pourBannerText = document.getElementById('pourBannerText');
-      const waterBody = document.getElementById('waterBody');
-      const bowlPercent = document.getElementById('bowlPercent');
-      const bowlFraction = document.getElementById('bowlFraction');
-      const bowlMascot = document.getElementById('bowlMascot');
+      const pourStation = document.getElementById('pourStation');
+      const pourStream = document.getElementById('pourStream');
+      const splashContainer = document.getElementById('splashContainer');
+      const pourToast = document.getElementById('pourToast');
+      const pourToastText = document.getElementById('pourToastText');
+      const reservoir = document.getElementById('waterReservoir');
+      const dispPct = document.getElementById('displayPercent');
+      const dispFraction = document.getElementById('displayFraction');
+      const spirit = document.getElementById('animeSpirit');
 
-      // 1. Show Pitcher & Toast Banner
-      pourBannerText.innerText = `Pouring +${amountPoured} ml from ${labelText || 'Telegram'}! 🫗`;
-      pourBanner.style.display = 'flex';
-      pourSpout.classList.add('pouring');
+      // 1. Play Authentic Water Pouring Sound
+      playWaterPouringSound(2.2);
 
-      // 2. Stream drops down into bowl
+      // 2. Show Toast & Tip Pitcher
+      pourToastText.innerText = `Pouring +${amountPoured} ml from ${labelText || 'Telegram'}! 🫗`;
+      pourToast.style.display = 'flex';
+      pourStation.classList.add('pouring');
+
+      // 3. Extend Water Stream & Splash
       setTimeout(() => {
-        waterStream.style.height = '140px';
-        splashRing.style.display = 'block';
-      }, 250);
+        pourStream.style.height = '145px';
+        splashContainer.style.display = 'block';
+      }, 240);
 
-      // 3. Water body rises up in the bowl with a splash
+      // 4. Mascot Cheers and Water Level Rises
       const finalMl = typeof targetTotal !== 'undefined' ? targetTotal : (currentWaterMl + amountPoured);
       const startMl = currentWaterMl;
 
       setTimeout(() => {
+        spirit.classList.add('happy');
+        pokeMizutama();
+
         const finalPct = Math.min(100, Math.round((finalMl / DAILY_GOAL_ML) * 100));
-        waterBody.style.height = `${finalPct}%`;
-        
-        // Counter tick animation
+        reservoir.style.height = `${finalPct}%`;
+
+        // Smooth Counter Tick
         let step = 0;
-        const totalSteps = 20;
+        const totalSteps = 24;
         const delta = (finalMl - startMl) / totalSteps;
         const interval = setInterval(() => {
           step++;
           const curVal = Math.round(startMl + delta * step);
           const curPct = Math.min(100, Math.round((curVal / DAILY_GOAL_ML) * 100));
-          bowlPercent.innerText = `${curPct}%`;
-          bowlFraction.innerText = `${curVal.toLocaleString()} / ${DAILY_GOAL_ML.toLocaleString()} ML`;
+          dispPct.innerText = `${curPct}%`;
+          dispFraction.innerText = `${curVal.toLocaleString()} / ${DAILY_GOAL_ML.toLocaleString()} ML`;
           if (step >= totalSteps) {
             clearInterval(interval);
             setBowlLevelDirect(finalMl);
+            if (finalMl >= DAILY_GOAL_ML) {
+              playAnimeChime();
+            }
           }
-        }, 50);
+        }, 45);
 
-        // Mascot jumps with joy
-        splashMascot();
-      }, 700);
+      }, 650);
 
-      // 4. End the stream & hide pitcher
+      // 5. Retract Stream
       setTimeout(() => {
-        waterStream.style.height = '0';
-        splashRing.style.display = 'none';
-        pourSpout.classList.remove('pouring');
-      }, 2000);
+        pourStream.style.height = '0';
+        splashContainer.style.display = 'none';
+        pourStation.classList.remove('pouring');
+      }, 2100);
 
-      // 5. Hide banner
+      // 6. Fade Toast
       setTimeout(() => {
-        pourBanner.style.display = 'none';
+        pourToast.style.display = 'none';
+        spirit.classList.remove('happy');
         isPouringNow = false;
-      }, 3500);
+      }, 3400);
     }
 
+    // Update Stats
     function updateStatsPills(totalMl) {
       const remaining = Math.max(0, DAILY_GOAL_ML - totalMl);
       const pct = Math.min(100, Math.round((totalMl / DAILY_GOAL_ML) * 100));
       const glassesLeft = Math.ceil(remaining / 250);
 
       document.getElementById('todayTotalVal').innerText = `${totalMl.toLocaleString()} ml`;
-      document.getElementById('goalStatus').innerText = `${pct}% of 4L target`;
+      document.getElementById('todayGoalPct').innerText = `${pct}% of 4L target`;
 
       const remEl = document.getElementById('remainingVal');
       if (remaining === 0) {
         remEl.innerText = '0 ml 🎉';
         remEl.style.color = '#38bdf8';
-        document.getElementById('estimatedGlasses').innerText = 'Goal achieved! You are hydrated ⚡';
+        document.getElementById('remainingGlasses').innerText = 'Goal achieved! Divine hydration reached ⚡';
       } else {
         remEl.innerText = `${remaining.toLocaleString()} ml`;
         remEl.style.color = '#34d399';
-        document.getElementById('estimatedGlasses').innerText = `~${glassesLeft} glass${glassesLeft > 1 ? 'es' : ''} left`;
+        document.getElementById('remainingGlasses').innerText = `~${glassesLeft} glass${glassesLeft > 1 ? 'es' : ''} left`;
       }
     }
 
-    function renderLogList(logs, newlyAddedCount) {
-      const listEl = document.getElementById('logList');
+    // Render Timeline
+    function renderLogFeed(logs, newlyAddedCount) {
+      const feedEl = document.getElementById('logFeed');
       const badge = document.getElementById('logCountBadge');
       badge.innerText = `${logs.length} sip${logs.length === 1 ? '' : 's'}`;
 
       if (!logs || logs.length === 0) {
-        listEl.innerHTML = `
-          <div style="text-align: center; padding: 40px 20px; color: var(--muted); font-size: 0.9rem; font-style: italic;">
+        feedEl.innerHTML = `
+          <div style="text-align: center; padding: 42px 20px; color: var(--muted); font-size: 0.88rem; font-style: italic;">
             Waiting for your first sip today!<br>
             Text <code>300 ml</code> to <a href="https://t.me/raviteja_water_bot" target="_blank" style="color: var(--accent); font-weight: 700;">@raviteja_water_bot</a> on Telegram.
           </div>`;
         return;
       }
 
-      // Reverse to show latest first
       const reversed = [...logs].reverse();
-      listEl.innerHTML = reversed.map((l, idx) => {
+      feedEl.innerHTML = reversed.map((l, idx) => {
         const isNew = idx < newlyAddedCount;
         return `
-          <div class="log-item ${isNew ? 'newly-poured' : ''}">
-            <div class="log-left">
-              <span class="log-icon">💧</span>
+          <div class="log-row-item ${isNew ? 'new-glow' : ''}">
+            <div class="log-meta-left">
+              <div class="log-sip-icon">💧</div>
               <div>
-                <div class="log-time">${l.time || 'Today'}</div>
-                <div class="log-raw">${escapeHtml(l.rawMessage || `${l.amount} ml`)}</div>
+                <div class="log-time-text">${escapeHtml(l.time || 'Today')}</div>
+                <div class="log-raw-text">${escapeHtml(l.rawMessage || `${l.amount} ml`)}</div>
               </div>
             </div>
-            <div class="log-amount">+${l.amount.toLocaleString()} ml</div>
+            <div class="log-amount-badge">+${l.amount.toLocaleString()} ml</div>
           </div>
         `;
       }).join('');
@@ -820,7 +1460,7 @@
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-    // Fetch live data from Vercel API (which queries your Google Sheet)
+    // Fetch Live Water Data from Vercel API
     async function fetchLiveWaterData(isManual = false) {
       try {
         const res = await fetch('/api/water-data');
@@ -831,7 +1471,7 @@
         const logs = data.todayLogs || [];
         const todayStr = data.todayStr || "";
 
-        // Check if day changed - if new day, reset last seen markers
+        // Check if day changed
         const lastSeenDate = localStorage.getItem(LAST_SEEN_DATE_KEY);
         let lastSeenTotal = Number(localStorage.getItem(LAST_SEEN_TOTAL_KEY)) || 0;
         let lastSeenCount = Number(localStorage.getItem(LAST_SEEN_LOGS_KEY)) || 0;
@@ -842,7 +1482,7 @@
           localStorage.setItem(LAST_SEEN_DATE_KEY, todayStr);
         }
 
-        // If newly added water detected on open or refresh
+        // Newly added water detected!
         if (serverTotal > lastSeenTotal) {
           const delta = serverTotal - lastSeenTotal;
           const latestLog = logs[logs.length - 1];
@@ -852,7 +1492,7 @@
           setBowlLevelDirect(serverTotal);
         }
 
-        renderLogList(logs, Math.max(0, logs.length - lastSeenCount));
+        renderLogFeed(logs, Math.max(0, logs.length - lastSeenCount));
 
         // Save new seen total
         localStorage.setItem(LAST_SEEN_TOTAL_KEY, serverTotal);
@@ -860,10 +1500,10 @@
         localStorage.setItem(LAST_SEEN_DATE_KEY, todayStr);
 
         if (isManual) {
-          const btn = event?.target;
+          const btn = event?.target?.closest('button');
           if (btn) {
-            btn.innerText = "✓ Synced!";
-            setTimeout(() => { btn.innerText = "🔄 Refresh Sync"; }, 1500);
+            btn.innerHTML = "<span>✓</span> Synced!";
+            setTimeout(() => { btn.innerHTML = "<span>🔄</span> Sync Now"; }, 1500);
           }
         }
       } catch (err) {
@@ -871,10 +1511,59 @@
       }
     }
 
+    // Manual Simulation Pour for Testing
+    function simulateTestPour(amount = 300) {
+      getAudioContext();
+      const newTotal = currentWaterMl + amount;
+      triggerPourAnimation(amount, 'Test Sip', newTotal);
+    }
+
+    // Ambient Bubbles Generator
+    function initBubbles() {
+      const container = document.getElementById('bubbleContainer');
+      for (let i = 0; i < 7; i++) {
+        const b = document.createElement('div');
+        b.className = 'bubble';
+        const size = 6 + Math.random() * 12;
+        b.style.width = `${size}px`;
+        b.style.height = `${size}px`;
+        b.style.left = `${15 + Math.random() * 70}%`;
+        b.style.animationDelay = `${Math.random() * 4}s`;
+        b.style.animationDuration = `${3 + Math.random() * 2.5}s`;
+        container.appendChild(b);
+      }
+    }
+    initBubbles();
+
+    // Ambient Stars Generator
+    function initStars() {
+      const field = document.getElementById('starField');
+      for (let i = 0; i < 28; i++) {
+        const s = document.createElement('div');
+        s.className = 'star-dot';
+        const size = 2 + Math.random() * 3;
+        s.style.width = `${size}px`;
+        s.style.height = `${size}px`;
+        s.style.left = `${Math.random() * 100}%`;
+        s.style.top = `${Math.random() * 100}%`;
+        s.style.animationDelay = `${Math.random() * 6}s`;
+        s.style.animationDuration = `${5 + Math.random() * 6}s`;
+        field.appendChild(s);
+      }
+    }
+    initStars();
+
+    // Unlock Audio on First Click Anywhere
+    document.addEventListener('click', () => {
+      if (audioEnabled) {
+        getAudioContext();
+      }
+    }, { once: true });
+
     // Initial Load
     fetchLiveWaterData();
 
-    // Auto-poll in background every 12 seconds so if you text on phone with website open on desktop, it pours live!
+    // Auto-poll in background every 12s so live pours happen in real-time
     setInterval(() => {
       fetchLiveWaterData();
     }, 12000);
