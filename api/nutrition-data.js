@@ -78,26 +78,39 @@ export default async function handler(req, res) {
     const rawPantry = pantryRes.ok ? await pantryRes.json() : [];
 
     // 3. Clean Pantry Items
-    const pantry = Array.isArray(rawPantry) ? rawPantry.map((item, idx) => ({
-      id: `pantry_${idx}`,
-      itemName: item["Item Name"] || item.itemName || "Item",
-      brand: item["Brand"] || item.brand || "",
-      servingUnit: item["Serving Unit"] || item.servingUnit || "1 serving",
-      servingWeight: item["Serving Weight (g/ml)"] || item.servingWeight || "",
-      calories: Number(item["Calories (kcal)"] || item.calories) || 0,
-      protein: Number(item["Protein (g)"] || item.protein) || 0,
-      carbs: Number(item["Carbs (g)"] || item.carbs) || 0,
-      fats: Number(item["Fats (g)"] || item.fats) || 0,
-      fiber: Number(item["Fiber (g)"] || item.fiber) || 0,
-      sugar: Number(item["Sugar (g)"] || item.sugar) || 0,
-      aliases: item["Aliases"] || item.aliases || ""
-    })) : [];
+    const pantry = Array.isArray(rawPantry) ? rawPantry.map((item, idx) => {
+      const rawAliases = item["Aliases"] || item.aliases || "";
+      let vitals = "";
+      const match = rawAliases.match(/\[Vitals:\s*(.*?)\]/i);
+      if (match) vitals = match[1];
+
+      return {
+        id: `pantry_${idx}`,
+        itemName: item["Item Name"] || item.itemName || "Item",
+        brand: item["Brand"] || item.brand || "",
+        servingUnit: item["Serving Unit"] || item.servingUnit || "1 serving",
+        servingWeight: item["Serving Weight (g/ml)"] || item.servingWeight || "",
+        calories: Number(item["Calories (kcal)"] || item.calories) || 0,
+        protein: Number(item["Protein (g)"] || item.protein) || 0,
+        carbs: Number(item["Carbs (g)"] || item.carbs) || 0,
+        fats: Number(item["Fats (g)"] || item.fats) || 0,
+        fiber: Number(item["Fiber (g)"] || item.fiber) || 0,
+        sugar: Number(item["Sugar (g)"] || item.sugar) || 0,
+        vitals: vitals,
+        aliases: rawAliases.replace(/\[Vitals:\s*.*?\]/i, '').trim()
+      };
+    }) : [];
 
     // 4. Clean and Filter Today's Food Logs
     const cleanedLogs = Array.isArray(rawLogs) ? rawLogs.map((r, idx) => {
       const rowDate = normalizeToISTDateStr(r.Date || r.date || "");
       const timestamp = r.Timestamp || r.timestamp || "";
       const rowTime = formatDisplayTime(r.Time || r.time, timestamp);
+      const rawMsg = r["Message"] || r.rawMessage || "";
+      let vitals = "";
+      const match = rawMsg.match(/\[Vitals:\s*(.*?)\]/i);
+      if (match) vitals = match[1];
+
       return {
         id: `food_${idx}_${timestamp}`,
         date: rowDate,
@@ -112,7 +125,8 @@ export default async function handler(req, res) {
         fats: Number(r["Fats"] || r.fats) || 0,
         fiber: Number(r["Fiber"] || r.fiber) || 0,
         sugar: Number(r["Sugar"] || r.sugar) || 0,
-        rawMessage: r["Message"] || r.rawMessage || ""
+        vitals: vitals,
+        rawMessage: rawMsg.replace(/\[Vitals:\s*.*?\]/i, '').trim()
       };
     }) : [];
 

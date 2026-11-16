@@ -709,22 +709,27 @@
           logsList.innerHTML = `
             <div style="text-align: center; padding: 48px 20px; color: var(--muted); font-size: 0.9rem; font-style: italic;">
               Waiting for your first fuel log today!<br>
-              Text <code>1 scoop protein</code> to <a href="https://t.me/raviteja_fuel_bot" target="_blank" style="color: var(--accent); font-weight: 700;">@raviteja_fuel_bot</a>.
+              Text <code>1 scoop protein</code> or <code>1 cap fish oil</code> to <a href="https://t.me/raviteja_fuel_bot" target="_blank" style="color: var(--accent); font-weight: 700;">@raviteja_fuel_bot</a>.
             </div>`;
         } else {
           const reversed = [...logs].reverse();
-          logsList.innerHTML = reversed.map(l => `
+          logsList.innerHTML = reversed.map(l => {
+            const hasMacros = (l.protein > 0 || l.calories > 0);
+            return `
             <div class="food-log-item">
               <div>
                 <div class="food-item-title">${escapeHtml(l.brand && l.brand !== 'Whole Food' ? l.brand + ' ' : '')}${escapeHtml(l.itemName || 'Meal')}</div>
                 <div class="food-meta">${l.time || 'Today'} • ${l.quantity || 1} ${escapeHtml(l.servingUnit || 'serving')}</div>
+                ${l.vitals ? `<div style="font-size: 0.72rem; color: #c084fc; font-weight: 700; margin-top: 4px; display: flex; align-items: center; gap: 4px;">💊 ${escapeHtml(l.vitals)}</div>` : ''}
               </div>
               <div class="food-macro-badges">
-                <span class="badge-protein">+${l.protein || 0}g P</span>
-                <span class="badge-calories">+${l.calories || 0} kcal</span>
+                ${l.protein > 0 ? `<span class="badge-protein">+${l.protein}g P</span>` : ''}
+                ${l.calories > 0 ? `<span class="badge-calories">+${l.calories} kcal</span>` : ''}
+                ${!hasMacros && l.vitals ? `<span class="badge-protein" style="color: #c084fc; border-color: rgba(192, 132, 252, 0.4); background: rgba(192, 132, 252, 0.12);">Active Vital</span>` : ''}
               </div>
             </div>
-          `).join('');
+            `;
+          }).join('');
         }
 
         // 3. Render Pantry Catalog
@@ -736,23 +741,33 @@
           pantryList.innerHTML = `
             <div style="grid-column: 1 / -1; text-align: center; padding: 48px 20px; color: var(--muted); font-size: 0.9rem;">
               📸 <b>Your Brand Pantry is empty!</b><br><br>
-              Snap a photo of any nutrition label (e.g. <i>NAC Pro Impact Whey</i>) and send it to <a href="https://t.me/raviteja_fuel_bot" target="_blank" style="color: var(--accent); font-weight: 700;">@raviteja_fuel_bot</a> on Telegram to register your first brand!
+              Snap a photo of any nutrition or supplement label (e.g. <i>NAC Pro Whey</i>, <i>Fish Oil</i>, <i>Magnesium</i>, <i>Creatine</i>) and send it to <a href="https://t.me/raviteja_fuel_bot" target="_blank" style="color: var(--accent); font-weight: 700;">@raviteja_fuel_bot</a> on Telegram to register your first brand!
             </div>`;
         } else {
-          pantryList.innerHTML = pantry.map(item => `
+          pantryList.innerHTML = pantry.map(item => {
+            const hasMacros = (item.protein > 0 || item.calories > 0);
+            return `
             <div class="pantry-item-card">
               <span class="pantry-brand-badge">${escapeHtml(item.brand || 'Brand')}</span>
               <div class="pantry-item-name">${escapeHtml(item.itemName)}</div>
               <div class="pantry-serving-size">📏 ${escapeHtml(item.servingUnit)} ${item.servingWeight ? '(' + escapeHtml(item.servingWeight) + ')' : ''}</div>
               
+              ${item.vitals ? `
+                <div style="background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 8px; padding: 6px 10px; margin-top: 10px; font-size: 0.72rem; color: #e9d5ff; font-family: var(--font-mono);">
+                  💊 <b>Vitals:</b> ${escapeHtml(item.vitals)}
+                </div>
+              ` : ''}
+
+              ${hasMacros ? `
               <div class="pantry-macros-row">
                 <div class="pantry-macro-pill" style="color: var(--protein-color);">🥩 <b>${item.protein}g</b> P</div>
                 <div class="pantry-macro-pill" style="color: var(--carbs-color);">🍞 ${item.carbs}g C</div>
                 <div class="pantry-macro-pill" style="color: var(--fats-color);">🥑 ${item.fats}g F</div>
                 <div class="pantry-macro-pill" style="color: var(--calories-color);">🔥 ${item.calories} kcal</div>
-              </div>
+              </div>` : ''}
             </div>
-          `).join('');
+            `;
+          }).join('');
         }
 
         if (isManual) {
