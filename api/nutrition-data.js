@@ -9,6 +9,7 @@ const DAILY_TARGETS = {
   carbs: 220,
   fats: 60,
   fiber: 30,
+  sugar: 35,
   calories: 2100
 };
 

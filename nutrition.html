@@ -24,6 +24,7 @@
       --carbs-color: #fbbf24;
       --fats-color: #fb7185;
       --calories-color: #34d399;
+      --sugar-color: #f472b6;
       --fiber-color: #a78bfa;
       --font-mono: 'JetBrains Mono', monospace;
       --font-display: 'Fraunces', serif;
@@ -255,11 +256,16 @@
     /* ── MACRO HERO RINGS ────────────────────────────────────────── */
     .macro-hero-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
       margin-bottom: 28px;
     }
-    @media(max-width: 640px) {
+    @media(max-width: 900px) {
+      .macro-hero-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    @media(max-width: 600px) {
       .macro-hero-grid {
         grid-template-columns: repeat(2, 1fr);
       }
@@ -668,6 +674,19 @@
         <div class="macro-sub" id="valFats">0 / 60g</div>
       </div>
 
+      <!-- Sugar Ring -->
+      <div class="macro-ring-card">
+        <div style="position: relative; width: 90px; height: 90px;">
+          <svg class="macro-ring-svg" viewBox="0 0 90 90">
+            <circle class="macro-ring-bg" cx="45" cy="45" r="38"></circle>
+            <circle class="macro-ring-bar" id="ringSugar" stroke="var(--sugar-color)" cx="45" cy="45" r="38"></circle>
+          </svg>
+          <div class="macro-center-label" id="pctSugar">0%</div>
+        </div>
+        <div class="macro-title" style="color: var(--sugar-color);">🍬 Sugar</div>
+        <div class="macro-sub" id="valSugar">0 / 35g</div>
+      </div>
+
       <!-- Calories Ring -->
       <div class="macro-ring-card">
         <div style="position: relative; width: 90px; height: 90px;">
@@ -838,8 +857,8 @@
         if (!res.ok) throw new Error("Failed to fetch nutrition data");
         const data = await res.json();
 
-        const targets = data.targets || { protein: 150, carbs: 220, fats: 60, calories: 2100 };
-        const totals = data.todayTotals || { protein: 0, carbs: 0, fats: 0, calories: 0 };
+        const targets = data.targets || { protein: 150, carbs: 220, fats: 60, sugar: 35, calories: 2100 };
+        const totals = data.todayTotals || { protein: 0, carbs: 0, fats: 0, sugar: 0, calories: 0 };
         const logs = data.todayLogs || [];
         const pantry = data.pantry || [];
 
@@ -847,11 +866,13 @@
         const pPct = Math.round((totals.protein / targets.protein) * 100);
         const cPct = Math.round((totals.carbs / targets.carbs) * 100);
         const fPct = Math.round((totals.fats / targets.fats) * 100);
+        const sPct = Math.round((totals.sugar / (targets.sugar || 35)) * 100);
         const calPct = Math.round((totals.calories / targets.calories) * 100);
 
         setRingProgress('ringProtein', pPct);
         setRingProgress('ringCarbs', cPct);
         setRingProgress('ringFats', fPct);
+        setRingProgress('ringSugar', sPct);
         setRingProgress('ringCalories', calPct);
 
         document.getElementById('pctProtein').innerText = `${pPct}%`;
@@ -862,6 +883,9 @@
 
         document.getElementById('pctFats').innerText = `${fPct}%`;
         document.getElementById('valFats').innerText = `${totals.fats} / ${targets.fats}g`;
+
+        document.getElementById('pctSugar').innerText = `${sPct}%`;
+        document.getElementById('valSugar').innerText = `${totals.sugar} / ${targets.sugar || 35}g`;
 
         document.getElementById('pctCalories').innerText = `${calPct}%`;
         document.getElementById('valCalories').innerText = `${totals.calories.toLocaleString()} / ${targets.calories.toLocaleString()} kcal`;
@@ -890,6 +914,7 @@
               </div>
               <div class="food-macro-badges">
                 ${l.protein > 0 ? `<span class="badge-protein">+${l.protein}g P</span>` : ''}
+                ${l.sugar > 0 ? `<span class="badge-calories" style="color: var(--sugar-color); background: rgba(244, 114, 182, 0.12); border-color: rgba(244, 114, 182, 0.3);">🍬 ${l.sugar}g</span>` : ''}
                 ${l.calories > 0 ? `<span class="badge-calories">+${l.calories} kcal</span>` : ''}
                 ${!hasMacros && l.vitals ? `<span class="badge-protein" style="color: #c084fc; border-color: rgba(192, 132, 252, 0.4); background: rgba(192, 132, 252, 0.12);">Active Vital</span>` : ''}
               </div>
@@ -929,6 +954,7 @@
                 <div class="pantry-macro-pill" style="color: var(--protein-color);">🥩 <b>${item.protein}g</b> P</div>
                 <div class="pantry-macro-pill" style="color: var(--carbs-color);">🍞 ${item.carbs}g C</div>
                 <div class="pantry-macro-pill" style="color: var(--fats-color);">🥑 ${item.fats}g F</div>
+                <div class="pantry-macro-pill" style="color: var(--sugar-color);">🍬 ${item.sugar || 0}g S</div>
                 <div class="pantry-macro-pill" style="color: var(--calories-color);">🔥 ${item.calories} kcal</div>
               </div>` : ''}
             </div>
@@ -1079,6 +1105,7 @@
                       </div>
                       <div style="display: flex; gap: 6px; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700;">
                         ${l.protein > 0 ? `<span style="background: rgba(248, 113, 113, 0.15); color: var(--protein-color); padding: 2px 6px; border-radius: 4px;">+${l.protein}g P</span>` : ''}
+                        ${l.sugar > 0 ? `<span style="background: rgba(244, 114, 182, 0.15); color: var(--sugar-color); padding: 2px 6px; border-radius: 4px;">🍬 ${l.sugar}g</span>` : ''}
                         ${l.calories > 0 ? `<span style="background: rgba(251, 191, 36, 0.15); color: var(--calories-color); padding: 2px 6px; border-radius: 4px;">+${l.calories} kcal</span>` : ''}
                       </div>
                     </div>
