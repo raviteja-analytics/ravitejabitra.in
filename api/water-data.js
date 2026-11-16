@@ -4,6 +4,43 @@
 const GOOGLE_SCRIPT_URL = process.env.WATER_APPS_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbwcQUP8bClLpHeZnwvCrtqm-KvMItQkMNZ0lY0YYCPAOchBlMEbUP-NqejKThehipvW/exec";
 const DAILY_GOAL_ML = 4000;
 
+function normalizeToISTDateStr(val) {
+  if (!val) return "";
+  const s = String(val).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) {
+    const istOffsetMs = 5.5 * 60 * 60 * 1000;
+    const istDate = new Date(d.getTime() + (d.getTimezoneOffset() * 60000) + istOffsetMs);
+    const yyyy = istDate.getFullYear();
+    const mm = String(istDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(istDate.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  return s.split('T')[0];
+}
+
+function formatDisplayTime(timeVal, timestampVal) {
+  const s = String(timeVal || "").trim();
+  if (/^\d{1,2}:\d{2}\s*(AM|PM)$/i.test(s)) return s;
+  
+  const target = timestampVal || timeVal;
+  if (!target) return "Today";
+  const d = new Date(target);
+  if (!isNaN(d.getTime())) {
+    const istOffsetMs = 5.5 * 60 * 60 * 1000;
+    const istDate = new Date(d.getTime() + (d.getTimezoneOffset() * 60000) + istOffsetMs);
+    let hours = istDate.getHours();
+    const minutes = String(istDate.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    return `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+  }
+  return s || "Today";
+}
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -41,10 +78,11 @@ export default async function handler(req, res) {
 
     // Normalize rows
     const cleanedLogs = rows.map((r, idx) => {
-      const rowDate = String(r.Date || r.date || "").trim();
-      const rowTime = String(r.Time || r.time || "").trim();
-      const amount = Number(r["Amount (ml)"] || r.amount) || 0;
+      const rawDate = r.Date || r.date || "";
+      const rowDate = normalizeToISTDateStr(rawDate);
       const timestamp = r.Timestamp || r.timestamp || "";
+      const rowTime = formatDisplayTime(r.Time || r.time, timestamp);
+      const amount = Number(r["Amount (ml)"] || r.amount) || 0;
       const rawMessage = r.Message || r.rawMessage || "";
       return {
         id: `log_${idx}_${timestamp}`,

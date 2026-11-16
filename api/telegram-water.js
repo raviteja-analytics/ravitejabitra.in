@@ -66,6 +66,23 @@ function getISTDateTime(timestampSec) {
   return { dateStr, timeStr, istDate };
 }
 
+function normalizeToISTDateStr(val) {
+  if (!val) return "";
+  const s = String(val).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) {
+    const istOffsetMs = 5.5 * 60 * 60 * 1000;
+    const istDate = new Date(d.getTime() + (d.getTimezoneOffset() * 60000) + istOffsetMs);
+    const yyyy = istDate.getFullYear();
+    const mm = String(istDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(istDate.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  return s.split('T')[0];
+}
+
 // Send reply message back to Telegram
 async function sendTelegramMessage(chatId, text) {
   try {
@@ -130,7 +147,7 @@ export default async function handler(req, res) {
       `• Just text the amount: <code>300 ml</code>, <code>500</code>, <code>1.5L</code>\n` +
       `• Or phrases: <code>drank 250ml water</code>, <code>1 glass</code>\n\n` +
       `Every log instantly updates your live animated dashboard at:\n` +
-      `<a href="https://ravitejabitra.in/water.html">ravitejabitra.in/water.html</a> 🚀`;
+      `<a href="https://www.ravitejabitra.in/water">ravitejabitra.in/water</a> 🚀`;
     await sendTelegramMessage(chatId, welcome);
     return res.status(200).send("OK");
   }
@@ -161,7 +178,7 @@ export default async function handler(req, res) {
     if (getRes.ok) {
       const rows = await getRes.json();
       if (Array.isArray(rows)) {
-        const todayRows = rows.filter(r => String(r.Date || r.date || "").trim() === dateStr);
+        const todayRows = rows.filter(r => normalizeToISTDateStr(r.Date || r.date) === dateStr);
         const prevTotal = todayRows.reduce((sum, r) => sum + (Number(r["Amount (ml)"] || r.amount) || 0), 0);
         newDailyTotal = prevTotal + amountMl;
       }
@@ -208,7 +225,7 @@ export default async function handler(req, res) {
     `📥 <b>Added:</b> +${amountMl} ml at ${timeStr}\n` +
     `🌊 <b>Today's Total:</b> ${newDailyTotal.toLocaleString()} / ${DAILY_GOAL_ML.toLocaleString()} ml (${progressPercent}%)\n` +
     (remainingMl > 0 ? `🎯 <b>Remaining:</b> ${remainingMl.toLocaleString()} ml left\n\n` : `\n`) +
-    `👉 View your live animated bowl: <a href="https://ravitejabitra.in/water.html">ravitejabitra.in/water.html</a>`;
+    `👉 View your live animated bowl: <a href="https://www.ravitejabitra.in/water">ravitejabitra.in/water</a>`;
 
   await sendTelegramMessage(chatId, reply);
   return res.status(200).send("OK");
