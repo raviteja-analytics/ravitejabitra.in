@@ -738,7 +738,6 @@ export default async function handler(req, res) {
     const vitalsSummary = vitalsList.join(" | ");
     analyzed.vitalsSummary = vitalsSummary;
 
-    // Compact item payload for inline buttons
     const compactPayload = {
       itemName: analyzed.itemName,
       brand: analyzed.brand,
@@ -753,9 +752,8 @@ export default async function handler(req, res) {
       fiber: analyzed.fiber || 0,
       vitalsSummary: vitalsSummary
     };
-    const b64Data = Buffer.from(JSON.stringify(compactPayload)).toString("base64");
 
-    // 1. If user used explicit "/save" shortcut -> Save immediately to Pantry
+    // 1. If user used explicit "/save" shortcut -> Save to Pantry
     if (explicitAction === "pantry") {
       await saveItemToPantrySheet({
         ...compactPayload,
@@ -778,53 +776,31 @@ export default async function handler(req, res) {
       return res.status(200).send("OK");
     }
 
-    // 2. If user used explicit "/log" shortcut -> Log immediately to Today's Fuel
-    if (explicitAction === "log") {
-      await logFoodToDailySheet(compactPayload, dateStr, timeStr, queryText);
+    // 2. Default: Seamless automatic logging to Today Fuel!
+    // Directly logs to Google Sheets without asking or requiring button clicks
+    await logFoodToDailySheet(compactPayload, dateStr, timeStr, queryText);
 
-      const todayLogs = await getTodayNutritionLogs(dateStr);
-      const totalP = todayLogs.reduce((sum, r) => sum + (Number(r["Protein"] || r.protein) || 0), 0) + (compactPayload.protein || 0);
-      const totalCal = todayLogs.reduce((sum, r) => sum + (Number(r["Calories"] || r.calories) || 0), 0) + (compactPayload.calories || 0);
-      const pPct = Math.min(100, Math.round((totalP / DAILY_TARGETS.protein) * 100));
+    const todayLogs = await getTodayNutritionLogs(dateStr);
+    const totalP = todayLogs.reduce((sum, r) => sum + (Number(r["Protein"] || r.protein) || 0), 0) + (compactPayload.protein || 0);
+    const totalCal = todayLogs.reduce((sum, r) => sum + (Number(r["Calories"] || r.calories) || 0), 0) + (compactPayload.calories || 0);
+    const pPct = Math.min(100, Math.round((totalP / DAILY_TARGETS.protein) * 100));
 
-      const confirmation = `⚡ <b>Logged: ${compactPayload.quantity} ${compactPayload.servingUnit} ${compactPayload.brand && compactPayload.brand !== 'Whole Food' ? compactPayload.brand + ' ' : ''}${compactPayload.itemName}</b>\n\n` +
-        `• 🥩 +<b>${compactPayload.protein}g</b> Protein • 🍞 +${compactPayload.carbs}g Carbs\n` +
-        `• 🥑 +${compactPayload.fats}g Fat • 🍬 +${compactPayload.sugar}g Sugar\n` +
-        `• 🔥 +<b>${compactPayload.calories}</b> kcal\n` +
-        (vitalsSummary ? `💊 <i>${vitalsSummary}</i>\n` : '') +
-        `━━━━━━━━━━━━━━━━━━━\n` +
-        `📈 <b>Today's Fuel:</b> <b>${Math.round(totalP)}g</b> / ${DAILY_TARGETS.protein}g Protein (${pPct}%)\n` +
-        `🔥 <b>Total Calories:</b> ${Math.round(totalCal)} / ${DAILY_TARGETS.calories} kcal\n\n` +
-        `👉 View on site: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
-
-      await sendTelegramMessage(chatId, confirmation, messageId);
-      return res.status(200).send("OK");
-    }
-
-    // 3. Default: User sent normal text -> Present Interactive 2-Button Choice Menu!
     let vitalsPreview = "";
     if (vitalsList.length > 0) {
       vitalsPreview = `💊 <b>Vitals:</b> <i>${vitalsSummary}</i>\n`;
     }
 
-    const previewMsg = `🍽️ <b>${analyzed.quantity} ${analyzed.servingUnit} ${analyzed.brand && analyzed.brand !== 'Whole Food' ? analyzed.brand + ' ' : ''}${analyzed.itemName}</b>\n` +
-      `• 🥩 <b>${analyzed.protein}g</b> Protein • 🍞 <b>${analyzed.carbs}g</b> Carbs\n` +
-      `• 🥑 <b>${analyzed.fats}g</b> Fat • 🍬 <b>${analyzed.sugar}g</b> Sugar\n` +
-      `• 🔥 <b>${analyzed.calories}</b> kcal\n` +
+    const receipt = `⚡ <b>Logged: ${compactPayload.quantity} ${compactPayload.servingUnit} ${compactPayload.brand && compactPayload.brand !== 'Whole Food' ? compactPayload.brand + ' ' : ''}${compactPayload.itemName}</b>\n\n` +
+      `• 🥩 +<b>${compactPayload.protein}g</b> Protein • 🍞 +${compactPayload.carbs}g Carbs\n` +
+      `• 🥑 +${compactPayload.fats}g Fat • 🍬 +${compactPayload.sugar}g Sugar • 🌾 +${compactPayload.fiber}g Fiber\n` +
+      `• 🔥 +<b>${compactPayload.calories}</b> kcal\n` +
       vitalsPreview +
       `━━━━━━━━━━━━━━━━━━━\n` +
-      `<b>What would you like to do?</b>`;
+      `📈 <b>Today's Fuel:</b> <b>${Math.round(totalP)}g</b> / ${DAILY_TARGETS.protein}g Protein (${pPct}%)\n` +
+      `🔥 <b>Total Calories:</b> ${Math.round(totalCal)} / ${DAILY_TARGETS.calories} kcal\n\n` +
+      `👉 View on site: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
 
-    const inlineKeyboard = {
-      inline_keyboard: [
-        [
-          { text: "⚡ Log to Today's Fuel", callback_data: `log:${b64Data}` },
-          { text: "📦 Save to Pantry Catalog", callback_data: `pantry:${b64Data}` }
-        ]
-      ]
-    };
-
-    await sendTelegramMessage(chatId, previewMsg, messageId, inlineKeyboard);
+    await sendTelegramMessage(chatId, receipt, messageId);
     return res.status(200).send("OK");
 
   } catch (err) {
