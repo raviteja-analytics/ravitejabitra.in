@@ -275,13 +275,51 @@
       background: rgba(15, 23, 42, 0.65);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 18px;
-      padding: 18px;
+      padding: 18px 14px;
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
       position: relative;
       overflow: hidden;
+      backdrop-filter: blur(12px);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .macro-ring-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.6), 0 0 20px var(--card-glow, rgba(56, 189, 248, 0.2));
+      border-color: var(--card-border, rgba(56, 189, 248, 0.4));
+    }
+    .macro-ring-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: var(--card-accent, #38bdf8);
+      opacity: 0.8;
+    }
+    .card-protein { --card-accent: #38bdf8; --card-border: rgba(56, 189, 248, 0.4); --card-glow: rgba(56, 189, 248, 0.25); }
+    .card-carbs { --card-accent: #fbbf24; --card-border: rgba(251, 191, 36, 0.4); --card-glow: rgba(251, 191, 36, 0.25); }
+    .card-fats { --card-accent: #fb7185; --card-border: rgba(251, 113, 133, 0.4); --card-glow: rgba(251, 113, 133, 0.25); }
+    .card-fiber { --card-accent: #a78bfa; --card-border: rgba(167, 139, 250, 0.4); --card-glow: rgba(167, 139, 250, 0.25); }
+    .card-sugar { --card-accent: #f472b6; --card-border: rgba(244, 114, 182, 0.4); --card-glow: rgba(244, 114, 182, 0.25); }
+    .card-calories { --card-accent: #34d399; --card-border: rgba(52, 211, 153, 0.4); --card-glow: rgba(52, 211, 153, 0.25); }
+
+    .pulse-ring-wrapper {
+      position: relative;
+      width: 90px;
+      height: 90px;
+    }
+    .pulse-halo {
+      position: absolute;
+      inset: 6px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--card-accent, #38bdf8) 0%, transparent 70%);
+      opacity: 0.12;
+      animation: ambientHaloPulse 3s ease-in-out infinite alternate;
+    }
+    @keyframes ambientHaloPulse {
+      0% { transform: scale(0.92); opacity: 0.08; }
+      100% { transform: scale(1.08); opacity: 0.22; }
     }
     .macro-ring-svg {
       width: 90px;
@@ -619,20 +657,37 @@
       background: rgba(15, 23, 42, 0.65);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 16px;
-      padding: 16px 18px;
+      padding: 18px 20px;
       position: relative;
       overflow: hidden;
-      transition: all 0.2s ease;
+      backdrop-filter: blur(12px);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .sport-kpi-card:hover {
-      border-color: rgba(56, 189, 248, 0.3);
-      transform: translateY(-2px);
+      border-color: var(--card-accent, #38bdf8);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.15);
     }
     .sport-kpi-card::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0; height: 2px;
-      background: var(--card-accent, #38bdf8);
+      top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--card-accent, #38bdf8), transparent);
+    }
+    .sport-kpi-card::after {
+      content: '';
+      position: absolute;
+      top: -20px; right: -20px;
+      width: 70px; height: 70px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--card-accent, #38bdf8) 0%, transparent 70%);
+      opacity: 0.06;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .sport-kpi-card:hover::after {
+      opacity: 0.18;
+      transform: scale(1.3);
     }
     .sport-kpi-top {
       display: flex;
@@ -660,18 +715,34 @@
     }
     .sport-progress-bar-bg {
       width: 100%;
-      height: 6px;
+      height: 7px;
       background: rgba(255, 255, 255, 0.08);
-      border-radius: 4px;
-      margin-top: 10px;
+      border-radius: 6px;
+      margin-top: 12px;
       overflow: hidden;
+      position: relative;
     }
     .sport-progress-bar-fill {
       height: 100%;
-      background: var(--card-accent, #38bdf8);
-      border-radius: 4px;
-      transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 0 10px var(--card-accent, #38bdf8);
+      background: linear-gradient(90deg, var(--card-accent, #38bdf8), #ffffff);
+      border-radius: 6px;
+      transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 0 12px var(--card-accent, #38bdf8);
+      position: relative;
+    }
+    .sport-progress-bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0; right: 0; width: 14px;
+      background: #ffffff;
+      filter: blur(2px);
+      opacity: 0.8;
+      animation: barShimmer 2.2s infinite;
+    }
+    @keyframes barShimmer {
+      0% { opacity: 0.3; }
+      50% { opacity: 1; }
+      100% { opacity: 0.3; }
     }
 
     .micros-grid {
@@ -745,8 +816,9 @@
       <div class="macro-hero-grid">
       
       <!-- Protein Ring -->
-      <div class="macro-ring-card">
-        <div style="position: relative; width: 90px; height: 90px;">
+      <div class="macro-ring-card card-protein">
+        <div class="pulse-ring-wrapper">
+          <div class="pulse-halo"></div>
           <svg class="macro-ring-svg" viewBox="0 0 90 90">
             <circle class="macro-ring-bg" cx="45" cy="45" r="38"></circle>
             <circle class="macro-ring-bar" id="ringProtein" stroke="var(--protein-color)" cx="45" cy="45" r="38"></circle>
@@ -758,8 +830,9 @@
       </div>
 
       <!-- Carbs Ring -->
-      <div class="macro-ring-card">
-        <div style="position: relative; width: 90px; height: 90px;">
+      <div class="macro-ring-card card-carbs">
+        <div class="pulse-ring-wrapper">
+          <div class="pulse-halo"></div>
           <svg class="macro-ring-svg" viewBox="0 0 90 90">
             <circle class="macro-ring-bg" cx="45" cy="45" r="38"></circle>
             <circle class="macro-ring-bar" id="ringCarbs" stroke="var(--carbs-color)" cx="45" cy="45" r="38"></circle>
@@ -771,8 +844,9 @@
       </div>
 
       <!-- Fats Ring -->
-      <div class="macro-ring-card">
-        <div style="position: relative; width: 90px; height: 90px;">
+      <div class="macro-ring-card card-fats">
+        <div class="pulse-ring-wrapper">
+          <div class="pulse-halo"></div>
           <svg class="macro-ring-svg" viewBox="0 0 90 90">
             <circle class="macro-ring-bg" cx="45" cy="45" r="38"></circle>
             <circle class="macro-ring-bar" id="ringFats" stroke="var(--fats-color)" cx="45" cy="45" r="38"></circle>
@@ -784,8 +858,9 @@
       </div>
 
       <!-- Fiber Ring -->
-      <div class="macro-ring-card">
-        <div style="position: relative; width: 90px; height: 90px;">
+      <div class="macro-ring-card card-fiber">
+        <div class="pulse-ring-wrapper">
+          <div class="pulse-halo"></div>
           <svg class="macro-ring-svg" viewBox="0 0 90 90">
             <circle class="macro-ring-bg" cx="45" cy="45" r="38"></circle>
             <circle class="macro-ring-bar" id="ringFiber" stroke="var(--fiber-color)" cx="45" cy="45" r="38"></circle>
@@ -797,8 +872,9 @@
       </div>
 
       <!-- Sugar Ring -->
-      <div class="macro-ring-card">
-        <div style="position: relative; width: 90px; height: 90px;">
+      <div class="macro-ring-card card-sugar">
+        <div class="pulse-ring-wrapper">
+          <div class="pulse-halo"></div>
           <svg class="macro-ring-svg" viewBox="0 0 90 90">
             <circle class="macro-ring-bg" cx="45" cy="45" r="38"></circle>
             <circle class="macro-ring-bar" id="ringSugar" stroke="var(--sugar-color)" cx="45" cy="45" r="38"></circle>
@@ -810,8 +886,9 @@
       </div>
 
       <!-- Calories Ring -->
-      <div class="macro-ring-card">
-        <div style="position: relative; width: 90px; height: 90px;">
+      <div class="macro-ring-card card-calories">
+        <div class="pulse-ring-wrapper">
+          <div class="pulse-halo"></div>
           <svg class="macro-ring-svg" viewBox="0 0 90 90">
             <circle class="macro-ring-bg" cx="45" cy="45" r="38"></circle>
             <circle class="macro-ring-bar" id="ringCalories" stroke="var(--calories-color)" cx="45" cy="45" r="38"></circle>
