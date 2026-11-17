@@ -212,65 +212,81 @@ async function callGemini(contents, generationConfig = null) {
 
 // Call Gemini Vision to Extract Nutrition Facts + Vital Micronutrients from Photo
 async function extractNutritionFromImage(base64Data, mimeType, optionalCaption) {
-  const prompt = `You are an expert sports nutrition, supplement, and clinical data extractor.
-Analyze this photo of a product's nutritional label with 100% mathematical precision.
-It could be packaged food (protein oats, peanut butter, whey, tofu, milk) OR a supplement (Fish Oil, Magnesium Glycinate, ZMA, Creatine, Multivitamins, Electrolytes).
-${optionalCaption ? `User added this note/brand name: "${optionalCaption}".` : ''}
+  const prompt = `You are an elite sports nutritionist, culinary scientist, and food vision AI.
+Analyze this photo with high mathematical and biological precision.
 
-CRITICAL INSTRUCTION 1: PREVENT "PER 100g" VS "PER SERVING" CONFUSION:
-Most nutrition labels (especially in India) display facts in TWO COLUMNS:
-- Column A: "Per 100g" / "Per 100ml"
-- Column B: "Per Serving" (e.g. 50g, 33g, 1 scoop, 2 biscuits, 1 capsule)
-Or sometimes the table ONLY has "Per 100g", but states "Serving Size: 40g".
-Or the table ONLY has "Per Serving (30g)".
+STEP 1: DETERMINE THE IMAGE TYPE:
+- "pantry_label": The photo shows a packaged food nutrition facts table, supplement facts panel, bottle/tub label, or ingredient panel.
+- "dish_meal": The photo shows real prepared food, a cooked dish, plate/bowl of food, street food, restaurant meal, fruit, snack, or beverage (e.g. Biryani, Dosa, Chicken Curry, Rice, Roti, Eggs, Salad, Dal, etc.).
 
-YOU MUST EXPLICITLY SEPARATE THEM:
-1. Identify the official Serving Size specified on the pack (e.g., "50g", "1 scoop (33g)", "1 capsule", "2 tablets", "100g").
-2. Set "servingUnit" to that official serving size (e.g. "50g" or "1 scoop (33g)").
-3. The macros in the root object (calories, protein, carbs, fats, fiber, sugar) MUST MATCH THAT SPECIFIC SERVING SIZE:
-   - If servingUnit is 50g: extract the 50g numbers (e.g. Protein 13g, Calories 196 kcal). DO NOT put 100g values (26g) into a 50g serving!
-   - If the label ONLY gives "Per 100g" with a 40g serving size: calculate (value_100g * 40 / 100).
-   - If the label ONLY gives "Per Serving": use the per-serving numbers directly.
-4. Also extract "per100g" values into the per100g object.
+STEP 2: IF "dish_meal" (PLATE OF FOOD / PREPARED MEAL / DISH):
+${optionalCaption ? `• CRITICAL - USER NOTE / CAPTION PROVIDED: "${optionalCaption}".
+  The user typed quantities, weights (e.g. in grams), ingredients, or meal details in their own words.
+  TREAT THE USER'S CAPTION AS THE AUTHORITATIVE GROUND TRUTH for:
+  - Exact weights/quantities (e.g. "200g chicken curry + 250g cooked rice", "3 rotis", "1 tbsp mustard oil").
+  - Specific ingredients, cuts of meat, and cooking oils used.
+  Use the photo for visual verification of components, visible sides, raita, salad, and proportions.` : `• No caption provided.
+  Visually identify the dish/foods on the plate.
+  Estimate the realistic total weight and portion size (in grams and standard household units like "1 plate (~350g)" or "2 medium dosas") based on realistic Indian and global culinary portions.`}
+- Calculate accurate sports nutrition values for the entire portion:
+  * dishName: Clean, recognizable name of the dish (e.g. "Chicken Biryani with Raita", "Masala Dosa with Sambar", "Chicken Curry with Rice", "Paneer Bhurji with 2 Rotis")
+  * portionDescription: Clear summary of portion (e.g. "1 plate (~350g, ~150g chicken + ~200g rice)" or "~200g chicken curry + ~250g rice")
+  * ingredientsList: Array of detected or user-specified ingredients with estimated weights (e.g. ["Cooked chicken ~150g", "Cooked white rice ~250g", "Mustard oil ~1 tbsp"])
+  * calories: number (total kcal for the portion)
+  * protein: number (grams of protein)
+  * carbs: number (grams of carbohydrates)
+  * fats: number (grams of total fats)
+  * fiber: number (grams of dietary fiber)
+  * sugar: number (grams of sugar)
+  * vitalNutrients: object with key electrolytes & minerals if significant (e.g. {"Sodium": "650 mg", "Potassium": "420 mg", "Iron": "2.5 mg"})
 
-CRITICAL INSTRUCTION 2: MICRONUTRIENTS & VITAL ACTIVE INGREDIENTS:
-Extract active micronutrients for the specified serving:
-- For Fish Oil: Total Omega-3, EPA, DHA.
-- For Magnesium / ZMA: Elemental Magnesium, Zinc, Vitamin B6.
-- For Creatine: Creatine Monohydrate.
-- For Multivitamins: Vitamin D3, B12, C, Zinc, Iron, Biotin.
-- For Electrolytes & Oats: Sodium, Potassium, Magnesium, Calcium.
+STEP 3: IF "pantry_label" (PACKAGED NUTRITION / SUPPLEMENT FACTS LABEL):
+- Identify official single serving (servingUnit, e.g. "50g", "1 scoop (33g)", "1 capsule", "100g").
+- Extract root macros strictly matching that servingUnit (NOT 100g values if serving is 50g!).
+- Extract per100g object for 100g values.
+- Extract vital active ingredients (Omega-3, EPA, DHA, Elemental Magnesium, Creatine, Multivitamins, Sodium, etc.).
 
 Output ONLY a raw, valid JSON object (without markdown fences, no backticks, no other text) with this exact schema:
 {
-  "itemName": "Specific product name (e.g. High Protein Oats Chocolate, Impact Whey, Magnesium Glycinate)",
-  "brand": "Brand name (e.g. Pintola, Nakpro, Carbamide Forte)",
+  "imageType": "dish_meal" | "pantry_label",
+
+  // For "dish_meal":
+  "dishName": "Name of the dish or meal",
+  "portionDescription": "Portion description with weights",
+  "ingredientsList": ["Ingredient 1 with weight", "Ingredient 2 with weight"],
+
+  // For "pantry_label":
+  "itemName": "Specific product name",
+  "brand": "Brand name",
   "category": "Protein | Supplement | Whole Food | Cereal | Dairy | Other",
-  "servingUnit": "Official single serving (e.g. 50g, 1 scoop (33g), 2 tablets, 1 capsule, 100g)",
-  "servingWeight": "Weight in grams/ml if applicable (e.g. 50g, 33g, 100g)",
-  "calories": number (kcal per single servingUnit),
-  "protein": number (grams of protein per single servingUnit),
-  "carbs": number (grams of total carbs per single servingUnit),
-  "fats": number (grams of total fat per single servingUnit),
-  "fiber": number (grams of dietary fiber per single servingUnit),
-  "sugar": number (grams of total sugar per single servingUnit),
-  "vitalNutrients": {
-    "Sodium": "65 mg",
-    "Magnesium": "88 mg"
-  },
+  "servingUnit": "Official single serving",
+  "servingWeight": "Weight in grams/ml if applicable",
   "per100g": {
-    "calories": number (kcal per 100g/ml),
-    "protein": number (grams of protein per 100g/ml),
-    "carbs": number (grams of carbs per 100g/ml),
-    "fats": number (grams of fats per 100g/ml),
-    "fiber": number (grams of fiber per 100g/ml),
-    "sugar": number (grams of sugar per 100g/ml),
+    "calories": number,
+    "protein": number,
+    "carbs": number,
+    "fats": number,
+    "fiber": number,
+    "sugar": number,
     "vitalNutrients": {
-      "Sodium": "130 mg",
-      "Magnesium": "176 mg"
+      "Sodium": "...",
+      "Magnesium": "..."
     }
   },
-  "aliases": "Comma-separated lowercase keywords for texting/logging this item, plus [Per100g: ...]"
+  "aliases": "Comma-separated lowercase keywords",
+
+  // Common to both:
+  "calories": number,
+  "protein": number,
+  "carbs": number,
+  "fats": number,
+  "fiber": number,
+  "sugar": number,
+  "vitalNutrients": {
+    "Sodium": "...",
+    "Potassium": "...",
+    "Magnesium": "..."
+  }
 }`;
 
   const contents = [
@@ -683,9 +699,9 @@ export default async function handler(req, res) {
 
   const { dateStr, timeStr } = getISTDateTime(msg.date);
 
-  // ── A. PHOTO DETECTED: AUTO-CATALOG TO PANTRY ────────────────────
+  // ── A. PHOTO DETECTED: SMART MEAL LOGGING OR PANTRY REGISTRATION ────
   if (msg.photo && msg.photo.length > 0) {
-    await sendTelegramMessage(chatId, "🔍 <i>Analyzing label & vital active ingredients with Gemini Vision...</i>", messageId);
+    await sendTelegramMessage(chatId, "🔍 <i>Analyzing photo & ingredients with Gemini Vision...</i>", messageId);
 
     try {
       const highestPhoto = msg.photo[msg.photo.length - 1];
@@ -707,41 +723,113 @@ export default async function handler(req, res) {
       }
       const vitalsSummaryStr = vitalsList.join(" | ");
 
-      // Save to Google Sheet: Ravi Pantry Catalog
-      await saveItemToPantrySheet({
-        ...extracted,
+      // ── BRANCH 1: PACKAGING / NUTRITION FACTS LABEL -> SAVE TO PANTRY ──
+      if (extracted.imageType === "pantry_label") {
+        await saveItemToPantrySheet({
+          ...extracted,
+          vitalsSummary: vitalsSummaryStr
+        });
+
+        let vitalsBlock = "";
+        if (vitalsList.length > 0) {
+          vitalsBlock = `\n💊 <b>Vital Active Ingredients:</b>\n` +
+            vitalsList.map(v => `• <b>${v.split(':')[0]}:</b> ${v.split(':').slice(1).join(':').trim()}`).join("\n") + "\n";
+        }
+
+        const hasMacros = (extracted.calories > 0 || extracted.protein > 0 || extracted.fats > 0);
+        let macrosBlock = "";
+        if (hasMacros) {
+          macrosBlock = `🥩 <b>Protein:</b> ${extracted.protein}g • 🍞 <b>Carbs:</b> ${extracted.carbs}g • 🥑 <b>Fats:</b> ${extracted.fats}g\n` +
+            `🍬 <b>Sugar:</b> ${extracted.sugar || 0}g • 🔥 <b>Calories:</b> ${extracted.calories} kcal\n`;
+        }
+
+        const card = `✅ <b>Saved to Your Brand Pantry!</b>\n\n` +
+          `📦 <b>Product:</b> ${extracted.brand ? extracted.brand + ' ' : ''}${extracted.itemName}\n` +
+          `📏 <b>Serving:</b> ${extracted.servingUnit} ${extracted.servingWeight ? '(' + extracted.servingWeight + ')' : ''}\n` +
+          `━━━━━━━━━━━━━━━━━━━\n` +
+          vitalsBlock +
+          macrosBlock +
+          `━━━━━━━━━━━━━━━━━━━\n` +
+          `💡 <i>You can now log this anytime by texting:</i>\n` +
+          `• <code>1 ${extracted.servingUnit.split(' ')[0]} ${extracted.aliases.split(',')[0].trim()}</code>\n\n` +
+          `🌐 View your live dashboard: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
+
+        await sendTelegramMessage(chatId, card, messageId);
+        return res.status(200).send("OK");
+      }
+
+      // ── BRANCH 2: COOKED FOOD / LOCAL DISH / MEAL -> LOG DIRECTLY TO TODAY'S FUEL ──
+      const mealName = extracted.dishName || extracted.itemName || "Prepared Meal";
+      const portionStr = extracted.portionDescription || extracted.servingUnit || "1 serving";
+      const ingredients = Array.isArray(extracted.ingredientsList) && extracted.ingredientsList.length > 0
+        ? extracted.ingredientsList
+        : [];
+
+      const rawMsgText = msg.caption ? `${mealName} (${msg.caption})` : mealName;
+
+      const compactPayload = {
+        itemName: mealName,
+        brand: extracted.brand || "",
+        quantity: 1,
+        servingUnit: portionStr,
+        calories: extracted.calories || 0,
+        protein: extracted.protein || 0,
+        carbs: extracted.carbs || 0,
+        fats: extracted.fats || 0,
+        sugar: extracted.sugar || 0,
+        fiber: extracted.fiber || 0,
         vitalsSummary: vitalsSummaryStr
-      });
+      };
 
-      let vitalsBlock = "";
+      // Directly log to Google Sheets!
+      await logFoodToDailySheet(compactPayload, dateStr, timeStr, rawMsgText);
+
+      // Fetch running totals for today
+      const todayLogs = await getTodayNutritionLogs(dateStr);
+      const totalP = todayLogs.reduce((sum, r) => sum + (Number(r["Protein"] || r.protein) || 0), 0) + (compactPayload.protein || 0);
+      const totalCal = todayLogs.reduce((sum, r) => sum + (Number(r["Calories"] || r.calories) || 0), 0) + (compactPayload.calories || 0);
+      const pPct = Math.min(100, Math.round((totalP / DAILY_TARGETS.protein) * 100));
+
+      let ingredientsBlock = "";
+      if (ingredients.length > 0) {
+        ingredientsBlock = `🥗 <b>Ingredients & Quantities:</b>\n` +
+          ingredients.map(ing => `• ${ing}`).join("\n") + "\n";
+      }
+
+      let vitalsPreview = "";
       if (vitalsList.length > 0) {
-        vitalsBlock = `\n💊 <b>Vital Active Ingredients:</b>\n` +
-          vitalsList.map(v => `• <b>${v.split(':')[0]}:</b> ${v.split(':').slice(1).join(':').trim()}`).join("\n") + "\n";
+        vitalsPreview = `💊 <b>Vitals:</b> <i>${vitalsSummaryStr}</i>\n`;
       }
 
-      const hasMacros = (extracted.calories > 0 || extracted.protein > 0 || extracted.fats > 0);
-      let macrosBlock = "";
-      if (hasMacros) {
-        macrosBlock = `🥩 <b>Protein:</b> ${extracted.protein}g • 🍞 <b>Carbs:</b> ${extracted.carbs}g • 🥑 <b>Fats:</b> ${extracted.fats}g\n` +
-          `🍬 <b>Sugar:</b> ${extracted.sugar || 0}g • 🔥 <b>Calories:</b> ${extracted.calories} kcal\n`;
-      }
-
-      const card = `✅ <b>Saved to Your Brand Pantry!</b>\n\n` +
-        `📦 <b>Product:</b> ${extracted.brand ? extracted.brand + ' ' : ''}${extracted.itemName}\n` +
-        `📏 <b>Serving:</b> ${extracted.servingUnit} ${extracted.servingWeight ? '(' + extracted.servingWeight + ')' : ''}\n` +
+      const receipt = `🍽️ <b>Visual Meal Logged: ${mealName}</b>\n` +
+        `📏 <b>Portion:</b> ${portionStr}\n` +
+        (msg.caption ? `💬 <i>"${msg.caption}"</i>\n` : '') +
         `━━━━━━━━━━━━━━━━━━━\n` +
-        vitalsBlock +
-        macrosBlock +
+        ingredientsBlock +
+        `• 🥩 +<b>${compactPayload.protein}g</b> Protein • 🍞 +${compactPayload.carbs}g Carbs\n` +
+        `• 🥑 +${compactPayload.fats}g Fat • 🍬 +${compactPayload.sugar}g Sugar • 🌾 +${compactPayload.fiber}g Fiber\n` +
+        `• 🔥 +<b>${compactPayload.calories}</b> kcal\n` +
+        vitalsPreview +
         `━━━━━━━━━━━━━━━━━━━\n` +
-        `💡 <i>You can now log this anytime by texting:</i>\n` +
-        `• <code>1 ${extracted.servingUnit.split(' ')[0]} ${extracted.aliases.split(',')[0].trim()}</code>\n\n` +
-        `🌐 View your live dashboard: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
+        `📈 <b>Today's Fuel:</b> <b>${Math.round(totalP)}g</b> / ${DAILY_TARGETS.protein}g Protein (${pPct}%)\n` +
+        `🔥 <b>Total Calories:</b> ${Math.round(totalCal)} / ${DAILY_TARGETS.calories} kcal\n\n` +
+        `👉 View & Pie Chart: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
 
-      await sendTelegramMessage(chatId, card, messageId);
+      // Provide inline button to Undo / Delete if user wants to remove or change
+      const replyMarkup = {
+        inline_keyboard: [
+          [
+            { text: `🗑️ Delete "${mealName.slice(0, 18)}"`, callback_data: `del:${encodeURIComponent(mealName)}` }
+          ]
+        ]
+      };
+
+      await sendTelegramMessage(chatId, receipt, messageId, replyMarkup);
       return res.status(200).send("OK");
+
     } catch (err) {
       console.error("Error processing photo:", err);
-      await sendTelegramMessage(chatId, `⚠️ <b>Could not read label</b>: ${err.message}\nMake sure the nutrition facts / supplement facts table is well-lit!`, messageId);
+      await sendTelegramMessage(chatId, `⚠️ <b>Could not analyze photo</b>: ${err.message}\nMake sure the food or nutrition label is clearly visible!`, messageId);
       return res.status(200).send("OK");
     }
   }
