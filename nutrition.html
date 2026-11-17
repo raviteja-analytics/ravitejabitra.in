@@ -756,6 +756,116 @@
     @media(max-width: 480px) {
       .micros-grid { grid-template-columns: 1fr; }
     }
+    /* ── NUTRIENT BREAKDOWN VIEW & PIE CHART STYLES ───────────── */
+    .macro-ring-card, .sport-kpi-card {
+      cursor: pointer;
+    }
+    .card-breakdown-hint {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--muted);
+      opacity: 0;
+      transform: translateY(2px);
+      transition: all 0.2s ease;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      padding: 2px 6px;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .macro-ring-card:hover .card-breakdown-hint,
+    .sport-kpi-card:hover .card-breakdown-hint {
+      opacity: 1;
+      transform: translateY(0);
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .bd-main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.35fr;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+    @media (max-width: 900px) {
+      .bd-main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .bd-selector-pills-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      margin-bottom: 22px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(56, 189, 248, 0.3) transparent;
+    }
+    .bd-selector-pills-row::-webkit-scrollbar {
+      height: 4px;
+    }
+    .bd-selector-pills-row::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, 0.3);
+      border-radius: 4px;
+    }
+    .bd-pill-btn {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--muted);
+      border-radius: 9999px;
+      padding: 7px 15px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
+    }
+    .bd-pill-btn:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+    .bd-pill-btn.active {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(168, 85, 247, 0.25));
+      border-color: #38bdf8;
+      color: #ffffff;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+    }
+
+    .bd-source-item {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 12px 16px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .bd-source-item:hover, .bd-source-item.highlighted {
+      background: rgba(30, 41, 59, 0.7);
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateX(4px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+    .pie-slice {
+      transition: all 0.25s ease;
+      cursor: pointer;
+      transform-origin: 150px 150px;
+    }
+    .pie-slice:hover, .pie-slice.highlighted {
+      filter: brightness(1.22) drop-shadow(0 0 8px currentColor);
+      transform: scale(1.04);
+    }
   </style>
 </head>
 <body>
@@ -816,7 +926,8 @@
       <div class="macro-hero-grid">
       
       <!-- Protein Ring -->
-      <div class="macro-ring-card card-protein">
+      <div class="macro-ring-card card-protein" onclick="openNutrientBreakdown('protein')" title="Click for Protein source pie chart">
+        <div class="card-breakdown-hint">Pie Chart ↗</div>
         <div class="pulse-ring-wrapper">
           <div class="pulse-halo"></div>
           <svg class="macro-ring-svg" viewBox="0 0 90 90">
@@ -830,7 +941,8 @@
       </div>
 
       <!-- Carbs Ring -->
-      <div class="macro-ring-card card-carbs">
+      <div class="macro-ring-card card-carbs" onclick="openNutrientBreakdown('carbs')" title="Click for Carbs source pie chart">
+        <div class="card-breakdown-hint">Pie Chart ↗</div>
         <div class="pulse-ring-wrapper">
           <div class="pulse-halo"></div>
           <svg class="macro-ring-svg" viewBox="0 0 90 90">
@@ -844,7 +956,8 @@
       </div>
 
       <!-- Fats Ring -->
-      <div class="macro-ring-card card-fats">
+      <div class="macro-ring-card card-fats" onclick="openNutrientBreakdown('fats')" title="Click for Fats source pie chart">
+        <div class="card-breakdown-hint">Pie Chart ↗</div>
         <div class="pulse-ring-wrapper">
           <div class="pulse-halo"></div>
           <svg class="macro-ring-svg" viewBox="0 0 90 90">
@@ -858,7 +971,8 @@
       </div>
 
       <!-- Fiber Ring -->
-      <div class="macro-ring-card card-fiber">
+      <div class="macro-ring-card card-fiber" onclick="openNutrientBreakdown('fiber')" title="Click for Fiber source pie chart">
+        <div class="card-breakdown-hint">Pie Chart ↗</div>
         <div class="pulse-ring-wrapper">
           <div class="pulse-halo"></div>
           <svg class="macro-ring-svg" viewBox="0 0 90 90">
@@ -872,7 +986,8 @@
       </div>
 
       <!-- Sugar Ring -->
-      <div class="macro-ring-card card-sugar">
+      <div class="macro-ring-card card-sugar" onclick="openNutrientBreakdown('sugar')" title="Click for Sugar source pie chart">
+        <div class="card-breakdown-hint">Pie Chart ↗</div>
         <div class="pulse-ring-wrapper">
           <div class="pulse-halo"></div>
           <svg class="macro-ring-svg" viewBox="0 0 90 90">
@@ -886,7 +1001,8 @@
       </div>
 
       <!-- Calories Ring -->
-      <div class="macro-ring-card card-calories">
+      <div class="macro-ring-card card-calories" onclick="openNutrientBreakdown('calories')" title="Click for Calories source pie chart">
+        <div class="card-breakdown-hint">Pie Chart ↗</div>
         <div class="pulse-ring-wrapper">
           <div class="pulse-halo"></div>
           <svg class="macro-ring-svg" viewBox="0 0 90 90">
@@ -914,7 +1030,8 @@
 
       <div class="electrolytes-grid" style="margin-bottom: 24px;">
         <!-- Sodium -->
-        <div class="sport-kpi-card" style="--card-accent: #38bdf8;">
+        <div class="sport-kpi-card" style="--card-accent: #38bdf8;" onclick="openNutrientBreakdown('sodium')" title="Click for Sodium source pie chart">
+          <div class="card-breakdown-hint">Pie Chart ↗</div>
           <div class="sport-kpi-top">
             <span>🧂 Sodium (Na)</span>
             <span id="pctSodium">0%</span>
@@ -930,7 +1047,8 @@
         </div>
 
         <!-- Potassium -->
-        <div class="sport-kpi-card" style="--card-accent: #fbbf24;">
+        <div class="sport-kpi-card" style="--card-accent: #fbbf24;" onclick="openNutrientBreakdown('potassium')" title="Click for Potassium source pie chart">
+          <div class="card-breakdown-hint">Pie Chart ↗</div>
           <div class="sport-kpi-top">
             <span>🍌 Potassium (K)</span>
             <span id="pctPotassium">0%</span>
@@ -946,7 +1064,8 @@
         </div>
 
         <!-- Magnesium -->
-        <div class="sport-kpi-card" style="--card-accent: #c084fc;">
+        <div class="sport-kpi-card" style="--card-accent: #c084fc;" onclick="openNutrientBreakdown('magnesium')" title="Click for Magnesium source pie chart">
+          <div class="card-breakdown-hint">Pie Chart ↗</div>
           <div class="sport-kpi-top">
             <span>💊 Magnesium (Mg)</span>
             <span id="pctMagnesium">0%</span>
@@ -962,7 +1081,8 @@
         </div>
 
         <!-- Calcium -->
-        <div class="sport-kpi-card" style="--card-accent: #34d399;">
+        <div class="sport-kpi-card" style="--card-accent: #34d399;" onclick="openNutrientBreakdown('calcium')" title="Click for Calcium source pie chart">
+          <div class="card-breakdown-hint">Pie Chart ↗</div>
           <div class="sport-kpi-top">
             <span>🥛 Calcium (Ca)</span>
             <span id="pctCalcium">0%</span>
@@ -988,7 +1108,8 @@
 
       <div class="micros-grid">
         <!-- Omega-3 -->
-        <div class="sport-kpi-card" style="--card-accent: #f43f5e;">
+        <div class="sport-kpi-card" style="--card-accent: #f43f5e;" onclick="openNutrientBreakdown('omega3')" title="Click for Omega-3 source pie chart">
+          <div class="card-breakdown-hint">Pie Chart ↗</div>
           <div class="sport-kpi-top">
             <span>🐟 Omega-3 (EPA/DHA)</span>
             <span id="pctOmega">0%</span>
@@ -1012,7 +1133,8 @@
         </div>
 
         <!-- Creatine Monohydrate -->
-        <div class="sport-kpi-card" style="--card-accent: #38bdf8;">
+        <div class="sport-kpi-card" style="--card-accent: #38bdf8;" onclick="openNutrientBreakdown('creatine')" title="Click for Creatine source pie chart">
+          <div class="card-breakdown-hint">Pie Chart ↗</div>
           <div class="sport-kpi-top">
             <span>⚡ Creatine Monohydrate</span>
             <span id="statusCreatine" style="color: #fbbf24; font-weight: 800;">PENDING</span>
@@ -1028,7 +1150,8 @@
         </div>
 
         <!-- Iron & Zinc -->
-        <div class="sport-kpi-card" style="--card-accent: #a855f7;">
+        <div class="sport-kpi-card" style="--card-accent: #a855f7;" onclick="openNutrientBreakdown('iron')" title="Click for Iron & Zinc source pie chart">
+          <div class="card-breakdown-hint">Pie Chart ↗</div>
           <div class="sport-kpi-top">
             <span>🩸 Iron & 🛡️ Zinc</span>
             <span id="pctIronZinc">Tracked</span>
@@ -1046,7 +1169,8 @@
         </div>
 
         <!-- Key Vitamins (D3, B12, C) -->
-        <div class="sport-kpi-card" style="--card-accent: #10b981;">
+        <div class="sport-kpi-card" style="--card-accent: #10b981;" onclick="openNutrientBreakdown('vitaminC')" title="Click for Vitamins source pie chart">
+          <div class="card-breakdown-hint">Pie Chart ↗</div>
           <div class="sport-kpi-top">
             <span>☀️ D3 • 🧬 B12 • 🍊 Vit C</span>
             <span>Active</span>
@@ -1261,6 +1385,78 @@
     </div>
     <!-- ── END VIEW 2: HISTORICAL ANALYTICS & TRENDS ───────────────── -->
 
+    <!-- ── VIEW 3: NUTRIENT SOURCE PIE CHART BREAKDOWN ──────────────── -->
+    <div id="fuelBreakdownView" style="display: none;">
+      <!-- Breadcrumb & Back Action Row -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
+        <button class="ctrl-pill-btn" onclick="closeNutrientBreakdown()" style="font-weight: 700; background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">
+          <span style="font-size: 1.15rem; font-weight: 800;">←</span> Back to Fuel Dashboard
+        </button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 0.78rem; font-family: var(--font-mono); color: #38bdf8; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); padding: 4px 10px; border-radius: 8px; font-weight: 700;">
+            ⚡ LIVE INGREDIENT TELEMETRY
+          </span>
+        </div>
+      </div>
+
+      <!-- Quick Nutrient Selector Pills Row -->
+      <div class="bd-selector-pills-row" id="bdPillsRow"></div>
+
+      <!-- Main Breakdown Container: 2-column layout (Left: Pie Chart, Right: Leaderboard) -->
+      <div class="bd-main-grid">
+        <!-- Left: Pie Chart Hero Card -->
+        <div class="fuel-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative;">
+          <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px; text-align: left;">
+              <span id="bdIcon" style="font-size: 1.6rem;">🥩</span>
+              <div>
+                <h3 id="bdTitle" style="font-size: 1.3rem; font-weight: 800; color: #ffffff; margin: 0;">Protein Breakdown</h3>
+                <span id="bdSub" style="font-size: 0.78rem; color: var(--muted);">Where your protein comes from today</span>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div id="bdTotalVal" style="font-size: 1.45rem; font-weight: 800; font-family: var(--font-mono); color: var(--accent);">0 g</div>
+              <span id="bdPctTarget" style="font-size: 0.74rem; color: var(--muted); font-family: var(--font-mono);">0% of target</span>
+            </div>
+          </div>
+
+          <!-- SVG Donut Chart Area -->
+          <div style="position: relative; width: 300px; height: 300px; margin: 12px auto;">
+            <svg id="bdPieSvg" viewBox="0 0 300 300" style="width: 100%; height: 100%; transform: rotate(-90deg); filter: drop-shadow(0 4px 16px rgba(0,0,0,0.4));">
+              <!-- Dynamically populated SVG slices -->
+            </svg>
+            <!-- Center Donut Content -->
+            <div id="bdCenterLabel" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; width: 140px;">
+              <div id="bdCenterIcon" style="font-size: 1.8rem; margin-bottom: 2px;">🥩</div>
+              <div id="bdCenterAmount" style="font-size: 1.35rem; font-weight: 800; font-family: var(--font-mono); color: #ffffff; line-height: 1.1;">0g</div>
+              <div id="bdCenterSub" style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px;">Total Today</div>
+            </div>
+          </div>
+
+          <div style="font-size: 0.75rem; color: var(--muted); margin-top: 8px;">
+            💡 Tap or hover on any slice to isolate that specific food contribution
+          </div>
+        </div>
+
+        <!-- Right: Food Source Contribution Leaderboard -->
+        <div class="fuel-card">
+          <div class="section-title-row" style="margin-bottom: 14px;">
+            <div class="section-title">
+              <span>🏆 Ingredient Contribution Leaderboard</span>
+            </div>
+            <span id="bdSourcesCount" style="font-family: var(--font-mono); font-size: 0.76rem; color: var(--accent); font-weight: 700;">
+              0 sources
+            </span>
+          </div>
+
+          <div id="bdSourcesList" style="display: grid; gap: 10px; max-height: 480px; overflow-y: auto; padding-right: 4px;">
+            <!-- Dynamically populated list -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ── END VIEW 3: NUTRIENT SOURCE PIE CHART BREAKDOWN ──────────── -->
+
     <!-- Bottom Telegram Banner -->
     <div class="bot-sync-footer-card">
       <div>
@@ -1298,6 +1494,7 @@
         const res = await fetch('/api/nutrition-data');
         if (!res.ok) throw new Error("Failed to fetch nutrition data");
         const data = await res.json();
+        window._latestNutritionData = data;
 
         const targets = data.targets || { protein: 150, carbs: 380, fats: 70, fiber: 38, sugar: 35, calories: 2800 };
         const totals = data.todayTotals || { protein: 0, carbs: 0, fats: 0, fiber: 0, sugar: 0, calories: 0 };
@@ -1488,6 +1685,11 @@
         // 4. Render Historical Analytics & Day Logs
         renderNutritionHistory(data);
 
+        // 5. Update Breakdown View if currently active
+        if (window._currentTab === 'breakdown') {
+          renderBreakdownView(_currentBreakdownNutrient);
+        }
+
         if (isManual) {
           const btn = event?.target?.closest('button');
           if (btn) {
@@ -1501,23 +1703,36 @@
       }
     }
 
-    // View Switcher: Today's Fuel vs History
+    // View Switcher: Today's Fuel vs History vs Breakdown
     function switchFuelTab(tab) {
+      window._currentTab = tab;
       const liveView = document.getElementById('fuelLiveView');
       const histView = document.getElementById('fuelHistoryView');
+      const bdView = document.getElementById('fuelBreakdownView');
+      const switcherRow = document.querySelector('.view-switcher-row');
       const btnLive = document.getElementById('btnFuelLive');
       const btnHist = document.getElementById('btnFuelHistory');
 
       if (tab === 'history') {
-        liveView.style.display = 'none';
-        histView.style.display = 'block';
-        btnLive.classList.remove('active');
-        btnHist.classList.add('active');
+        if (liveView) liveView.style.display = 'none';
+        if (histView) histView.style.display = 'block';
+        if (bdView) bdView.style.display = 'none';
+        if (switcherRow) switcherRow.style.display = 'flex';
+        if (btnLive) btnLive.classList.remove('active');
+        if (btnHist) btnHist.classList.add('active');
+      } else if (tab === 'breakdown') {
+        if (liveView) liveView.style.display = 'none';
+        if (histView) histView.style.display = 'none';
+        if (bdView) bdView.style.display = 'block';
+        if (switcherRow) switcherRow.style.display = 'none';
+        window.scrollTo({ top: 120, behavior: 'smooth' });
       } else {
-        liveView.style.display = 'block';
-        histView.style.display = 'none';
-        btnLive.classList.add('active');
-        btnHist.classList.remove('active');
+        if (liveView) liveView.style.display = 'block';
+        if (histView) histView.style.display = 'none';
+        if (bdView) bdView.style.display = 'none';
+        if (switcherRow) switcherRow.style.display = 'flex';
+        if (btnLive) btnLive.classList.add('active');
+        if (btnHist) btnHist.classList.remove('active');
       }
     }
 
@@ -1694,6 +1909,329 @@
       return `${months[mIdx] || month} ${year}`;
     }
 
+    // ── NUTRIENT SOURCE BREAKDOWN & PIE CHART LOGIC ────────────
+    let _currentBreakdownNutrient = 'protein';
+
+    const NUTRIENT_CONFIGS = {
+      protein: { name: 'Protein', icon: '🥩', unit: 'g', targetKey: 'protein', color: '#38bdf8' },
+      carbs: { name: 'Carbohydrates', icon: '🍞', unit: 'g', targetKey: 'carbs', color: '#fbbf24' },
+      fats: { name: 'Healthy Fats', icon: '🥑', unit: 'g', targetKey: 'fats', color: '#fb7185' },
+      calories: { name: 'Total Energy', icon: '🔥', unit: 'kcal', targetKey: 'calories', color: '#34d399' },
+      sugar: { name: 'Sugars', icon: '🍬', unit: 'g', targetKey: 'sugar', color: '#f472b6' },
+      fiber: { name: 'Dietary Fiber', icon: '🌾', unit: 'g', targetKey: 'fiber', color: '#a78bfa' },
+      sodium: { name: 'Sodium (Na)', icon: '🧂', unit: 'mg', targetKey: 'sodiumMg', color: '#38bdf8' },
+      potassium: { name: 'Potassium (K)', icon: '🍌', unit: 'mg', targetKey: 'potassiumMg', color: '#fbbf24' },
+      magnesium: { name: 'Magnesium (Mg)', icon: '💊', unit: 'mg', targetKey: 'magnesiumMg', color: '#c084fc' },
+      calcium: { name: 'Calcium (Ca)', icon: '🥛', unit: 'mg', targetKey: 'calciumMg', color: '#34d399' },
+      omega3: { name: 'Omega-3 (EPA/DHA/ALA)', icon: '🐟', unit: 'mg', targetKey: 'omega3Mg', color: '#f43f5e' },
+      creatine: { name: 'Creatine Monohydrate', icon: '⚡', unit: 'g', targetKey: 'creatineG', color: '#38bdf8' },
+      iron: { name: 'Iron (Fe)', icon: '🩸', unit: 'mg', targetKey: 'ironMg', color: '#38bdf8' },
+      zinc: { name: 'Zinc (Zn)', icon: '🛡️', unit: 'mg', targetKey: 'zincMg', color: '#a855f7' },
+      vitaminC: { name: 'Vitamin C', icon: '🍊', unit: 'mg', targetKey: 'vitaminCMg', color: '#10b981' },
+      vitaminD: { name: 'Vitamin D3', icon: '☀️', unit: 'IU', targetKey: 'vitaminD3Iu', color: '#fbbf24' },
+      vitaminB12: { name: 'Vitamin B12', icon: '🧬', unit: 'mcg', targetKey: 'vitaminB12Mcg', color: '#38bdf8' }
+    };
+
+    const PIE_COLORS = [
+      '#38bdf8', '#10b981', '#fbbf24', '#f43f5e', '#a855f7',
+      '#ec4899', '#f97316', '#06b6d4', '#6366f1', '#84cc16',
+      '#eab308', '#14b8a6', '#d946ef', '#2dd4bf', '#fb923c'
+    ];
+
+    function extractNutrientValue(vitalsStr, pattern, multiplier = 1) {
+      if (!vitalsStr) return 0;
+      const match = vitalsStr.match(pattern);
+      if (!match) return 0;
+      const val = parseFloat(match[1]);
+      return isNaN(val) ? 0 : val * multiplier;
+    }
+
+    function extractNutrientFromLog(l, key) {
+      const v = (l.vitals || '') + ' ' + (l.rawMessage || '') + ' ' + (l.itemName || '');
+      if (key === 'protein') return l.protein || 0;
+      if (key === 'carbs') return l.carbs || 0;
+      if (key === 'fats') return l.fats || 0;
+      if (key === 'fiber') return l.fiber || 0;
+      if (key === 'sugar') return l.sugar || 0;
+      if (key === 'calories') return l.calories || 0;
+      if (key === 'sodium') return extractNutrientValue(v, /sodium[:\s]+([\d.]+)\s*mg/i);
+      if (key === 'potassium') return extractNutrientValue(v, /potassium[:\s]+([\d.]+)\s*mg/i);
+      if (key === 'magnesium') {
+        let m = extractNutrientValue(v, /(?:elemental\s+)?magnesium[:\s]+([\d.]+)\s*mg/i);
+        if (/magnesium\s*glycinate/i.test(l.itemName) && m === 0) m = (l.quantity || 1) * 210;
+        return m;
+      }
+      if (key === 'calcium') return extractNutrientValue(v, /calcium[:\s]+([\d.]+)\s*mg/i);
+      if (key === 'omega3') {
+        let epa = extractNutrientValue(v, /epa[:\s]+([\d.]+)\s*mg/i);
+        let dha = extractNutrientValue(v, /dha[:\s]+([\d.]+)\s*mg/i);
+        let ala = extractNutrientValue(v, /omega-3\s+fatty\s+acids\s*\(ala\)[:\s]+([\d.]+)\s*g/i) * 1000;
+        if (/fish\s*oil/i.test(l.itemName) || /hk\s*vital/i.test(l.itemName)) {
+          const qty = l.quantity || 1;
+          if (epa === 0) epa = qty * 180;
+          if (dha === 0) dha = qty * 120;
+        }
+        return (epa + dha) + ala;
+      }
+      if (key === 'creatine') {
+        let c = extractNutrientValue(v, /creatine(?:\s*monohydrate)?[:\s]+([\d.]+)\s*g/i);
+        if (/creatine/i.test(l.itemName) && c === 0) c = (l.quantity || 1) * 5.0;
+        return c;
+      }
+      if (key === 'iron') return extractNutrientValue(v, /iron[:\s]+([\d.]+)\s*mg/i);
+      if (key === 'zinc') return extractNutrientValue(v, /zinc[:\s]+([\d.]+)\s*mg/i);
+      if (key === 'vitaminC') return extractNutrientValue(v, /vitamin\s*c[:\s]+([\d.]+)\s*mg/i);
+      if (key === 'vitaminD') {
+        let iu = extractNutrientValue(v, /vitamin\s*d(?:3)?[:\s]+([\d.]+)\s*(?:iu|ui)/i);
+        let mcg = extractNutrientValue(v, /vitamin\s*d(?:3)?[:\s]+([\d.]+)\s*mcg/i);
+        return iu > 0 ? iu : mcg * 40;
+      }
+      if (key === 'vitaminB12') return extractNutrientValue(v, /vitamin\s*b12[:\s]+([\d.]+)\s*mcg/i);
+      return 0;
+    }
+
+    function describeArc(cx, cy, rOuter, rInner, startAngle, endAngle) {
+      const rad = Math.PI / 180;
+      const x1 = cx + rOuter * Math.cos(startAngle * rad);
+      const y1 = cy + rOuter * Math.sin(startAngle * rad);
+      const x2 = cx + rOuter * Math.cos(endAngle * rad);
+      const y2 = cy + rOuter * Math.sin(endAngle * rad);
+
+      const x3 = cx + rInner * Math.cos(endAngle * rad);
+      const y3 = cy + rInner * Math.sin(endAngle * rad);
+      const x4 = cx + rInner * Math.cos(startAngle * rad);
+      const y4 = cy + rInner * Math.sin(startAngle * rad);
+
+      const largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
+
+      return [
+        'M', x1, y1,
+        'A', rOuter, rOuter, 0, largeArc, 1, x2, y2,
+        'L', x3, y3,
+        'A', rInner, rInner, 0, largeArc, 0, x4, y4,
+        'Z'
+      ].join(' ');
+    }
+
+    function openNutrientBreakdown(nutrientKey) {
+      _currentBreakdownNutrient = nutrientKey;
+      switchFuelTab('breakdown');
+      renderBreakdownView(nutrientKey);
+      if (window.location.hash !== '#breakdown=' + nutrientKey) {
+        window.location.hash = 'breakdown=' + nutrientKey;
+      }
+    }
+
+    function closeNutrientBreakdown() {
+      switchFuelTab('live');
+      if (window.location.hash.includes('breakdown')) {
+        history.pushState(null, null, ' ');
+      }
+    }
+
+    function renderBreakdownPills(activeKey) {
+      const row = document.getElementById('bdPillsRow');
+      if (!row) return;
+      row.innerHTML = Object.entries(NUTRIENT_CONFIGS).map(([k, cfg]) => `
+        <button class="bd-pill-btn ${k === activeKey ? 'active' : ''}" onclick="openNutrientBreakdown('${k}')">
+          <span>${cfg.icon}</span> ${cfg.name}
+        </button>
+      `).join('');
+    }
+
+    function renderBreakdownView(nutrientKey) {
+      const cfg = NUTRIENT_CONFIGS[nutrientKey] || NUTRIENT_CONFIGS.protein;
+      renderBreakdownPills(nutrientKey);
+
+      const data = window._latestNutritionData || {};
+      const logs = data.todayLogs || [];
+      const targets = data.targets || {};
+      const targetVal = targets[cfg.targetKey] || 0;
+
+      // Extract sources
+      const sourcesMap = {};
+      logs.forEach(l => {
+        const val = extractNutrientFromLog(l, nutrientKey);
+        if (val > 0) {
+          const title = (l.brand && l.brand !== 'Whole Food' ? l.brand + ' ' : '') + (l.itemName || 'Meal');
+          if (!sourcesMap[title]) {
+            sourcesMap[title] = {
+              title,
+              amount: 0,
+              count: 0,
+              lastTime: l.time || 'Today',
+              sampleLog: l
+            };
+          }
+          sourcesMap[title].amount += val;
+          sourcesMap[title].count += 1;
+          sourcesMap[title].lastTime = l.time || sourcesMap[title].lastTime;
+        }
+      });
+
+      const items = Object.values(sourcesMap).sort((a, b) => b.amount - a.amount);
+      const totalAmount = Math.round(items.reduce((s, it) => s + it.amount, 0) * 10) / 10;
+
+      items.forEach((it, idx) => {
+        it.pct = totalAmount > 0 ? Math.round((it.amount / totalAmount) * 1000) / 10 : 0;
+        it.color = PIE_COLORS[idx % PIE_COLORS.length];
+      });
+
+      // Update titles
+      document.getElementById('bdIcon').innerText = cfg.icon;
+      document.getElementById('bdTitle').innerText = `${cfg.name} Breakdown`;
+      document.getElementById('bdSub').innerText = `Real-time food and supplement sources for ${cfg.name} today`;
+      document.getElementById('bdTotalVal').innerHTML = `${totalAmount.toLocaleString()} <span style="font-size: 0.95rem; color: var(--muted);">${cfg.unit}</span>`;
+      
+      const pctTarget = targetVal > 0 ? Math.round((totalAmount / targetVal) * 100) : 0;
+      document.getElementById('bdPctTarget').innerText = targetVal > 0 ? `${pctTarget}% of ${targetVal.toLocaleString()} ${cfg.unit} target` : `${items.length} contributing food${items.length === 1 ? '' : 's'}`;
+
+      document.getElementById('bdSourcesCount').innerText = `${items.length} source${items.length === 1 ? '' : 's'}`;
+
+      // Reset center label
+      const resetCenterLabel = () => {
+        document.getElementById('bdCenterIcon').innerText = cfg.icon;
+        document.getElementById('bdCenterAmount').innerText = `${totalAmount.toLocaleString()} ${cfg.unit}`;
+        document.getElementById('bdCenterSub').innerText = 'TOTAL TODAY';
+      };
+      resetCenterLabel();
+
+      // Render SVG Donut
+      const svg = document.getElementById('bdPieSvg');
+      svg.innerHTML = '';
+
+      if (totalAmount === 0 || items.length === 0) {
+        // Empty placeholder ring
+        svg.innerHTML = `
+          <circle cx="150" cy="150" r="100" fill="none" stroke="rgba(255, 255, 255, 0.1)" stroke-width="20" stroke-dasharray="6,6"></circle>
+        `;
+        document.getElementById('bdSourcesList').innerHTML = `
+          <div style="text-align: center; padding: 48px 20px; color: var(--muted); font-size: 0.9rem;">
+            No ${cfg.name} sources logged yet today.<br>
+            Snap a label or text your meal to <a href="https://t.me/raviteja_fuel_bot" target="_blank" style="color: var(--accent); font-weight: 700;">@raviteja_fuel_bot</a> to see its pie breakdown!
+          </div>
+        `;
+        return;
+      }
+
+      // Draw slices
+      let currentAngle = 0;
+      const rOuter = 130;
+      const rInner = 74;
+      const cx = 150;
+      const cy = 150;
+
+      if (items.length === 1) {
+        // 100% single slice: draw full donut using 2 half-circles
+        const it = items[0];
+        const p1 = describeArc(cx, cy, rOuter, rInner, 0, 180);
+        const p2 = describeArc(cx, cy, rOuter, rInner, 180, 360);
+        svg.innerHTML = `
+          <path d="${p1}" fill="${it.color}" class="pie-slice" id="pie_slice_0" data-idx="0"></path>
+          <path d="${p2}" fill="${it.color}" class="pie-slice" id="pie_slice_0_b" data-idx="0"></path>
+        `;
+      } else {
+        svg.innerHTML = items.map((it, idx) => {
+          const sliceAngle = (it.amount / totalAmount) * 360;
+          const startAngle = currentAngle;
+          const endAngle = currentAngle + sliceAngle;
+          currentAngle = endAngle;
+
+          const d = describeArc(cx, cy, rOuter, rInner, startAngle, endAngle);
+          return `<path d="${d}" fill="${it.color}" class="pie-slice" id="pie_slice_${idx}" data-idx="${idx}"></path>`;
+        }).join('');
+      }
+
+      // Attach hover interactions for SVG slices
+      items.forEach((it, idx) => {
+        const sliceEl = document.getElementById(`pie_slice_${idx}`);
+        const sliceElB = document.getElementById(`pie_slice_${idx}_b`);
+        const highlight = (active) => {
+          if (active) {
+            document.getElementById('bdCenterIcon').innerText = cfg.icon;
+            document.getElementById('bdCenterAmount').innerText = `${it.amount.toLocaleString()} ${cfg.unit}`;
+            document.getElementById('bdCenterSub').innerText = `${it.pct}% • ${it.title.slice(0, 15)}`;
+            if (sliceEl) sliceEl.classList.add('highlighted');
+            if (sliceElB) sliceElB.classList.add('highlighted');
+            const rowEl = document.getElementById(`bd_row_${idx}`);
+            if (rowEl) rowEl.classList.add('highlighted');
+          } else {
+            resetCenterLabel();
+            if (sliceEl) sliceEl.classList.remove('highlighted');
+            if (sliceElB) sliceElB.classList.remove('highlighted');
+            const rowEl = document.getElementById(`bd_row_${idx}`);
+            if (rowEl) rowEl.classList.remove('highlighted');
+          }
+        };
+
+        if (sliceEl) {
+          sliceEl.addEventListener('mouseenter', () => highlight(true));
+          sliceEl.addEventListener('mouseleave', () => highlight(false));
+          sliceEl.addEventListener('click', () => highlight(true));
+        }
+        if (sliceElB) {
+          sliceElB.addEventListener('mouseenter', () => highlight(true));
+          sliceElB.addEventListener('mouseleave', () => highlight(false));
+          sliceElB.addEventListener('click', () => highlight(true));
+        }
+      });
+
+      // Render Leaderboard items
+      document.getElementById('bdSourcesList').innerHTML = items.map((it, idx) => `
+        <div class="bd-source-item" id="bd_row_${idx}" onmouseenter="highlightNutrientItem(${idx}, true)" onmouseleave="highlightNutrientItem(${idx}, false)">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-family: var(--font-mono); font-size: 0.76rem; font-weight: 800; color: var(--muted); width: 22px;">#${idx + 1}</span>
+              <div style="width: 12px; height: 12px; border-radius: 4px; background: ${it.color}; box-shadow: 0 0 8px ${it.color};"></div>
+              <div>
+                <div style="font-weight: 800; font-size: 0.92rem; color: #ffffff;">${escapeHtml(it.title)}</div>
+                <div style="font-size: 0.74rem; color: var(--muted); margin-top: 2px;">
+                  ${it.count > 1 ? `${it.count} servings logged • ` : ''}Last: ${it.lastTime}
+                </div>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-weight: 800; font-family: var(--font-mono); font-size: 1.05rem; color: #ffffff;">
+                ${it.amount.toLocaleString()} <span style="font-size: 0.78rem; color: var(--muted);">${cfg.unit}</span>
+              </div>
+              <div style="font-size: 0.76rem; font-weight: 700; font-family: var(--font-mono); color: ${it.color};">
+                ${it.pct}%
+              </div>
+            </div>
+          </div>
+
+          <div style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.06); border-radius: 9999px; overflow: hidden; margin-top: 4px;">
+            <div style="width: ${it.pct}%; height: 100%; background: ${it.color}; border-radius: 9999px; transition: width 0.4s ease;"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function highlightNutrientItem(idx, active) {
+      const sliceEl = document.getElementById(`pie_slice_${idx}`);
+      const sliceElB = document.getElementById(`pie_slice_${idx}_b`);
+      const rowEl = document.getElementById(`bd_row_${idx}`);
+      if (active) {
+        if (sliceEl) sliceEl.classList.add('highlighted');
+        if (sliceElB) sliceElB.classList.add('highlighted');
+        if (rowEl) rowEl.classList.add('highlighted');
+      } else {
+        if (sliceEl) sliceEl.classList.remove('highlighted');
+        if (sliceElB) sliceElB.classList.remove('highlighted');
+        if (rowEl) rowEl.classList.remove('highlighted');
+      }
+    }
+
+    // URL hash listener for browser back/forward buttons
+    window.addEventListener('hashchange', () => {
+      const match = window.location.hash.match(/#breakdown=([a-zA-Z0-9_]+)/);
+      if (match && match[1] && NUTRIENT_CONFIGS[match[1]]) {
+        openNutrientBreakdown(match[1]);
+      } else if (!window.location.hash || window.location.hash === '#') {
+        switchFuelTab('live');
+      }
+    });
+
     // Ambient Stars
     function initStars() {
       const field = document.getElementById('starField');
@@ -1714,6 +2252,14 @@
 
     // Initial Load
     fetchLiveNutritionData();
+
+    // Initial URL Hash check (e.g. direct link to /nutrition#breakdown=protein)
+    setTimeout(() => {
+      const match = window.location.hash.match(/#breakdown=([a-zA-Z0-9_]+)/);
+      if (match && match[1] && NUTRIENT_CONFIGS[match[1]]) {
+        openNutrientBreakdown(match[1]);
+      }
+    }, 350);
 
     // Auto-poll in background every 12 seconds
     setInterval(() => {
