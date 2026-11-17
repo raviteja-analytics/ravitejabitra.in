@@ -133,6 +133,130 @@ function parsePantryRows(rawPantry) {
   return result;
 }
 
+function parseNutritionLogEntry(r, pantryCatalog = []) {
+  if (!r || typeof r !== 'object') return null;
+
+  const vals = Object.values(r);
+  let rawTimestamp = r["Timestamp"] || r.timestamp || r["Date"] || r.date || r[" "] || vals[0] || "";
+  let rawMsg = r["Raw Message"] || r.rawMessage || r[""] || vals[1] || vals[0] || "";
+
+  if (typeof rawTimestamp === 'string' && !/^\d{4}-\d{2}-\d{2}/.test(rawTimestamp) && /^\d{4}-\d{2}-\d{2}/.test(rawMsg)) {
+    const tmp = rawTimestamp; rawTimestamp = rawMsg; rawMsg = tmp;
+  }
+
+  const rowDate = normalizeToISTDateStr(rawTimestamp);
+  const rowTime = formatDisplayTime(r["Time"] || r.time, rawTimestamp);
+
+  let vitals = "";
+  const vitalsMatch = String(rawMsg).match(/\[Vitals:\s*(.*?)\]/i);
+  if (vitalsMatch) {
+    vitals = vitalsMatch[1];
+  } else if (r.vitals) {
+    vitals = String(r.vitals);
+  }
+
+  const cleanText = String(rawMsg).replace(/\[Vitals:\s*.*?\]/i, '').trim();
+  if (!cleanText || /^(can you\s+)?delete\b/i.test(cleanText)) return null;
+
+  let itemName = r["Item Name"] || r.itemName || "";
+  let brand = r["Brand"] || r.brand || "";
+  let quantity = Number(r["Quantity"] || r.quantity) || 1;
+  let servingUnit = r["Serving Unit"] || r.servingUnit || "";
+  let calories = Number(r["Calories"] || r.calories) || 0;
+  let protein = Number(r["Protein"] || r.protein) || 0;
+  let carbs = Number(r["Carbs"] || r.carbs) || 0;
+  let fats = Number(r["Fats"] || r.fats) || 0;
+  let fiber = Number(r["Fiber"] || r.fiber) || 0;
+  let sugar = Number(r["Sugar"] || r.sugar) || 0;
+
+  // 1. Try parsing pipe-delimited explicit macros
+  const pMatch = cleanText.match(/([\d.]+)\s*g\s*P\b/i);
+  const cMatch = cleanText.match(/([\d.]+)\s*g\s*C\b/i);
+  const fMatch = cleanText.match(/([\d.]+)\s*g\s*F\b/i);
+  const fibMatch = cleanText.match(/([\d.]+)\s*g\s*(?:Fib|Fiber)\b/i);
+  const sMatch = cleanText.match(/([\d.]+)\s*g\s*(?:Sug|Sugar)\b/i);
+  const calMatch = cleanText.match(/([\d.]+)\s*(?:kcal|calories)\b/i);
+
+  if (pMatch || calMatch) {
+    if (pMatch) protein = parseFloat(pMatch[1]);
+    if (cMatch) carbs = parseFloat(cMatch[1]);
+    if (fMatch) fats = parseFloat(fMatch[1]);
+    if (fibMatch) fiber = parseFloat(fibMatch[1]);
+    if (sMatch) sugar = parseFloat(sMatch[1]);
+    if (calMatch) calories = parseFloat(calMatch[1]);
+
+    const parts = cleanText.split('|').map(s => s.trim());
+    if (parts.length > 1) {
+      itemName = parts[1] || parts[0];
+    }
+  } else if ((protein === 0 && calories === 0) && cleanText) {
+    // 2. Fuzzy match against Pantry Catalog
+    const lower = cleanText.toLowerCase();
+    const qtyMatch = lower.match(/^([\d.]+)\s*(g|ml|kg|scoop|scoops|egg|eggs|slice|slices|tbsp|tablet|tablets|capsule|capsules)?/i);
+    let userQty = 1;
+    let userUnit = "";
+    if (qtyMatch) {
+      userQty = parseFloat(qtyMatch[1]) || 1;
+      userUnit = (qtyMatch[2] || "").toLowerCase();
+    }
+
+    let matchedItem = null;
+    for (const p of pantryCatalog) {
+      const pName = (p.itemName || "").toLowerCase();
+      const pBrand = (p.brand || "").toLowerCase();
+      const pAliases = (p.aliases || "").toLowerCase().split(',').map(a => a.trim());
+
+      if (lower.includes(pName) || (pBrand && lower.includes(pBrand)) || pAliases.some(a => a && lower.includes(a))) {
+        matchedItem = p;
+        break;
+      }
+    }
+
+    if (matchedItem) {
+      itemName = matchedItem.itemName;
+      brand = matchedItem.brand;
+      quantity = userQty;
+      servingUnit = userUnit || matchedItem.servingUnit;
+
+      let multiplier = userQty;
+      const baseServingWeightMatch = String(matchedItem.servingWeight || matchedItem.servingUnit || "").match(/([\d.]+)\s*g/i);
+      if (baseServingWeightMatch && (userUnit === 'g' || !userUnit)) {
+        const baseGrams = parseFloat(baseServingWeightMatch[1]);
+        if (baseGrams > 0 && userQty >= 5) {
+          multiplier = userQty / baseGrams;
+        }
+      }
+
+      protein = Math.round((matchedItem.protein * multiplier) * 10) / 10;
+      carbs = Math.round((matchedItem.carbs * multiplier) * 10) / 10;
+      fats = Math.round((matchedItem.fats * multiplier) * 10) / 10;
+      fiber = Math.round((matchedItem.fiber * multiplier) * 10) / 10;
+      sugar = Math.round((matchedItem.sugar * multiplier) * 10) / 10;
+      calories = Math.round(matchedItem.calories * multiplier);
+      if (!vitals && matchedItem.vitals) vitals = matchedItem.vitals;
+    } else {
+      itemName = cleanText;
+    }
+  }
+
+  return {
+    date: rowDate,
+    time: rowTime,
+    itemName: itemName || cleanText,
+    brand: brand,
+    quantity: quantity || 1,
+    servingUnit: servingUnit,
+    calories: calories || 0,
+    protein: protein || 0,
+    carbs: carbs || 0,
+    fats: fats || 0,
+    fiber: fiber || 0,
+    sugar: sugar || 0,
+    vitals: vitals,
+    rawMessage: cleanText
+  };
+}
+
 // Helper to extract numeric values from vitals string
 function extractNutrientValue(vitalsStr, pattern, multiplier = 1) {
   if (!vitalsStr) return 0;
@@ -184,37 +308,10 @@ export default async function handler(req, res) {
     const dd = String(nowIST.getDate()).padStart(2, '0');
     const todayStr = `${yyyy}-${mm}-${dd}`;
 
-    // 4. Clean & normalize food logs
-    const cleanedLogs = Array.isArray(rawLogs) ? rawLogs.map((r) => {
-      const rowDate = normalizeToISTDateStr(r["Date"] || r.date || r.timestamp);
-      const rowTime = formatDisplayTime(r["Time"] || r.time, r["Timestamp"] || r.timestamp);
-      
-      let vitals = "";
-      const rawMsg = String(r["Raw Message"] || r.rawMessage || "");
-      const vitalsMatch = rawMsg.match(/\[Vitals:\s*(.*?)\]/i);
-      if (vitalsMatch) {
-        vitals = vitalsMatch[1];
-      } else if (r.vitals) {
-        vitals = String(r.vitals);
-      }
-
-      return {
-        date: rowDate,
-        time: rowTime,
-        itemName: r["Item Name"] || r.itemName || "",
-        brand: r["Brand"] || r.brand || "",
-        quantity: Number(r["Quantity"] || r.quantity) || 1,
-        servingUnit: r["Serving Unit"] || r.servingUnit || "",
-        calories: Number(r["Calories"] || r.calories) || 0,
-        protein: Number(r["Protein"] || r.protein) || 0,
-        carbs: Number(r["Carbs"] || r.carbs) || 0,
-        fats: Number(r["Fats"] || r.fats) || 0,
-        fiber: Number(r["Fiber"] || r.fiber) || 0,
-        sugar: Number(r["Sugar"] || r.sugar) || 0,
-        vitals: vitals,
-        rawMessage: rawMsg.replace(/\[Vitals:\s*.*?\]/i, '').trim()
-      };
-    }) : [];
+    // 4. Clean & normalize food logs using robust parsing & pantry matching
+    const cleanedLogs = Array.isArray(rawLogs)
+      ? rawLogs.map(r => parseNutritionLogEntry(r, pantry)).filter(Boolean)
+      : [];
 
     const todayLogs = cleanedLogs.filter(l => l.date === todayStr);
 
@@ -388,7 +485,6 @@ export default async function handler(req, res) {
     }));
 
     return res.status(200).json({
-      _rawLogsDebug: rawLogs.slice(0, 3),
       todayStr,
       targets: DAILY_TARGETS,
       todayTotals,

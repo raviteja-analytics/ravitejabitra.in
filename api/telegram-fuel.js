@@ -79,15 +79,31 @@ async function sendTelegramMessage(chatId, text, replyToMsgId = null, replyMarku
       parse_mode: "HTML",
       disable_web_page_preview: true
     };
-    if (replyToMsgId) payload.reply_to_message_id = replyToMsgId;
+    if (replyToMsgId) {
+      payload.reply_to_message_id = replyToMsgId;
+      payload.allow_sending_without_reply = true;
+    }
     if (replyMarkup) payload.reply_markup = replyMarkup;
 
-    const res = await fetch(url, {
+    let res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
-    return await res.json();
+    let data = await res.json();
+    if (!data.ok) {
+      console.warn("Telegram sendMessage failed with HTML, retrying plain text:", data.description);
+      delete payload.parse_mode;
+      payload.text = text.replace(/<[^>]*>/g, '');
+      delete payload.reply_to_message_id;
+      const retryRes = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      data = await retryRes.json();
+    }
+    return data;
   } catch (err) {
     console.error("Telegram send error:", err);
     return null;
@@ -394,7 +410,23 @@ async function getTodayNutritionLogs(todayDateStr) {
     if (!res.ok) return [];
     const items = await res.json();
     if (!Array.isArray(items)) return [];
-    return items.filter(r => normalizeToISTDateStr(r.Date || r.date) === todayDateStr);
+    return items.map(r => {
+      const vals = Object.values(r);
+      let rawTimestamp = r["Timestamp"] || r.timestamp || r["Date"] || r.date || r[" "] || vals[0] || "";
+      let rawMsg = r["Raw Message"] || r.rawMessage || r[""] || vals[1] || vals[0] || "";
+      if (typeof rawTimestamp === 'string' && !/^\d{4}-\d{2}-\d{2}/.test(rawTimestamp) && /^\d{4}-\d{2}-\d{2}/.test(rawMsg)) {
+        const tmp = rawTimestamp; rawTimestamp = rawMsg; rawMsg = tmp;
+      }
+      const dStr = normalizeToISTDateStr(rawTimestamp);
+      if (dStr !== todayDateStr) return null;
+
+      const pMatch = String(rawMsg).match(/([\d.]+)\s*g\s*P\b/i);
+      const calMatch = String(rawMsg).match(/([\d.]+)\s*(?:kcal|calories)\b/i);
+      return {
+        protein: pMatch ? parseFloat(pMatch[1]) : (Number(r["Protein"] || r.protein) || 0),
+        calories: calMatch ? parseFloat(calMatch[1]) : (Number(r["Calories"] || r.calories) || 0)
+      };
+    }).filter(Boolean);
   } catch (err) {
     console.error("Error fetching nutrition logs:", err);
     return [];
@@ -428,6 +460,8 @@ async function saveItemToPantrySheet(item) {
 // Execute Log to Daily Intake Sheet
 async function logFoodToDailySheet(item, dateStr, timeStr, rawMessage) {
   const vitalsSummary = item.vitalsSummary || "";
+  const structuredMsg = `${rawMessage} | ${item.brand && item.brand !== 'Whole Food' ? item.brand + ' ' : ''}${item.itemName} | ${item.protein}g P | ${item.carbs}g C | ${item.fats}g F | ${item.fiber}g Fib | ${item.sugar}g Sug | ${item.calories} kcal${vitalsSummary ? ` [Vitals: ${vitalsSummary}]` : ''}`;
+
   await fetch(GOOGLE_SCRIPT_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -446,7 +480,7 @@ async function logFoodToDailySheet(item, dateStr, timeStr, rawMessage) {
       fats: item.fats || 0,
       fiber: item.fiber || 0,
       sugar: item.sugar || 0,
-      rawMessage: rawMessage + (vitalsSummary ? ` [Vitals: ${vitalsSummary}]` : "")
+      rawMessage: structuredMsg
     })
   });
 }

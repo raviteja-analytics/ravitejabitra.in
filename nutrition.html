@@ -1120,7 +1120,7 @@
             <span>🔥</span> Daily Avg Calories
           </div>
           <div class="hist-val" id="histAvgCalories" style="color: var(--calories-color);">0 kcal</div>
-          <div style="font-size: 0.74rem; color: var(--muted); margin-top: 4px;">Target: 2,100 kcal</div>
+          <div style="font-size: 0.74rem; color: var(--muted); margin-top: 4px;">Target: 2,800 kcal</div>
         </div>
 
         <div class="hist-card">
@@ -1429,7 +1429,7 @@
       if (!data) return;
       const history = data.dayWiseHistory || [];
       const monthly = data.monthlyHistory || [];
-      const targets = data.targets || { protein: 150, calories: 2100 };
+      const targets = data.targets || { protein: 150, calories: 2800 };
 
       // Calculate aggregates
       const daysCount = history.length;
