@@ -1148,6 +1148,83 @@
         </div>
       </div>
 
+      <!-- 🏃 Weekly Marathon Fueling Block -->
+      <div class="fuel-card" style="margin-bottom: 24px; border: 1px solid rgba(56, 189, 248, 0.25); background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), transparent 70%), rgba(15, 23, 42, 0.65);">
+        <div class="section-title-row">
+          <div class="section-title">
+            <span style="display: flex; align-items: center; gap: 8px;">
+              <span>🏃</span> Current Week Marathon Fueling Pacing
+            </span>
+          </div>
+          <span id="weeklyDateRangeLabel" style="font-family: var(--font-mono); font-size: 0.8rem; color: #38bdf8; font-weight: 700; background: rgba(56, 189, 248, 0.12); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.3);">
+            This Week
+          </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 14px;">
+          <!-- Weekly Protein -->
+          <div style="background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.06);">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700;">
+              <span style="color: var(--protein-color);">🥩 Weekly Protein</span>
+              <span id="pctWeekProtein" style="font-family: var(--font-mono); color: #ffffff;">0%</span>
+            </div>
+            <div style="font-size: 1.35rem; font-weight: 800; font-family: var(--font-mono); color: var(--protein-color); margin: 6px 0 4px 0;" id="valWeekProtein">
+              0 <span style="font-size: 0.85rem; color: var(--muted);">/ 1,050 g</span>
+            </div>
+            <div class="sport-progress-bar-bg" style="height: 6px; margin-top: 6px;">
+              <div class="sport-progress-bar-fill" id="barWeekProtein" style="width: 0%; background: var(--protein-color);"></div>
+            </div>
+          </div>
+
+          <!-- Weekly Calories -->
+          <div style="background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.06);">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700;">
+              <span style="color: var(--calories-color);">🔥 Weekly Surplus Energy</span>
+              <span id="pctWeekCalories" style="font-family: var(--font-mono); color: #ffffff;">0%</span>
+            </div>
+            <div style="font-size: 1.35rem; font-weight: 800; font-family: var(--font-mono); color: var(--calories-color); margin: 6px 0 4px 0;" id="valWeekCalories">
+              0 <span style="font-size: 0.85rem; color: var(--muted);">/ 19,600 kcal</span>
+            </div>
+            <div class="sport-progress-bar-bg" style="height: 6px; margin-top: 6px;">
+              <div class="sport-progress-bar-fill" id="barWeekCalories" style="width: 0%; background: var(--calories-color);"></div>
+            </div>
+          </div>
+
+          <!-- Weekly Carbohydrates -->
+          <div style="background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.06);">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700;">
+              <span style="color: var(--carbs-color);">🍞 Glycogen Fuel (Carbs)</span>
+              <span id="pctWeekCarbs" style="font-family: var(--font-mono); color: #ffffff;">0%</span>
+            </div>
+            <div style="font-size: 1.35rem; font-weight: 800; font-family: var(--font-mono); color: var(--carbs-color); margin: 6px 0 4px 0;" id="valWeekCarbs">
+              0 <span style="font-size: 0.85rem; color: var(--muted);">/ 2,660 g</span>
+            </div>
+            <div class="sport-progress-bar-bg" style="height: 6px; margin-top: 6px;">
+              <div class="sport-progress-bar-fill" id="barWeekCarbs" style="width: 0%; background: var(--carbs-color);"></div>
+            </div>
+          </div>
+
+          <!-- Weekly Fats -->
+          <div style="background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.06);">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700;">
+              <span style="color: var(--fats-color);">🥑 Hormonal Support (Fats)</span>
+              <span id="pctWeekFats" style="font-family: var(--font-mono); color: #ffffff;">0%</span>
+            </div>
+            <div style="font-size: 1.35rem; font-weight: 800; font-family: var(--font-mono); color: var(--fats-color); margin: 6px 0 4px 0;" id="valWeekFats">
+              0 <span style="font-size: 0.85rem; color: var(--muted);">/ 490 g</span>
+            </div>
+            <div class="sport-progress-bar-bg" style="height: 6px; margin-top: 6px;">
+              <div class="sport-progress-bar-fill" id="barWeekFats" style="width: 0%; background: var(--fats-color);"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Sports Nutrition Pacing Insight -->
+        <div id="weeklyPacingInsight" style="margin-top: 14px; padding: 10px 14px; border-radius: 8px; background: rgba(56, 189, 248, 0.08); border-left: 3px solid #38bdf8; font-size: 0.82rem; color: var(--text-color);">
+          Calculating weekly marathon pacing...
+        </div>
+      </div>
+
       <!-- Split: Monthly Breakdown & Day-by-Day Historical Log -->
       <div style="display: grid; grid-template-columns: 0.75fr 1.25fr; gap: 24px; margin-bottom: 24px;">
         
@@ -1449,6 +1526,44 @@
       const history = data.dayWiseHistory || [];
       const monthly = data.monthlyHistory || [];
       const targets = data.targets || { protein: 150, calories: 2800 };
+      const weekly = data.weeklyTotals || {};
+      const weeklyTargets = data.weeklyTargets || { protein: 1050, calories: 19600, carbs: 2660, fats: 490 };
+
+      // Populate Weekly Marathon Fueling Block
+      if (document.getElementById('weeklyDateRangeLabel') && weekly.label) {
+        document.getElementById('weeklyDateRangeLabel').innerText = weekly.label;
+      }
+      const pWeek = weekly.protein || 0;
+      const cWeek = weekly.calories || 0;
+      const cbWeek = weekly.carbs || 0;
+      const fWeek = weekly.fats || 0;
+      const pPct = Math.min(100, Math.round((pWeek / weeklyTargets.protein) * 100));
+      const cPct = Math.min(100, Math.round((cWeek / weeklyTargets.calories) * 100));
+      const cbPct = Math.min(100, Math.round((cbWeek / weeklyTargets.carbs) * 100));
+      const fPct = Math.min(100, Math.round((fWeek / weeklyTargets.fats) * 100));
+
+      if (document.getElementById('valWeekProtein')) document.getElementById('valWeekProtein').innerHTML = `${pWeek} <span style="font-size: 0.85rem; color: var(--muted);">/ ${weeklyTargets.protein} g</span>`;
+      if (document.getElementById('pctWeekProtein')) document.getElementById('pctWeekProtein').innerText = `${pPct}%`;
+      if (document.getElementById('barWeekProtein')) document.getElementById('barWeekProtein').style.width = `${pPct}%`;
+
+      if (document.getElementById('valWeekCalories')) document.getElementById('valWeekCalories').innerHTML = `${cWeek.toLocaleString()} <span style="font-size: 0.85rem; color: var(--muted);">/ ${weeklyTargets.calories.toLocaleString()} kcal</span>`;
+      if (document.getElementById('pctWeekCalories')) document.getElementById('pctWeekCalories').innerText = `${cPct}%`;
+      if (document.getElementById('barWeekCalories')) document.getElementById('barWeekCalories').style.width = `${cPct}%`;
+
+      if (document.getElementById('valWeekCarbs')) document.getElementById('valWeekCarbs').innerHTML = `${cbWeek} <span style="font-size: 0.85rem; color: var(--muted);">/ ${weeklyTargets.carbs} g</span>`;
+      if (document.getElementById('pctWeekCarbs')) document.getElementById('pctWeekCarbs').innerText = `${cbPct}%`;
+      if (document.getElementById('barWeekCarbs')) document.getElementById('barWeekCarbs').style.width = `${cbPct}%`;
+
+      if (document.getElementById('valWeekFats')) document.getElementById('valWeekFats').innerHTML = `${fWeek} <span style="font-size: 0.85rem; color: var(--muted);">/ ${weeklyTargets.fats} g</span>`;
+      if (document.getElementById('pctWeekFats')) document.getElementById('pctWeekFats').innerText = `${fPct}%`;
+      if (document.getElementById('barWeekFats')) document.getElementById('barWeekFats').style.width = `${fPct}%`;
+
+      const elInsight = document.getElementById('weeklyPacingInsight');
+      if (elInsight) {
+        const daysLeft = Math.max(1, 7 - (weekly.daysLogged || 1));
+        const neededP = Math.max(0, Math.round((weeklyTargets.protein - pWeek) / daysLeft));
+        elInsight.innerHTML = `💡 <b>Sports Science Pacing:</b> You've logged <b>${pWeek}g</b> of your 1,050g weekly protein target. Across the remaining days this week, aim for ~<b>${neededP}g protein/day</b> to stay on track for your 70kg surplus & marathon conditioning!`;
+      }
 
       // Calculate aggregates
       const daysCount = history.length;

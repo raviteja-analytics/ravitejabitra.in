@@ -270,6 +270,34 @@ function parseNutritionLogEntry(r, pantryCatalog = []) {
   };
 }
 
+function getWeekRange(dateStr) {
+  const d = new Date(dateStr + "T00:00:00Z");
+  const day = d.getUTCDay();
+  const diffToMon = day === 0 ? -6 : 1 - day;
+  const monday = new Date(d.getTime() + diffToMon * 86400000);
+  const sunday = new Date(monday.getTime() + 6 * 86400000);
+
+  const format = (date) => {
+    const y = date.getUTCFullYear();
+    const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const dNum = String(date.getUTCDate()).padStart(2, '0');
+    return `${y}-${m}-${dNum}`;
+  };
+
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const startMonth = monthNames[monday.getUTCMonth()];
+  const endMonth = monthNames[sunday.getUTCMonth()];
+  const label = startMonth === endMonth
+    ? `${startMonth} ${monday.getUTCDate()} – ${sunday.getUTCDate()}`
+    : `${startMonth} ${monday.getUTCDate()} – ${endMonth} ${sunday.getUTCDate()}`;
+
+  return {
+    startStr: format(monday),
+    endStr: format(sunday),
+    label
+  };
+}
+
 // Helper to extract numeric values from vitals string
 function extractNutrientValue(vitalsStr, pattern, multiplier = 1) {
   if (!vitalsStr) return 0;
@@ -560,10 +588,43 @@ export default async function handler(req, res) {
       daysCount: monthlyMap[m].daysCount
     }));
 
+    // Weekly Marathon Fueling Analytics
+    const weekRange = getWeekRange(todayStr);
+    const weekLogs = cleanedLogs.filter(l => l.date >= weekRange.startStr && l.date <= weekRange.endStr);
+
+    const weekDaysMap = {};
+    weekLogs.forEach(l => { weekDaysMap[l.date] = true; });
+    const weekDaysLogged = Object.keys(weekDaysMap).length;
+
+    const WEEKLY_TARGETS = {
+      calories: 19600,
+      protein: 1050,
+      carbs: 2660,
+      fats: 490,
+      fiber: 266,
+      sugar: 245,
+      waterLiters: 28
+    };
+
+    const weeklyTotals = {
+      protein: Math.round(weekLogs.reduce((s, l) => s + (l.protein || 0), 0) * 10) / 10,
+      calories: Math.round(weekLogs.reduce((s, l) => s + (l.calories || 0), 0)),
+      carbs: Math.round(weekLogs.reduce((s, l) => s + (l.carbs || 0), 0) * 10) / 10,
+      fats: Math.round(weekLogs.reduce((s, l) => s + (l.fats || 0), 0) * 10) / 10,
+      fiber: Math.round(weekLogs.reduce((s, l) => s + (l.fiber || 0), 0) * 10) / 10,
+      sugar: Math.round(weekLogs.reduce((s, l) => s + (l.sugar || 0), 0) * 10) / 10,
+      daysLogged: weekDaysLogged,
+      label: weekRange.label,
+      startStr: weekRange.startStr,
+      endStr: weekRange.endStr
+    };
+
     return res.status(200).json({
       todayStr,
       targets: DAILY_TARGETS,
+      weeklyTargets: WEEKLY_TARGETS,
       todayTotals,
+      weeklyTotals,
       todayMicros,
       todayLogs,
       pantry,
