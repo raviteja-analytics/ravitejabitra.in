@@ -330,6 +330,22 @@ export default async function handler(req, res) {
           if (parsedLogs.length > 0) parsedLogs.pop();
           continue;
         }
+
+        const deleteMatch = rawMsg.match(/\[DELETE_ITEM:\s*(.*?)\]/i);
+        if (deleteMatch) {
+          const target = deleteMatch[1].toLowerCase().trim();
+          for (let k = parsedLogs.length - 1; k >= 0; k--) {
+            const entry = parsedLogs[k];
+            const name = (entry.itemName || "").toLowerCase();
+            const brand = (entry.brand || "").toLowerCase();
+            const raw = (entry.rawMessage || "").toLowerCase();
+            if (name.includes(target) || brand.includes(target) || raw.includes(target) || target.includes(name)) {
+              parsedLogs.splice(k, 1);
+              break;
+            }
+          }
+          continue;
+        }
         const entry = parseNutritionLogEntry(r, pantry);
         if (entry) parsedLogs.push(entry);
       }

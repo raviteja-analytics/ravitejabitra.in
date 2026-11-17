@@ -621,6 +621,38 @@ export default async function handler(req, res) {
 
         await editTelegramMessageText(chatId, messageId, card);
       }
+      else if (action === "del") {
+        await answerTelegramCallbackQuery(cbId, "Deleting item...");
+        const target = colonIdx !== -1 ? data.slice(colonIdx + 1).trim() : "";
+
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sheet: "nutrition",
+            timestamp: new Date().toISOString(),
+            date: dateStr,
+            time: timeStr,
+            itemName: "DELETED",
+            brand: "",
+            quantity: 0,
+            servingUnit: "",
+            calories: 0,
+            protein: 0,
+            carbs: 0,
+            fats: 0,
+            fiber: 0,
+            sugar: 0,
+            rawMessage: `[DELETE_ITEM: ${target}]`
+          })
+        });
+
+        await editTelegramMessageText(
+          chatId,
+          messageId,
+          `🗑️ <b>Deleted:</b> <i>${target}</i>\n\nYour dashboard has been updated!\n👉 View: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`
+        );
+      }
     } catch (err) {
       console.error("Callback handling error:", err);
       await answerTelegramCallbackQuery(cbId, "⚠️ Error processing choice");
@@ -729,8 +761,10 @@ export default async function handler(req, res) {
       `<b>3. Snap Any Label (Photo):</b>\n` +
       `• Snap any packaged brand or supplement label to auto-register.\n\n` +
       `<b>Quick Shortcuts:</b>\n` +
-      `• /today - Today's running fuel & vitals\n` +
-      `• /pantry - View all registered pantry items\n\n` +
+      `• <code>/today</code> - Today's running fuel & meals (with 🗑️ delete buttons)\n` +
+      `• <code>/delete &lt;item&gt;</code> - Delete a specific meal (e.g. <code>/delete oats</code>)\n` +
+      `• <code>/undo</code> - Undo last logged meal\n` +
+      `• <code>/pantry</code> - View all registered pantry items\n\n` +
       `🌐 Live Dashboard: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
 
     await sendTelegramMessage(chatId, welcome);
@@ -769,27 +803,92 @@ export default async function handler(req, res) {
     return res.status(200).send("OK");
   }
 
-  if (text === "/today" || text === "/macros") {
-    const todayLogs = await getTodayNutritionLogs(dateStr);
-    const totalP = todayLogs.reduce((sum, r) => sum + (Number(r["Protein"] || r.protein) || 0), 0);
-    const totalC = todayLogs.reduce((sum, r) => sum + (Number(r["Carbs"] || r.carbs) || 0), 0);
-    const totalF = todayLogs.reduce((sum, r) => sum + (Number(r["Fats"] || r.fats) || 0), 0);
-    const totalS = todayLogs.reduce((sum, r) => sum + (Number(r["Sugar"] || r.sugar) || 0), 0);
-    const totalCal = todayLogs.reduce((sum, r) => sum + (Number(r["Calories"] || r.calories) || 0), 0);
+  if (text === "/today" || text === "/macros" || text === "/meals") {
+    let detailedLogs = [];
+    try {
+      const res = await fetch(`https://www.ravitejabitra.in/api/nutrition-data`);
+      if (res.ok) {
+        const data = await res.json();
+        detailedLogs = data.todayLogs || [];
+      }
+    } catch(e) {}
 
-    const summary = `📊 <b>Today's Fuel Summary (${todayLogs.length} entries)</b>\n\n` +
+    const totalP = detailedLogs.reduce((sum, r) => sum + (r.protein || 0), 0);
+    const totalC = detailedLogs.reduce((sum, r) => sum + (r.carbs || 0), 0);
+    const totalF = detailedLogs.reduce((sum, r) => sum + (r.fats || 0), 0);
+    const totalS = detailedLogs.reduce((sum, r) => sum + (r.sugar || 0), 0);
+    const totalCal = detailedLogs.reduce((sum, r) => sum + (r.calories || 0), 0);
+
+    let mealsList = "";
+    const inlineButtons = [];
+
+    if (detailedLogs.length > 0) {
+      mealsList = `\n<b>🍽️ Today's Logged Meals (${detailedLogs.length}):</b>\n`;
+      detailedLogs.forEach((l, i) => {
+        mealsList += `${i + 1}. <b>${l.quantity ? l.quantity + ' ' : ''}${l.servingUnit ? l.servingUnit + ' ' : ''}${l.itemName}</b>` +
+          ` ➔ 🥩 ${l.protein}g P | 🔥 ${l.calories} kcal\n`;
+
+        const shortName = (l.itemName || "item").slice(0, 20);
+        inlineButtons.push([{
+          text: `🗑️ Delete ${shortName}`,
+          callback_data: `del:${shortName}`
+        }]);
+      });
+    } else {
+      mealsList = `\n<i>No meals logged yet today.</i>\n`;
+    }
+
+    const summary = `📊 <b>Today's Fuel Summary</b>\n` +
+      mealsList +
+      `\n━━━━━━━━━━━━━━━━━━━\n` +
       `🥩 <b>Protein:</b> ${Math.round(totalP)}g / ${DAILY_TARGETS.protein}g (${Math.min(100, Math.round((totalP/DAILY_TARGETS.protein)*100))}%)` + (totalP >= DAILY_TARGETS.protein ? ' 🏆' : '') + `\n` +
       `🍞 <b>Carbs:</b> ${Math.round(totalC)}g / ${DAILY_TARGETS.carbs}g\n` +
       `🥑 <b>Fats:</b> ${Math.round(totalF)}g / ${DAILY_TARGETS.fats}g\n` +
       `🍬 <b>Sugar:</b> ${Math.round(totalS * 10) / 10}g / ${DAILY_TARGETS.sugar}g\n` +
       `🔥 <b>Calories:</b> ${Math.round(totalCal)} kcal / ${DAILY_TARGETS.calories} kcal\n\n` +
+      `💡 <i>To delete an item, tap its button above or text:</i>\n` +
+      `• <code>/delete oats</code>\n` +
+      `• <code>/undo</code> (removes last entry)\n\n` +
       `🌐 Live Dashboard: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
 
-    await sendTelegramMessage(chatId, summary);
+    const replyMarkup = inlineButtons.length > 0 ? { inline_keyboard: inlineButtons } : null;
+    await sendTelegramMessage(chatId, summary, messageId, replyMarkup);
     return res.status(200).send("OK");
   }
 
-  if (text === "/undo" || text === "/delete") {
+  // ── DELETE / REMOVE / UNDO COMMANDS ──
+  const isDeleteCmd = /^\/(delete|remove|undo)\b/i.test(text) || /^delete\b/i.test(text) || /^remove\b/i.test(text);
+  if (isDeleteCmd) {
+    const targetItem = text.replace(/^(\/)?(delete|remove|undo)\s*/i, '').trim();
+
+    if (!targetItem || text.toLowerCase() === "/undo") {
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sheet: "nutrition",
+          timestamp: new Date().toISOString(),
+          date: dateStr,
+          time: timeStr,
+          itemName: "DELETED",
+          brand: "",
+          quantity: 0,
+          servingUnit: "",
+          calories: 0,
+          protein: 0,
+          carbs: 0,
+          fats: 0,
+          fiber: 0,
+          sugar: 0,
+          rawMessage: `[DELETE_LAST]`
+        })
+      });
+
+      await sendTelegramMessage(chatId, "🗑️ <b>Last food entry removed/undone!</b>\nYour live dashboard has been updated: <a href=\"https://www.ravitejabitra.in/nutrition\">ravitejabitra.in/nutrition</a>", messageId);
+      return res.status(200).send("OK");
+    }
+
+    // Delete specific item by name
     await fetch(GOOGLE_SCRIPT_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -808,11 +907,15 @@ export default async function handler(req, res) {
         fats: 0,
         fiber: 0,
         sugar: 0,
-        rawMessage: `[DELETE_LAST]`
+        rawMessage: `[DELETE_ITEM: ${targetItem}]`
       })
     });
 
-    await sendTelegramMessage(chatId, "🗑️ <b>Last food entry removed/undone!</b>\nYour live dashboard has been updated: <a href=\"https://www.ravitejabitra.in/nutrition\">ravitejabitra.in/nutrition</a>", messageId);
+    await sendTelegramMessage(
+      chatId,
+      `🗑️ <b>Removed:</b> <i>"${targetItem}"</i> from today's fuel!\n\nYour live dashboard has recalculated: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`,
+      messageId
+    );
     return res.status(200).send("OK");
   }
 
