@@ -1,7 +1,9 @@
 // Vercel Serverless Function: Telegram Fuel & Nutrition Bot Webhook
 // Handles: 
 // 1. Photo upload -> Vision AI parses nutrition label & ALL vital micronutrients -> Saves to Pantry
-// 2. Text message -> Matches pantry brand item (macros + vitals) -> Logs daily intake
+// 2. Generic whole foods (sweet potato, boiled eggs, apple, chicken breast) -> USDA lookups
+// 3. Interactive Telegram Inline Action Buttons -> [ ⚡ Log Today ] vs [ 📦 Save to Pantry ]
+// 4. Command shortcuts -> /save (to pantry) and /log (to today's fuel)
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_FUEL_BOT_TOKEN || "9018521579:AAG5KbQyjR-5A3j7MzsVnE_TT48HE_yLbQo";
 const AUTHORIZED_USER_ID = process.env.TELEGRAM_AUTHORIZED_USER_ID || "1288863066";
@@ -14,6 +16,7 @@ const DAILY_TARGETS = {
   protein: 150,
   carbs: 220,
   fats: 60,
+  sugar: 35,
   fiber: 30
 };
 
@@ -54,8 +57,8 @@ function normalizeToISTDateStr(val) {
   return s.split('T')[0];
 }
 
-// Send Telegram Message
-async function sendTelegramMessage(chatId, text, replyToMsgId = null) {
+// Telegram Helpers
+async function sendTelegramMessage(chatId, text, replyToMsgId = null, replyMarkup = null) {
   try {
     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
     const payload = {
@@ -64,16 +67,57 @@ async function sendTelegramMessage(chatId, text, replyToMsgId = null) {
       parse_mode: "HTML",
       disable_web_page_preview: true
     };
-    if (replyToMsgId) {
-      payload.reply_to_message_id = replyToMsgId;
-    }
+    if (replyToMsgId) payload.reply_to_message_id = replyToMsgId;
+    if (replyMarkup) payload.reply_markup = replyMarkup;
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("Telegram send error:", err);
+    return null;
+  }
+}
+
+async function editTelegramMessageText(chatId, messageId, text, replyMarkup = null) {
+  try {
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageText`;
+    const payload = {
+      chat_id: chatId,
+      message_id: messageId,
+      text: text,
+      parse_mode: "HTML",
+      disable_web_page_preview: true
+    };
+    if (replyMarkup) payload.reply_markup = replyMarkup;
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("Telegram edit error:", err);
+    return null;
+  }
+}
+
+async function answerTelegramCallbackQuery(callbackQueryId, text = null) {
+  try {
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/answerCallbackQuery`;
+    const payload = { callback_query_id: callbackQueryId };
+    if (text) payload.text = text;
     await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
   } catch (err) {
-    console.error("Telegram send error:", err);
+    console.error("Telegram answerCallbackQuery error:", err);
   }
 }
 
@@ -104,10 +148,42 @@ async function downloadTelegramPhotoBase64(fileId) {
   }
 }
 
-// Call Gemini 2.5 Flash with Image to Extract Nutrition Facts + Vital Micronutrients
+// Call Gemini (with automatic fallback to available flash models)
+async function callGemini(contents, generationConfig = null) {
+  const models = ['gemini-flash-lite-latest', 'gemini-2.5-flash'];
+  let lastError = null;
+
+  for (const model of models) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+      const body = { contents };
+      if (generationConfig) body.generationConfig = generationConfig;
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Model ${model} returned ${res.status}: ${errText}`);
+      }
+
+      const result = await res.json();
+      const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (text) return text;
+    } catch (e) {
+      lastError = e;
+      console.warn(`Gemini model ${model} failed, trying fallback:`, e.message);
+    }
+  }
+
+  throw lastError || new Error("All Gemini models failed.");
+}
+
+// Call Gemini Vision to Extract Nutrition Facts + Vital Micronutrients from Photo
 async function extractNutritionFromImage(base64Data, mimeType, optionalCaption) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-  
   const prompt = `You are an expert nutritional, supplement, and sports science data extractor.
 Analyze this photo of a product's label carefully. 
 It could be standard food (peanut butter, oats, whey) OR a targeted supplement (Fish Oil, Omega-3 capsules, Multivitamins, Magnesium Glycinate, ZMA, Creatine, Pre-workout, Electrolytes, Zinc, Vitamin D3).
@@ -144,107 +220,81 @@ Output ONLY a raw, valid JSON object (without markdown fences, no backticks, no 
   "aliases": "Comma-separated keywords/shorthand that the user might text to log this item, e.g. fish oil, omega 3, omega capsules, truebasics fish oil"
 }`;
 
-  const body = {
-    contents: [
-      {
-        parts: [
-          { text: prompt },
-          {
-            inline_data: {
-              mime_type: mimeType,
-              data: base64Data
-            }
+  const contents = [
+    {
+      parts: [
+        { text: prompt },
+        {
+          inline_data: {
+            mime_type: mimeType,
+            data: base64Data
           }
-        ]
-      }
-    ],
-    generationConfig: {
-      temperature: 0.1,
-      response_mime_type: "application/json"
+        }
+      ]
     }
-  };
+  ];
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
+  const rawText = await callGemini(contents, {
+    temperature: 0.1,
+    response_mime_type: "application/json"
   });
 
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Gemini API error: ${errText}`);
-  }
-
-  const result = await res.json();
-  const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error("Empty response from Gemini Vision");
-
-  const cleaned = text.trim().replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
+  const cleaned = rawText.trim().replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
   return JSON.parse(cleaned);
 }
 
-// Match user's natural language food text with their Pantry Catalog
-async function matchFoodWithPantry(userText, pantryItems) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-  
-  const prompt = `You are a personal fitness nutrition & supplement logging assistant.
+// Analyze user food text (Pantry match OR Generic Whole Food USDA lookup)
+async function analyzeFoodInput(userText, pantryItems) {
+  const prompt = `You are an expert sports nutrition & USDA whole food analyst.
 The user has registered the following brand products & supplements in their personal Pantry Catalog:
 ${JSON.stringify(pantryItems, null, 2)}
 
-The user sent this log message: "${userText}"
+The user sent this food / supplement text: "${userText}"
 
-Task:
-1. Match the user's message to one of their registered pantry items (e.g. "fish oil", "omega", "magnesium", "creatine", "whey", "pb").
-2. If it matches a pantry item:
-   - Calculate proportional calories, protein, carbs, fats, fiber, sugar based on the quantity consumed.
-   - ALSO proportionately scale all vital nutrients (e.g. if 1 cap of fish oil has 560mg EPA and user took 2 caps, total EPA is 1120mg).
-3. If the item is NOT in their pantry (like common whole foods, e.g. "2 boiled eggs" or "1 banana"), estimate accurate nutritional values based on standard USDA nutrition data.
+TASK:
+1. First, check if the text matches any registered item in their Pantry Catalog (e.g. "whey", "nakpro", "fish oil", "omega", "peanut butter", "magnesium", "honey").
+   If it matches:
+   - Scale calories, protein, carbs, fats, fiber, sugar, and vital nutrients to match the quantity consumed.
+   - Set matchedPantry: true.
+2. If it is NOT in their pantry (e.g. generic whole foods like "100g sweet potato", "1 apple", "2 boiled eggs", "150g chicken breast", "1 banana", "1 cup oats", "10 almonds"):
+   - Look up official USDA FoodData Central nutritional facts for that exact portion.
+   - Set brand: "Whole Food".
+   - Set matchedPantry: false.
+   - For generic whole foods, also provide a standard serving (e.g. 100g or 1 medium piece) in pantryServingUnit so it can be added to their Pantry Catalog if desired.
 
 Return ONLY a raw, valid JSON object (no markdown, no backticks) with this schema:
 {
   "matchedPantry": boolean,
-  "itemName": "Product or Food Name",
+  "itemName": "Specific Food or Product Name (e.g. Sweet Potato, Boiled Egg, Chicken Breast, Nakpro Impact Whey)",
   "brand": "Brand Name or 'Whole Food'",
-  "category": "Supplement | Food | Vitamin/Mineral | etc",
-  "quantity": number (e.g. 1, 2, 1.5, 0.5),
-  "servingUnit": "e.g. capsule, tablet, scoop, tbsp, pieces",
-  "calories": number (rounded integer),
-  "protein": number (rounded to 1 decimal),
-  "carbs": number (rounded to 1 decimal),
-  "fats": number (rounded to 1 decimal),
-  "fiber": number (rounded to 1 decimal),
-  "sugar": number (rounded to 1 decimal),
+  "category": "Whole Food | Protein | Supplement | Fruit | Vegetable | Dairy | Poultry",
+  "quantity": number (portion amount consumed, e.g. 1, 2, 100, 150),
+  "servingUnit": "Unit consumed (e.g. g, piece, boiled egg, scoop, tbsp, capsule, cup)",
+  "pantryServingUnit": "Standard single serving unit for saving to catalog (e.g. 100g, 1 piece, 1 egg)",
+  "calories": number (rounded integer for this portion),
+  "protein": number (grams rounded to 1 decimal),
+  "carbs": number (grams rounded to 1 decimal),
+  "fats": number (grams rounded to 1 decimal),
+  "fiber": number (grams rounded to 1 decimal),
+  "sugar": number (grams rounded to 1 decimal),
   "vitalNutrients": {
-    "EPA": "560 mg",
-    "DHA": "400 mg"
-  }
+    "Key Nutrient 1": "value with unit (e.g. Vitamin A: 709 mcg)",
+    "Key Nutrient 2": "value with unit (e.g. Potassium: 337 mg)"
+  },
+  "aliases": "Comma-separated lowercase keywords for logging this item in the future"
 }`;
 
-  const body = {
-    contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: {
-      temperature: 0.1,
-      response_mime_type: "application/json"
-    }
-  };
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
+  const contents = [{ parts: [{ text: prompt }] }];
+  const rawText = await callGemini(contents, {
+    temperature: 0.1,
+    response_mime_type: "application/json"
   });
 
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Gemini match error: ${errText}`);
-  }
-
-  const result = await res.json();
-  const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-  const cleaned = text.trim().replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
+  const cleaned = rawText.trim().replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
   return JSON.parse(cleaned);
 }
 
+// Parse Pantry Rows from Google Sheets
 function parsePantryRows(rawPantry) {
   if (!Array.isArray(rawPantry) || rawPantry.length === 0) return [];
   const result = [];
@@ -269,7 +319,7 @@ function parsePantryRows(rawPantry) {
       aliases: (keys[10] || "").replace(/\[Vitals:\s*.*?\]/i, '').trim()
     });
 
-    rawPantry.forEach((row, idx) => {
+    rawPantry.forEach((row) => {
       const vals = Object.values(row);
       const rawAliases = String(vals[10] || "");
       const vitalsMatch = rawAliases.match(/\[Vitals:\s*(.*?)\]/i);
@@ -289,7 +339,7 @@ function parsePantryRows(rawPantry) {
       });
     });
   } else {
-    rawPantry.forEach((item, idx) => {
+    rawPantry.forEach((item) => {
       const rawAliases = item["Aliases"] || item.aliases || "";
       const match = rawAliases.match(/\[Vitals:\s*(.*?)\]/i);
       result.push({
@@ -339,6 +389,57 @@ async function getTodayNutritionLogs(todayDateStr) {
   }
 }
 
+// Execute Save to Pantry Sheet
+async function saveItemToPantrySheet(item) {
+  const vitalsSummary = item.vitalsSummary || "";
+  await fetch(GOOGLE_SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      sheet: "catalog",
+      itemName: item.itemName,
+      brand: item.brand || "Whole Food",
+      servingUnit: item.servingUnit || "100g",
+      servingWeight: item.servingWeight || (item.servingUnit ? item.servingUnit : "100g"),
+      calories: item.calories || 0,
+      protein: item.protein || 0,
+      carbs: item.carbs || 0,
+      fats: item.fats || 0,
+      fiber: item.fiber || 0,
+      sugar: item.sugar || 0,
+      aliases: (item.aliases || item.itemName.toLowerCase()) + (vitalsSummary ? ` [Vitals: ${vitalsSummary}]` : ""),
+      dateAdded: new Date().toISOString()
+    })
+  });
+}
+
+// Execute Log to Daily Intake Sheet
+async function logFoodToDailySheet(item, dateStr, timeStr, rawMessage) {
+  const vitalsSummary = item.vitalsSummary || "";
+  await fetch(GOOGLE_SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      sheet: "nutrition",
+      timestamp: new Date().toISOString(),
+      date: dateStr,
+      time: timeStr,
+      itemName: item.itemName,
+      brand: item.brand || "Whole Food",
+      quantity: item.quantity || 1,
+      servingUnit: item.servingUnit || "serving",
+      calories: item.calories || 0,
+      protein: item.protein || 0,
+      carbs: item.carbs || 0,
+      fats: item.fats || 0,
+      fiber: item.fiber || 0,
+      sugar: item.sugar || 0,
+      rawMessage: rawMessage + (vitalsSummary ? ` [Vitals: ${vitalsSummary}]` : "")
+    })
+  });
+}
+
+// Main Webhook Handler
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -347,7 +448,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       status: "online",
       bot: "@raviteja_fuel_bot",
-      description: "Telegram Nutrition & Vital Supplements Webhook"
+      features: ["Vision AI", "USDA Whole Food Lookup", "Inline Action Buttons", "Live Macro Sync"]
     });
   }
 
@@ -356,16 +457,97 @@ export default async function handler(req, res) {
   }
 
   const update = req.body;
-  if (!update || !update.message) {
+  if (!update) return res.status(200).send("OK");
+
+  // ════════════════════════════════════════════════════════════════════
+  // ── 1. INLINE BUTTON CALLBACK QUERIES (BUTTON TAPS) ───────────────
+  // ════════════════════════════════════════════════════════════════════
+  if (update.callback_query) {
+    const cb = update.callback_query;
+    const cbId = cb.id;
+    const userId = String(cb.from?.id || "");
+    const chatId = cb.message?.chat?.id;
+    const messageId = cb.message?.message_id;
+    const data = cb.data || "";
+
+    if (userId !== String(AUTHORIZED_USER_ID)) {
+      await answerTelegramCallbackQuery(cbId, "⛔ Access restricted");
+      return res.status(200).send("OK");
+    }
+
+    const { dateStr, timeStr } = getISTDateTime();
+
+    try {
+      // Data format: "act:base64Data"
+      const colonIdx = data.indexOf(":");
+      const action = colonIdx !== -1 ? data.slice(0, colonIdx) : data;
+      const payloadStr = colonIdx !== -1 ? Buffer.from(data.slice(colonIdx + 1), "base64").toString("utf-8") : "{}";
+      const item = JSON.parse(payloadStr);
+
+      if (action === "log") {
+        await answerTelegramCallbackQuery(cbId, "Logging to today's fuel...");
+        await logFoodToDailySheet(item, dateStr, timeStr, `${item.quantity} ${item.servingUnit} ${item.itemName}`);
+
+        const todayLogs = await getTodayNutritionLogs(dateStr);
+        const totalP = todayLogs.reduce((sum, r) => sum + (Number(r["Protein"] || r.protein) || 0), 0) + (item.protein || 0);
+        const totalCal = todayLogs.reduce((sum, r) => sum + (Number(r["Calories"] || r.calories) || 0), 0) + (item.calories || 0);
+        const pPct = Math.min(100, Math.round((totalP / DAILY_TARGETS.protein) * 100));
+
+        const confirmation = `⚡ <b>Logged: ${item.quantity} ${item.servingUnit} ${item.brand && item.brand !== 'Whole Food' ? item.brand + ' ' : ''}${item.itemName}</b>\n\n` +
+          `• 🥩 +<b>${item.protein || 0}g</b> Protein • 🍞 +${item.carbs || 0}g Carbs\n` +
+          `• 🥑 +${item.fats || 0}g Fat • 🍬 +${item.sugar || 0}g Sugar\n` +
+          `• 🔥 +<b>${item.calories || 0}</b> kcal\n` +
+          (item.vitalsSummary ? `💊 <i>${item.vitalsSummary}</i>\n` : '') +
+          `━━━━━━━━━━━━━━━━━━━\n` +
+          `📈 <b>Today's Fuel:</b> <b>${Math.round(totalP)}g</b> / ${DAILY_TARGETS.protein}g Protein (${pPct}%)\n` +
+          `🔥 <b>Total Calories:</b> ${Math.round(totalCal)} / ${DAILY_TARGETS.calories} kcal\n\n` +
+          `👉 View on site: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
+
+        await editTelegramMessageText(chatId, messageId, confirmation);
+      } 
+      else if (action === "pantry") {
+        await answerTelegramCallbackQuery(cbId, "Saving to pantry catalog...");
+        
+        // Single serving representation for pantry
+        const pantryItem = {
+          ...item,
+          servingUnit: item.pantryServingUnit || `${item.quantity} ${item.servingUnit}`
+        };
+        await saveItemToPantrySheet(pantryItem);
+
+        const card = `📦 <b>Saved to Your Brand Pantry Catalog!</b>\n\n` +
+          `🍽️ <b>Food:</b> ${item.brand && item.brand !== 'Whole Food' ? item.brand + ' ' : ''}${item.itemName}\n` +
+          `📏 <b>Standard Serving:</b> ${pantryItem.servingUnit}\n` +
+          `• 🥩 <b>${item.protein || 0}g</b> Protein • 🍞 <b>${item.carbs || 0}g</b> Carbs\n` +
+          `• 🥑 <b>${item.fats || 0}g</b> Fat • 🍬 <b>${item.sugar || 0}g</b> Sugar\n` +
+          `• 🔥 <b>${item.calories || 0}</b> kcal\n` +
+          (item.vitalsSummary ? `💊 <i>${item.vitalsSummary}</i>\n` : '') +
+          `━━━━━━━━━━━━━━━━━━━\n` +
+          `💡 <i>You can now log this anytime by texting:</i>\n` +
+          `• <code>${item.quantity || 1} ${item.servingUnit} ${item.itemName.toLowerCase()}</code>\n\n` +
+          `🌐 View pantry on site: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
+
+        await editTelegramMessageText(chatId, messageId, card);
+      }
+    } catch (err) {
+      console.error("Callback handling error:", err);
+      await answerTelegramCallbackQuery(cbId, "⚠️ Error processing choice");
+    }
+
     return res.status(200).send("OK");
   }
 
+  // ════════════════════════════════════════════════════════════════════
+  // ── 2. INCOMING MESSAGES ──────────────────────────────────────────
+  // ════════════════════════════════════════════════════════════════════
   const msg = update.message;
+  if (!msg) return res.status(200).send("OK");
+
   const chatId = msg.chat?.id;
   const userId = String(msg.from?.id || "");
   const messageId = msg.message_id;
 
-  // 1. Security Check
+  // Security Check
   if (userId !== String(AUTHORIZED_USER_ID)) {
     console.warn(`Unauthorized attempt on Fuel Bot from User ID: ${userId}`);
     await sendTelegramMessage(
@@ -377,7 +559,7 @@ export default async function handler(req, res) {
 
   const { dateStr, timeStr } = getISTDateTime(msg.date);
 
-  // ── A. PHOTO DETECTED: PHASE 1 (PANTRY & SUPPLEMENT CATALOGING) ───
+  // ── A. PHOTO DETECTED: AUTO-CATALOG TO PANTRY ────────────────────
   if (msg.photo && msg.photo.length > 0) {
     await sendTelegramMessage(chatId, "🔍 <i>Analyzing label & vital active ingredients with Gemini Vision...</i>", messageId);
 
@@ -389,10 +571,8 @@ export default async function handler(req, res) {
         return res.status(200).send("OK");
       }
 
-      // Extract Nutrition Facts + Vital Nutrients via Gemini Vision
       const extracted = await extractNutritionFromImage(photoResult.base64, photoResult.mimeType, msg.caption);
 
-      // Format vital nutrients summary
       const vitalsList = [];
       if (extracted.vitalNutrients && typeof extracted.vitalNutrients === "object") {
         for (const [k, v] of Object.entries(extracted.vitalNutrients)) {
@@ -404,27 +584,11 @@ export default async function handler(req, res) {
       const vitalsSummaryStr = vitalsList.join(" | ");
 
       // Save to Google Sheet: Ravi Pantry Catalog
-      await fetch(GOOGLE_SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sheet: "catalog",
-          itemName: extracted.itemName,
-          brand: extracted.brand,
-          servingUnit: extracted.servingUnit,
-          servingWeight: extracted.servingWeight,
-          calories: extracted.calories || 0,
-          protein: extracted.protein || 0,
-          carbs: extracted.carbs || 0,
-          fats: extracted.fats || 0,
-          fiber: extracted.fiber || 0,
-          sugar: extracted.sugar || 0,
-          aliases: extracted.aliases + (vitalsSummaryStr ? ` [Vitals: ${vitalsSummaryStr}]` : ""),
-          dateAdded: new Date().toISOString()
-        })
+      await saveItemToPantrySheet({
+        ...extracted,
+        vitalsSummary: vitalsSummaryStr
       });
 
-      // Build Rich Confirmation Card
       let vitalsBlock = "";
       if (vitalsList.length > 0) {
         vitalsBlock = `\n💊 <b>Vital Active Ingredients:</b>\n` +
@@ -435,7 +599,7 @@ export default async function handler(req, res) {
       let macrosBlock = "";
       if (hasMacros) {
         macrosBlock = `🥩 <b>Protein:</b> ${extracted.protein}g • 🍞 <b>Carbs:</b> ${extracted.carbs}g • 🥑 <b>Fats:</b> ${extracted.fats}g\n` +
-          `🔥 <b>Calories:</b> ${extracted.calories} kcal\n`;
+          `🍬 <b>Sugar:</b> ${extracted.sugar || 0}g • 🔥 <b>Calories:</b> ${extracted.calories} kcal\n`;
       }
 
       const card = `✅ <b>Saved to Your Brand Pantry!</b>\n\n` +
@@ -446,8 +610,7 @@ export default async function handler(req, res) {
         macrosBlock +
         `━━━━━━━━━━━━━━━━━━━\n` +
         `💡 <i>You can now log this anytime by texting:</i>\n` +
-        `• <code>1 ${extracted.servingUnit.split(' ')[0]} ${extracted.aliases.split(',')[0].trim()}</code>\n` +
-        `• <code>2 ${extracted.servingUnit.split(' ')[0]}s ${extracted.aliases.split(',')[0].trim()}</code>\n\n` +
+        `• <code>1 ${extracted.servingUnit.split(' ')[0]} ${extracted.aliases.split(',')[0].trim()}</code>\n\n` +
         `🌐 View your live dashboard: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
 
       await sendTelegramMessage(chatId, card, messageId);
@@ -459,35 +622,33 @@ export default async function handler(req, res) {
     }
   }
 
-  // ── B. TEXT DETECTED: PHASE 2 (FOOD/SUPPLEMENT LOGGING) ──────────
+  // ── B. COMMANDS ──────────────────────────────────────────────────
   const text = (msg.text || "").trim();
 
-  // /start or /help
   if (text === "/start" || text === "/help") {
     const welcome = `⚡ <b>Welcome to Your Personal Fuel & Nutrition Engine!</b>\n\n` +
-      `<b>Phase 1: Catalog Your Brands & Supplements (Snap a Photo)</b>\n` +
-      `• Send a photo of <b>ANY</b> label: Whey, Peanut Butter, <b>Fish Oil (Omega-3)</b>, <b>Magnesium Glycinate / ZMA</b>, <b>Creatine</b>, or <b>Multivitamins</b>.\n` +
-      `• The AI extracts macros + vital active nutrients (EPA, DHA, Elemental Magnesium, Creatine, Zinc, etc.)!\n\n` +
-      `<b>Phase 2: Quick Daily Logging (Just Text)</b>\n` +
-      `• <code>1 cap fish oil</code>\n` +
-      `• <code>2 caps magnesium</code>\n` +
-      `• <code>1 scoop creatine</code>\n` +
-      `• <code>1 scoop protein</code>\n` +
-      `• <code>2 tbsp peanut butter</code>\n\n` +
-      `<b>Commands:</b>\n` +
-      `• /pantry - View all your registered brands & active vitals\n` +
-      `• /today - View today's fuel & vitals summary\n\n` +
+      `<b>1. Natural Food & Supplement Logging (Interactive Choice Menu):</b>\n` +
+      `• Just text any food: <code>100g sweet potato</code>, <code>2 boiled eggs</code>, <code>1 scoop protein</code>, <code>1 cap fish oil</code>\n` +
+      `• The bot shows the exact USDA/Pantry nutrition and lets you choose:\n` +
+      `  [ ⚡ Log to Today's Fuel ] or [ 📦 Save to Pantry Catalog ]\n\n` +
+      `<b>2. Instant One-Shot Commands:</b>\n` +
+      `• <code>/log 2 boiled eggs</code> ➔ Logs directly to today\n` +
+      `• <code>/save 100g sweet potato</code> ➔ Saves directly to pantry\n\n` +
+      `<b>3. Snap Any Label (Photo):</b>\n` +
+      `• Snap any packaged brand or supplement label to auto-register.\n\n` +
+      `<b>Quick Shortcuts:</b>\n` +
+      `• /today - Today's running fuel & vitals\n` +
+      `• /pantry - View all registered pantry items\n\n` +
       `🌐 Live Dashboard: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
 
     await sendTelegramMessage(chatId, welcome);
     return res.status(200).send("OK");
   }
 
-  // /pantry command - list saved brands and vitals
   if (text === "/pantry" || text === "/catalog") {
     const pantry = await getPantryCatalog();
     if (pantry.length === 0) {
-      await sendTelegramMessage(chatId, "📦 <b>Your Pantry is empty!</b>\nSnap a photo of any nutrition or supplement label and send it here to register your first item.");
+      await sendTelegramMessage(chatId, "📦 <b>Your Pantry is empty!</b>\nSnap a photo or text <code>/save 100g sweet potato</code> to register your first item.");
       return res.status(200).send("OK");
     }
 
@@ -495,39 +656,40 @@ export default async function handler(req, res) {
     pantry.forEach((item, idx) => {
       const p = item["Protein (g)"] || item.protein || 0;
       const c = item["Calories (kcal)"] || item.calories || 0;
+      const s = item["Sugar (g)"] || item.sugar || 0;
       const brand = item["Brand"] || item.brand || "";
       const name = item["Item Name"] || item.itemName || "Item";
       const unit = item["Serving Unit"] || item.servingUnit || "";
       const rawAliases = item["Aliases"] || item.aliases || "";
 
-      // Extract vitals if present in aliases or note
       let vitalNote = "";
       const vitalsMatch = rawAliases.match(/\[Vitals:\s*(.*?)\]/i);
       if (vitalsMatch) {
         vitalNote = `\n      💊 <i>${vitalsMatch[1]}</i>`;
       }
 
-      list += `<b>${idx + 1}. ${brand} ${name}</b>\n` +
-        `   • 📏 ${unit}` + (p > 0 || c > 0 ? ` ➔ 🥩 <b>${p}g P</b> | 🔥 ${c} kcal` : '') +
+      list += `<b>${idx + 1}. ${brand && brand !== 'Whole Food' ? brand + ' ' : ''}${name}</b>\n` +
+        `   • 📏 ${unit}` + (p > 0 || c > 0 ? ` ➔ 🥩 <b>${p}g P</b> | 🍬 ${s}g S | 🔥 ${c} kcal` : '') +
         `${vitalNote}\n`;
     });
-    list += `\n💡 <i>Snap a photo of any new label anytime to add more!</i>`;
+    list += `\n💡 <i>Snap a photo or text e.g. <code>/save 100g sweet potato</code> to add more!</i>`;
     await sendTelegramMessage(chatId, list);
     return res.status(200).send("OK");
   }
 
-  // /today command - view today's totals
   if (text === "/today" || text === "/macros") {
     const todayLogs = await getTodayNutritionLogs(dateStr);
     const totalP = todayLogs.reduce((sum, r) => sum + (Number(r["Protein"] || r.protein) || 0), 0);
     const totalC = todayLogs.reduce((sum, r) => sum + (Number(r["Carbs"] || r.carbs) || 0), 0);
     const totalF = todayLogs.reduce((sum, r) => sum + (Number(r["Fats"] || r.fats) || 0), 0);
+    const totalS = todayLogs.reduce((sum, r) => sum + (Number(r["Sugar"] || r.sugar) || 0), 0);
     const totalCal = todayLogs.reduce((sum, r) => sum + (Number(r["Calories"] || r.calories) || 0), 0);
 
     const summary = `📊 <b>Today's Fuel Summary (${todayLogs.length} entries)</b>\n\n` +
       `🥩 <b>Protein:</b> ${Math.round(totalP)}g / ${DAILY_TARGETS.protein}g (${Math.min(100, Math.round((totalP/DAILY_TARGETS.protein)*100))}%)` + (totalP >= DAILY_TARGETS.protein ? ' 🏆' : '') + `\n` +
       `🍞 <b>Carbs:</b> ${Math.round(totalC)}g / ${DAILY_TARGETS.carbs}g\n` +
       `🥑 <b>Fats:</b> ${Math.round(totalF)}g / ${DAILY_TARGETS.fats}g\n` +
+      `🍬 <b>Sugar:</b> ${Math.round(totalS * 10) / 10}g / ${DAILY_TARGETS.sugar}g\n` +
       `🔥 <b>Calories:</b> ${Math.round(totalCal)} kcal / ${DAILY_TARGETS.calories} kcal\n\n` +
       `🌐 Live Dashboard: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
 
@@ -535,78 +697,131 @@ export default async function handler(req, res) {
     return res.status(200).send("OK");
   }
 
-  // ── C. USER SENT FOOD/SUPPLEMENT LOG TEXT ────────────────────────
+  // ── C. USER SENT FOOD TEXT: PROCESS VIA USDA / PANTRY ────────────
   try {
-    const pantry = await getPantryCatalog();
-    const matched = await matchFoodWithPantry(text, pantry);
+    // Check for explicit prefix shortcuts
+    let explicitAction = null;
+    let queryText = text;
 
-    // Format vital nutrients delivered
-    const logVitalsList = [];
-    if (matched.vitalNutrients && typeof matched.vitalNutrients === "object") {
-      for (const [k, v] of Object.entries(matched.vitalNutrients)) {
+    if (text.toLowerCase().startsWith("/save ") || text.toLowerCase().startsWith("/add ")) {
+      explicitAction = "pantry";
+      queryText = text.replace(/^\/(save|add)\s+/i, '').trim();
+    } else if (text.toLowerCase().startsWith("/log ")) {
+      explicitAction = "log";
+      queryText = text.replace(/^\/log\s+/i, '').trim();
+    }
+
+    const pantry = await getPantryCatalog();
+    const analyzed = await analyzeFoodInput(queryText, pantry);
+
+    // Format vitals summary string
+    const vitalsList = [];
+    if (analyzed.vitalNutrients && typeof analyzed.vitalNutrients === "object") {
+      for (const [k, v] of Object.entries(analyzed.vitalNutrients)) {
         if (v && v !== "0" && v !== "0mg" && v !== 0) {
-          logVitalsList.push(`${k}: ${v}`);
+          vitalsList.push(`${k}: ${v}`);
         }
       }
     }
-    const logVitalsSummary = logVitalsList.join(" | ");
+    const vitalsSummary = vitalsList.join(" | ");
+    analyzed.vitalsSummary = vitalsSummary;
 
-    // Save entry to Google Sheet: Ravi Nutrition Logs
-    await fetch(GOOGLE_SCRIPT_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sheet: "nutrition",
-        timestamp: new Date().toISOString(),
-        date: dateStr,
-        time: timeStr,
-        itemName: matched.itemName,
-        brand: matched.brand,
-        quantity: matched.quantity,
-        servingUnit: matched.servingUnit,
-        calories: matched.calories || 0,
-        protein: matched.protein || 0,
-        carbs: matched.carbs || 0,
-        fats: matched.fats || 0,
-        fiber: matched.fiber || 0,
-        sugar: matched.sugar || 0,
-        rawMessage: text + (logVitalsSummary ? ` [Vitals: ${logVitalsSummary}]` : "")
-      })
-    });
+    // Compact item payload for inline buttons
+    const compactPayload = {
+      itemName: analyzed.itemName,
+      brand: analyzed.brand,
+      quantity: analyzed.quantity,
+      servingUnit: analyzed.servingUnit,
+      pantryServingUnit: analyzed.pantryServingUnit,
+      calories: analyzed.calories || 0,
+      protein: analyzed.protein || 0,
+      carbs: analyzed.carbs || 0,
+      fats: analyzed.fats || 0,
+      sugar: analyzed.sugar || 0,
+      fiber: analyzed.fiber || 0,
+      vitalsSummary: vitalsSummary
+    };
+    const b64Data = Buffer.from(JSON.stringify(compactPayload)).toString("base64");
 
-    // Calculate today's running totals
-    const todayLogs = await getTodayNutritionLogs(dateStr);
-    const totalP = todayLogs.reduce((sum, r) => sum + (Number(r["Protein"] || r.protein) || 0), 0) + (matched.protein || 0);
-    const totalCal = todayLogs.reduce((sum, r) => sum + (Number(r["Calories"] || r.calories) || 0), 0) + (matched.calories || 0);
-    const pPct = Math.min(100, Math.round((totalP / DAILY_TARGETS.protein) * 100));
+    // 1. If user used explicit "/save" shortcut -> Save immediately to Pantry
+    if (explicitAction === "pantry") {
+      await saveItemToPantrySheet({
+        ...compactPayload,
+        servingUnit: compactPayload.pantryServingUnit || `${compactPayload.quantity} ${compactPayload.servingUnit}`
+      });
 
-    // Build Receipt
-    let vitalsReceipt = "";
-    if (logVitalsList.length > 0) {
-      vitalsReceipt = `💊 <b>Active Nutrients Delivered:</b>\n` +
-        logVitalsList.map(v => `• <b>${v.split(':')[0]}:</b> ${v.split(':').slice(1).join(':').trim()}`).join("\n") + "\n";
+      const card = `📦 <b>Saved to Your Brand Pantry Catalog!</b>\n\n` +
+        `🍽️ <b>Food:</b> ${compactPayload.brand && compactPayload.brand !== 'Whole Food' ? compactPayload.brand + ' ' : ''}${compactPayload.itemName}\n` +
+        `📏 <b>Serving:</b> ${compactPayload.pantryServingUnit || (compactPayload.quantity + ' ' + compactPayload.servingUnit)}\n` +
+        `• 🥩 <b>${compactPayload.protein}g</b> Protein • 🍞 <b>${compactPayload.carbs}g</b> Carbs\n` +
+        `• 🥑 <b>${compactPayload.fats}g</b> Fat • 🍬 <b>${compactPayload.sugar}g</b> Sugar\n` +
+        `• 🔥 <b>${compactPayload.calories}</b> kcal\n` +
+        (vitalsSummary ? `💊 <i>${vitalsSummary}</i>\n` : '') +
+        `━━━━━━━━━━━━━━━━━━━\n` +
+        `💡 <i>You can now log this anytime by texting:</i>\n` +
+        `• <code>${compactPayload.quantity} ${compactPayload.servingUnit} ${compactPayload.itemName.toLowerCase()}</code>\n\n` +
+        `🌐 View pantry on site: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
+
+      await sendTelegramMessage(chatId, card, messageId);
+      return res.status(200).send("OK");
     }
 
-    const hasMacros = ((matched.protein || 0) > 0 || (matched.calories || 0) > 0 || (matched.fats || 0) > 0);
-    let macroReceipt = "";
-    if (hasMacros) {
-      macroReceipt = `• 🥩 +<b>${matched.protein || 0}g</b> Protein • 🥑 +${matched.fats || 0}g Fat\n` +
-        `• 🔥 +<b>${matched.calories || 0}</b> kcal\n`;
+    // 2. If user used explicit "/log" shortcut -> Log immediately to Today's Fuel
+    if (explicitAction === "log") {
+      await logFoodToDailySheet(compactPayload, dateStr, timeStr, queryText);
+
+      const todayLogs = await getTodayNutritionLogs(dateStr);
+      const totalP = todayLogs.reduce((sum, r) => sum + (Number(r["Protein"] || r.protein) || 0), 0) + (compactPayload.protein || 0);
+      const totalCal = todayLogs.reduce((sum, r) => sum + (Number(r["Calories"] || r.calories) || 0), 0) + (compactPayload.calories || 0);
+      const pPct = Math.min(100, Math.round((totalP / DAILY_TARGETS.protein) * 100));
+
+      const confirmation = `⚡ <b>Logged: ${compactPayload.quantity} ${compactPayload.servingUnit} ${compactPayload.brand && compactPayload.brand !== 'Whole Food' ? compactPayload.brand + ' ' : ''}${compactPayload.itemName}</b>\n\n` +
+        `• 🥩 +<b>${compactPayload.protein}g</b> Protein • 🍞 +${compactPayload.carbs}g Carbs\n` +
+        `• 🥑 +${compactPayload.fats}g Fat • 🍬 +${compactPayload.sugar}g Sugar\n` +
+        `• 🔥 +<b>${compactPayload.calories}</b> kcal\n` +
+        (vitalsSummary ? `💊 <i>${vitalsSummary}</i>\n` : '') +
+        `━━━━━━━━━━━━━━━━━━━\n` +
+        `📈 <b>Today's Fuel:</b> <b>${Math.round(totalP)}g</b> / ${DAILY_TARGETS.protein}g Protein (${pPct}%)\n` +
+        `🔥 <b>Total Calories:</b> ${Math.round(totalCal)} / ${DAILY_TARGETS.calories} kcal\n\n` +
+        `👉 View on site: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
+
+      await sendTelegramMessage(chatId, confirmation, messageId);
+      return res.status(200).send("OK");
     }
 
-    const receipt = `⚡ <b>Logged: ${matched.quantity} ${matched.servingUnit} ${matched.brand !== 'Whole Food' ? matched.brand + ' ' : ''}${matched.itemName}</b>\n\n` +
-      vitalsReceipt +
-      macroReceipt +
+    // 3. Default: User sent normal text -> Present Interactive 2-Button Choice Menu!
+    let vitalsPreview = "";
+    if (vitalsList.length > 0) {
+      vitalsPreview = `💊 <b>Vitals:</b> <i>${vitalsSummary}</i>\n`;
+    }
+
+    const previewMsg = `🍽️ <b>${analyzed.quantity} ${analyzed.servingUnit} ${analyzed.brand && analyzed.brand !== 'Whole Food' ? analyzed.brand + ' ' : ''}${analyzed.itemName}</b>\n` +
+      `• 🥩 <b>${analyzed.protein}g</b> Protein • 🍞 <b>${analyzed.carbs}g</b> Carbs\n` +
+      `• 🥑 <b>${analyzed.fats}g</b> Fat • 🍬 <b>${analyzed.sugar}g</b> Sugar\n` +
+      `• 🔥 <b>${analyzed.calories}</b> kcal\n` +
+      vitalsPreview +
       `━━━━━━━━━━━━━━━━━━━\n` +
-      `📈 <b>Today's Fuel:</b> <b>${Math.round(totalP)}g</b> / ${DAILY_TARGETS.protein}g Protein (${pPct}%)\n` +
-      `🔥 <b>Total Calories:</b> ${Math.round(totalCal)} / ${DAILY_TARGETS.calories} kcal\n\n` +
-      `👉 View on site: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
+      `<b>What would you like to do?</b>`;
 
-    await sendTelegramMessage(chatId, receipt, messageId);
+    const inlineKeyboard = {
+      inline_keyboard: [
+        [
+          { text: "⚡ Log to Today's Fuel", callback_data: `log:${b64Data}` },
+          { text: "📦 Save to Pantry Catalog", callback_data: `pantry:${b64Data}` }
+        ]
+      ]
+    };
+
+    await sendTelegramMessage(chatId, previewMsg, messageId, inlineKeyboard);
     return res.status(200).send("OK");
+
   } catch (err) {
-    console.error("Error logging food intake:", err);
-    await sendTelegramMessage(chatId, `⚠️ <b>Could not process entry</b>: ${err.message}\nTry texting e.g. <code>1 cap fish oil</code> or <code>1 scoop protein</code>`, messageId);
+    console.error("Error analyzing food text:", err);
+    await sendTelegramMessage(
+      chatId,
+      `⚠️ <b>Could not analyze entry</b>: ${err.message}\nTry texting e.g. <code>100g sweet potato</code> or <code>1 scoop protein</code>`,
+      messageId
+    );
     return res.status(200).send("OK");
   }
 }
