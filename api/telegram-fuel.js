@@ -10,14 +10,26 @@ const AUTHORIZED_USER_ID = process.env.TELEGRAM_AUTHORIZED_USER_ID || "128886306
 const GOOGLE_SCRIPT_URL = process.env.WATER_APPS_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbwcQUP8bClLpHeZnwvCrtqm-KvMItQkMNZ0lY0YYCPAOchBlMEbUP-NqejKThehipvW/exec";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || Buffer.from("QVEuQWI4Uk42STZXV2I2b1JYNzN1QzFKYmZONVBrOGxKLTNWdjNTOExRY2tvbmRWWnEydmc=", "base64").toString("utf-8");
 
-// Daily Macro Targets
+// Daily Macro Targets (Sports Science & Marathon Fueling)
 const DAILY_TARGETS = {
-  calories: 2100,
+  calories: 2800,
   protein: 150,
-  carbs: 220,
-  fats: 60,
+  carbs: 380,
+  fats: 70,
+  fiber: 38,
   sugar: 35,
-  fiber: 30
+  waterLiters: 4.0,
+  sodiumMg: 3500,
+  potassiumMg: 4700,
+  magnesiumMg: 420,
+  calciumMg: 1000,
+  ironMg: 15,
+  zincMg: 15,
+  omega3Mg: 1500,
+  vitaminB12Mcg: 5.0,
+  vitaminCMg: 150,
+  vitaminD3Iu: 3000,
+  creatineG: 5.0
 };
 
 // Convert to IST Date & Time

@@ -256,11 +256,11 @@
     /* ── MACRO HERO RINGS ────────────────────────────────────────── */
     .macro-hero-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 14px;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
       margin-bottom: 28px;
     }
-    @media(max-width: 900px) {
+    @media(max-width: 1024px) {
       .macro-hero-grid {
         grid-template-columns: repeat(3, 1fr);
       }
@@ -576,6 +576,115 @@
       border-color: rgba(251, 191, 36, 0.35);
       background: rgba(251, 191, 36, 0.04);
     }
+
+    /* ── SPORTS SCIENCE & ELECTROLYTE PANELS ───────────────────── */
+    .sports-science-section {
+      margin-bottom: 28px;
+    }
+    .panel-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .panel-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-subtitle {
+      font-size: 0.74rem;
+      color: var(--muted);
+      font-family: var(--font-mono);
+    }
+
+    .electrolytes-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+    @media(max-width: 900px) {
+      .electrolytes-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media(max-width: 480px) {
+      .electrolytes-grid { grid-template-columns: 1fr; }
+    }
+
+    .sport-kpi-card {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 16px 18px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+    .sport-kpi-card:hover {
+      border-color: rgba(56, 189, 248, 0.3);
+      transform: translateY(-2px);
+    }
+    .sport-kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: var(--card-accent, #38bdf8);
+    }
+    .sport-kpi-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+    .sport-kpi-val {
+      font-size: 1.55rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      margin-top: 6px;
+      color: #ffffff;
+    }
+    .sport-kpi-sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .sport-progress-bar-bg {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+    .sport-progress-bar-fill {
+      height: 100%;
+      background: var(--card-accent, #38bdf8);
+      border-radius: 4px;
+      transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 0 10px var(--card-accent, #38bdf8);
+    }
+
+    .micros-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+    @media(max-width: 900px) {
+      .micros-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media(max-width: 480px) {
+      .micros-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -658,7 +767,7 @@
           <div class="macro-center-label" id="pctCarbs">0%</div>
         </div>
         <div class="macro-title" style="color: var(--carbs-color);">🍞 Carbs</div>
-        <div class="macro-sub" id="valCarbs">0 / 220g</div>
+        <div class="macro-sub" id="valCarbs">0 / 380g</div>
       </div>
 
       <!-- Fats Ring -->
@@ -671,7 +780,20 @@
           <div class="macro-center-label" id="pctFats">0%</div>
         </div>
         <div class="macro-title" style="color: var(--fats-color);">🥑 Fats</div>
-        <div class="macro-sub" id="valFats">0 / 60g</div>
+        <div class="macro-sub" id="valFats">0 / 70g</div>
+      </div>
+
+      <!-- Fiber Ring -->
+      <div class="macro-ring-card">
+        <div style="position: relative; width: 90px; height: 90px;">
+          <svg class="macro-ring-svg" viewBox="0 0 90 90">
+            <circle class="macro-ring-bg" cx="45" cy="45" r="38"></circle>
+            <circle class="macro-ring-bar" id="ringFiber" stroke="var(--fiber-color)" cx="45" cy="45" r="38"></circle>
+          </svg>
+          <div class="macro-center-label" id="pctFiber">0%</div>
+        </div>
+        <div class="macro-title" style="color: var(--fiber-color);">🌾 Fiber</div>
+        <div class="macro-sub" id="valFiber">0 / 38g</div>
       </div>
 
       <!-- Sugar Ring -->
@@ -697,7 +819,164 @@
           <div class="macro-center-label" id="pctCalories">0%</div>
         </div>
         <div class="macro-title" style="color: var(--calories-color);">🔥 Calories</div>
-        <div class="macro-sub" id="valCalories">0 / 2,100 kcal</div>
+        <div class="macro-sub" id="valCalories">0 / 2,800 kcal</div>
+      </div>
+
+    </div>
+
+    <!-- ── 1.5. SPORTS SCIENCE: ELECTROLYTES & TRACE MINERAL PANELS ── -->
+    <div class="sports-science-section">
+      
+      <!-- Panel A: Electrolytes & Hydration (Sweat Loss Replenishment) -->
+      <div class="panel-header-row">
+        <div class="panel-title">
+          <span>⚡ Electrolytes & Sweat Loss Replenishment</span>
+        </div>
+        <span class="panel-subtitle">Hydration Balance for Long-Distance Running</span>
+      </div>
+
+      <div class="electrolytes-grid" style="margin-bottom: 24px;">
+        <!-- Sodium -->
+        <div class="sport-kpi-card" style="--card-accent: #38bdf8;">
+          <div class="sport-kpi-top">
+            <span>🧂 Sodium (Na)</span>
+            <span id="pctSodium">0%</span>
+          </div>
+          <div class="sport-kpi-val" id="valSodium">0 <span style="font-size: 0.95rem; color: var(--muted); font-weight: 600;">mg</span></div>
+          <div class="sport-kpi-sub">
+            <span>Target: 2,500 - 3,500 mg</span>
+            <span id="subSodium">Base / Run Spike</span>
+          </div>
+          <div class="sport-progress-bar-bg">
+            <div class="sport-progress-bar-fill" id="barSodium" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Potassium -->
+        <div class="sport-kpi-card" style="--card-accent: #fbbf24;">
+          <div class="sport-kpi-top">
+            <span>🍌 Potassium (K)</span>
+            <span id="pctPotassium">0%</span>
+          </div>
+          <div class="sport-kpi-val" id="valPotassium">0 <span style="font-size: 0.95rem; color: var(--muted); font-weight: 600;">mg</span></div>
+          <div class="sport-kpi-sub">
+            <span>Target: 3,400 - 4,700 mg</span>
+            <span>Nerve Signaling</span>
+          </div>
+          <div class="sport-progress-bar-bg">
+            <div class="sport-progress-bar-fill" id="barPotassium" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Magnesium -->
+        <div class="sport-kpi-card" style="--card-accent: #c084fc;">
+          <div class="sport-kpi-top">
+            <span>💊 Magnesium (Mg)</span>
+            <span id="pctMagnesium">0%</span>
+          </div>
+          <div class="sport-kpi-val" id="valMagnesium">0 <span style="font-size: 0.95rem; color: var(--muted); font-weight: 600;">mg</span></div>
+          <div class="sport-kpi-sub">
+            <span>Target: 420 mg</span>
+            <span>CNS & Sleep Recovery</span>
+          </div>
+          <div class="sport-progress-bar-bg">
+            <div class="sport-progress-bar-fill" id="barMagnesium" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Calcium -->
+        <div class="sport-kpi-card" style="--card-accent: #34d399;">
+          <div class="sport-kpi-top">
+            <span>🥛 Calcium (Ca)</span>
+            <span id="pctCalcium">0%</span>
+          </div>
+          <div class="sport-kpi-val" id="valCalcium">0 <span style="font-size: 0.95rem; color: var(--muted); font-weight: 600;">mg</span></div>
+          <div class="sport-kpi-sub">
+            <span>Target: 1,000 mg</span>
+            <span>Muscle Contraction</span>
+          </div>
+          <div class="sport-progress-bar-bg">
+            <div class="sport-progress-bar-fill" id="barCalcium" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel B: Essential Trace Minerals, Vitamins & Ergogenics -->
+      <div class="panel-header-row">
+        <div class="panel-title">
+          <span>🔬 Essential Trace Minerals, Vitamins & Ergogenics</span>
+        </div>
+        <span class="panel-subtitle">Cellular Repair, Marathon Bone Density & ATP Saturation</span>
+      </div>
+
+      <div class="micros-grid">
+        <!-- Omega-3 -->
+        <div class="sport-kpi-card" style="--card-accent: #f43f5e;">
+          <div class="sport-kpi-top">
+            <span>🐟 Omega-3 (EPA/DHA)</span>
+            <span id="pctOmega">0%</span>
+          </div>
+          <div class="sport-kpi-val" id="valOmega">0 <span style="font-size: 0.95rem; color: var(--muted); font-weight: 600;">mg</span></div>
+          <div class="sport-kpi-sub">
+            <span>Target: 1,000 - 2,000 mg</span>
+            <span>Anti-Inflammatory</span>
+          </div>
+          <div class="sport-progress-bar-bg">
+            <div class="sport-progress-bar-fill" id="barOmega" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Creatine Monohydrate -->
+        <div class="sport-kpi-card" style="--card-accent: #38bdf8;">
+          <div class="sport-kpi-top">
+            <span>⚡ Creatine Monohydrate</span>
+            <span id="statusCreatine" style="color: #fbbf24; font-weight: 800;">PENDING</span>
+          </div>
+          <div class="sport-kpi-val" id="valCreatine">0 <span style="font-size: 0.95rem; color: var(--muted); font-weight: 600;">/ 5g</span></div>
+          <div class="sport-kpi-sub">
+            <span>Target: 5.0 g / day</span>
+            <span>ATP Strength Saturation</span>
+          </div>
+          <div class="sport-progress-bar-bg">
+            <div class="sport-progress-bar-fill" id="barCreatine" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Iron & Zinc -->
+        <div class="sport-kpi-card" style="--card-accent: #a855f7;">
+          <div class="sport-kpi-top">
+            <span>🩸 Iron & 🛡️ Zinc</span>
+            <span id="pctIronZinc">Tracked</span>
+          </div>
+          <div class="sport-kpi-val" id="valIronZinc" style="font-size: 1.25rem;">
+            Fe: <span id="valIron" style="color: #38bdf8;">0</span>/15mg • Zn: <span id="valZinc" style="color: #a855f7;">0</span>/15mg
+          </div>
+          <div class="sport-kpi-sub">
+            <span>Foot-strike hemolysis</span>
+            <span>Muscle Micro-tears</span>
+          </div>
+          <div class="sport-progress-bar-bg">
+            <div class="sport-progress-bar-fill" id="barIron" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Key Vitamins (D3, B12, C) -->
+        <div class="sport-kpi-card" style="--card-accent: #10b981;">
+          <div class="sport-kpi-top">
+            <span>☀️ D3 • 🧬 B12 • 🍊 Vit C</span>
+            <span>Active</span>
+          </div>
+          <div class="sport-kpi-val" id="valVitaminsRow" style="font-size: 1.1rem; margin-top: 8px;">
+            D3: <span id="valVitD" style="color: #fbbf24;">0</span> IU • C: <span id="valVitC" style="color: #34d399;">0</span> mg
+          </div>
+          <div class="sport-kpi-sub">
+            <span>B12: <span id="valVitB12" style="color: #38bdf8; font-weight: 700;">0</span> mcg</span>
+            <span>Bone & Cellular Defense</span>
+          </div>
+          <div class="sport-progress-bar-bg">
+            <div class="sport-progress-bar-fill" id="barVitC" style="width: 0%;"></div>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -857,8 +1136,13 @@
         if (!res.ok) throw new Error("Failed to fetch nutrition data");
         const data = await res.json();
 
-        const targets = data.targets || { protein: 150, carbs: 220, fats: 60, sugar: 35, calories: 2100 };
-        const totals = data.todayTotals || { protein: 0, carbs: 0, fats: 0, sugar: 0, calories: 0 };
+        const targets = data.targets || { protein: 150, carbs: 380, fats: 70, fiber: 38, sugar: 35, calories: 2800 };
+        const totals = data.todayTotals || { protein: 0, carbs: 0, fats: 0, fiber: 0, sugar: 0, calories: 0 };
+        const micros = data.todayMicros || {
+          sodiumMg: 0, potassiumMg: 0, magnesiumMg: 0, calciumMg: 0,
+          omega3Mg: 0, creatineG: 0, ironMg: 0, zincMg: 0,
+          vitaminD3Iu: 0, vitaminCMg: 0, vitaminB12Mcg: 0
+        };
         const logs = data.todayLogs || [];
         const pantry = data.pantry || [];
 
@@ -866,12 +1150,14 @@
         const pPct = Math.round((totals.protein / targets.protein) * 100);
         const cPct = Math.round((totals.carbs / targets.carbs) * 100);
         const fPct = Math.round((totals.fats / targets.fats) * 100);
+        const fibPct = Math.round((totals.fiber / (targets.fiber || 38)) * 100);
         const sPct = Math.round((totals.sugar / (targets.sugar || 35)) * 100);
         const calPct = Math.round((totals.calories / targets.calories) * 100);
 
         setRingProgress('ringProtein', pPct);
         setRingProgress('ringCarbs', cPct);
         setRingProgress('ringFats', fPct);
+        setRingProgress('ringFiber', fibPct);
         setRingProgress('ringSugar', sPct);
         setRingProgress('ringCalories', calPct);
 
@@ -884,11 +1170,74 @@
         document.getElementById('pctFats').innerText = `${fPct}%`;
         document.getElementById('valFats').innerText = `${totals.fats} / ${targets.fats}g`;
 
+        document.getElementById('pctFiber').innerText = `${fibPct}%`;
+        document.getElementById('valFiber').innerText = `${totals.fiber} / ${targets.fiber || 38}g`;
+
         document.getElementById('pctSugar').innerText = `${sPct}%`;
         document.getElementById('valSugar').innerText = `${totals.sugar} / ${targets.sugar || 35}g`;
 
         document.getElementById('pctCalories').innerText = `${calPct}%`;
         document.getElementById('valCalories').innerText = `${totals.calories.toLocaleString()} / ${targets.calories.toLocaleString()} kcal`;
+
+        // 1.5. Update Electrolytes & Trace Minerals
+        // Sodium (Target: 3500 mg)
+        const naPct = Math.min(100, Math.round((micros.sodiumMg / (targets.sodiumMg || 3500)) * 100));
+        document.getElementById('valSodium').innerHTML = `${micros.sodiumMg.toLocaleString()} <span style="font-size: 0.95rem; color: var(--muted); font-weight: 600;">mg</span>`;
+        document.getElementById('pctSodium').innerText = `${naPct}%`;
+        document.getElementById('barSodium').style.width = `${naPct}%`;
+
+        // Potassium (Target: 4700 mg)
+        const kPct = Math.min(100, Math.round((micros.potassiumMg / (targets.potassiumMg || 4700)) * 100));
+        document.getElementById('valPotassium').innerHTML = `${micros.potassiumMg.toLocaleString()} <span style="font-size: 0.95rem; color: var(--muted); font-weight: 600;">mg</span>`;
+        document.getElementById('pctPotassium').innerText = `${kPct}%`;
+        document.getElementById('barPotassium').style.width = `${kPct}%`;
+
+        // Magnesium (Target: 420 mg)
+        const mgPct = Math.min(100, Math.round((micros.magnesiumMg / (targets.magnesiumMg || 420)) * 100));
+        document.getElementById('valMagnesium').innerHTML = `${micros.magnesiumMg} <span style="font-size: 0.95rem; color: var(--muted); font-weight: 600;">mg</span>`;
+        document.getElementById('pctMagnesium').innerText = `${mgPct}%`;
+        document.getElementById('barMagnesium').style.width = `${mgPct}%`;
+
+        // Calcium (Target: 1000 mg)
+        const caPct = Math.min(100, Math.round((micros.calciumMg / (targets.calciumMg || 1000)) * 100));
+        document.getElementById('valCalcium').innerHTML = `${micros.calciumMg} <span style="font-size: 0.95rem; color: var(--muted); font-weight: 600;">mg</span>`;
+        document.getElementById('pctCalcium').innerText = `${caPct}%`;
+        document.getElementById('barCalcium').style.width = `${caPct}%`;
+
+        // Omega-3 (Target: 1500 mg)
+        const omPct = Math.min(100, Math.round((micros.omega3Mg / (targets.omega3Mg || 1500)) * 100));
+        document.getElementById('valOmega').innerHTML = `${micros.omega3Mg.toLocaleString()} <span style="font-size: 0.95rem; color: var(--muted); font-weight: 600;">mg</span>`;
+        document.getElementById('pctOmega').innerText = `${omPct}%`;
+        document.getElementById('barOmega').style.width = `${omPct}%`;
+
+        // Creatine Monohydrate (Target: 5.0 g)
+        const creatPct = Math.min(100, Math.round((micros.creatineG / (targets.creatineG || 5.0)) * 100));
+        document.getElementById('valCreatine').innerHTML = `${micros.creatineG} <span style="font-size: 0.95rem; color: var(--muted); font-weight: 600;">/ 5g</span>`;
+        document.getElementById('barCreatine').style.width = `${creatPct}%`;
+        const creatStatusEl = document.getElementById('statusCreatine');
+        if (micros.creatineG >= 5.0) {
+          creatStatusEl.innerText = "SATURATED ✓";
+          creatStatusEl.style.color = "#34d399";
+        } else if (micros.creatineG > 0) {
+          creatStatusEl.innerText = `${creatPct}% SATURATED`;
+          creatStatusEl.style.color = "#38bdf8";
+        } else {
+          creatStatusEl.innerText = "PENDING";
+          creatStatusEl.style.color = "#fbbf24";
+        }
+
+        // Iron & Zinc
+        document.getElementById('valIron').innerText = `${micros.ironMg}`;
+        document.getElementById('valZinc').innerText = `${micros.zincMg}`;
+        const ironPct = Math.min(100, Math.round((micros.ironMg / (targets.ironMg || 15)) * 100));
+        document.getElementById('barIron').style.width = `${ironPct}%`;
+
+        // Vitamins
+        document.getElementById('valVitD').innerText = `${micros.vitaminD3Iu.toLocaleString()}`;
+        document.getElementById('valVitC').innerText = `${micros.vitaminCMg}`;
+        document.getElementById('valVitB12').innerText = `${micros.vitaminB12Mcg}`;
+        const vitCPct = Math.min(100, Math.round((micros.vitaminCMg / (targets.vitaminCMg || 150)) * 100));
+        document.getElementById('barVitC').style.width = `${vitCPct}%`;
 
         // 2. Render Today's Food Logs
         const logsList = document.getElementById('foodLogsList');
