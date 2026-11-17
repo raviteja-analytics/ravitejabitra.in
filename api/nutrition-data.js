@@ -379,7 +379,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // Deduplicate rapid duplicate retries (same item and quantity within 15 mins)
+    // Deduplicate rapid accidental retries (same item & quantity within 120 seconds)
     const cleanedLogs = [];
     for (let i = 0; i < parsedLogs.length; i++) {
       const cur = parsedLogs[i];
@@ -392,11 +392,11 @@ export default async function handler(req, res) {
         if (prev.rawTimestamp && cur.rawTimestamp) {
           const t1 = new Date(prev.rawTimestamp).getTime();
           const t2 = new Date(cur.rawTimestamp).getTime();
-          if (!isNaN(t1) && !isNaN(t2) && Math.abs(t2 - t1) < 15 * 60 * 1000) {
-            return true;
+          if (!isNaN(t1) && !isNaN(t2)) {
+            return Math.abs(t2 - t1) < 120 * 1000;
           }
         }
-        return prev.time === cur.time || Math.abs(prev.calories - cur.calories) < 2;
+        return prev.time && cur.time && prev.time === cur.time;
       });
 
       if (!isDupe) {
