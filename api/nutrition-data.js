@@ -166,7 +166,7 @@ function parseNutritionLogEntry(r, pantryCatalog = []) {
   }
 
   const cleanText = String(rawMsg).replace(/\[Vitals:\s*.*?\]/i, '').trim();
-  if (!cleanText || /^(can you\s+)?delete\b/i.test(cleanText) || cleanText.includes("[DELETE_LAST]")) return null;
+  if (!cleanText || /^(can you\s+)?delete\b/i.test(cleanText) || cleanText.includes("[DELETE_LAST]") || cleanText.includes("[ACTIVITY_METRICS:")) return null;
 
   let itemName = r["Item Name"] || r.itemName || "";
   let brand = r["Brand"] || r.brand || "";
@@ -351,9 +351,29 @@ export default async function handler(req, res) {
 
     // 4. Clean & normalize food logs using robust parsing & pantry matching
     const parsedLogs = [];
+    const dailyActivityMap = {}; // dateStr -> { steps: 0, caloriesBurned: 0, sleepHours: 0 }
+
     if (Array.isArray(rawLogs)) {
       for (const r of rawLogs) {
         const rawMsg = String(r["Raw Message"] || r.rawMessage || r[""] || Object.values(r)[1] || "");
+
+        // 4.1 Parse Activity Metrics (Steps, Calories Burned, Sleep Duration)
+        const actMatch = rawMsg.match(/\[ACTIVITY_METRICS:\s*steps=([^,\s]*),\s*burned=([^,\s]*),\s*sleep=([^\]\s]*)\]/i);
+        if (actMatch) {
+          const rawTimestamp = r["Timestamp"] || r.timestamp || r["Date"] || r.date || r[" "] || Object.values(r)[0] || "";
+          const rowDate = normalizeToISTDateStr(rawTimestamp);
+          if (!dailyActivityMap[rowDate]) {
+            dailyActivityMap[rowDate] = { steps: 0, caloriesBurned: 0, sleepHours: 0 };
+          }
+          const s = parseInt(actMatch[1], 10);
+          const b = parseInt(actMatch[2], 10);
+          const sl = parseFloat(actMatch[3]);
+          if (!isNaN(s) && s > 0) dailyActivityMap[rowDate].steps = s;
+          if (!isNaN(b) && b > 0) dailyActivityMap[rowDate].caloriesBurned = b;
+          if (!isNaN(sl) && sl > 0) dailyActivityMap[rowDate].sleepHours = sl;
+          continue;
+        }
+
         if (rawMsg.includes("[DELETE_LAST]") || /^delete\s+last\b/i.test(rawMsg)) {
           if (parsedLogs.length > 0) parsedLogs.pop();
           continue;
@@ -414,6 +434,18 @@ export default async function handler(req, res) {
       fiber: Math.round(todayLogs.reduce((sum, l) => sum + l.fiber, 0) * 10) / 10,
       sugar: Math.round(todayLogs.reduce((sum, l) => sum + l.sugar, 0) * 10) / 10,
       calories: Math.round(todayLogs.reduce((sum, l) => sum + l.calories, 0))
+    };
+
+    // 5.1 Aggregate Today's Activity & Health Metrics (Steps, Calories Burned, Sleep)
+    const todayAct = dailyActivityMap[todayStr] || { steps: 0, caloriesBurned: 0, sleepHours: 0 };
+    const todayActivity = {
+      steps: todayAct.steps || 0,
+      stepsTarget: 10000,
+      caloriesBurned: todayAct.caloriesBurned || 0,
+      caloriesBurnedTarget: 500,
+      sleepHours: todayAct.sleepHours || 0,
+      sleepTarget: 8.0,
+      netCalories: todayTotals.calories - (todayAct.caloriesBurned || 0)
     };
 
     // Calculate Today's Water intake in Liters
@@ -552,6 +584,7 @@ export default async function handler(req, res) {
       const dateObj = new Date(d + "T00:00:00Z");
       const dayName = !isNaN(dateObj.getTime()) ? dayNames[dateObj.getUTCDay()] : "";
       const dayAbbr = !isNaN(dateObj.getTime()) ? dayShort[dateObj.getUTCDay()] : "";
+      const act = dailyActivityMap[d] || { steps: 0, caloriesBurned: 0, sleepHours: 0 };
 
       return {
         date: d,
@@ -565,6 +598,10 @@ export default async function handler(req, res) {
         calories: Math.round(item.calories),
         metProteinGoal: item.protein >= DAILY_TARGETS.protein,
         mealsCount: item.logs.length,
+        steps: act.steps || 0,
+        caloriesBurned: act.caloriesBurned || 0,
+        sleepHours: act.sleepHours || 0,
+        netCalories: Math.round(item.calories) - (act.caloriesBurned || 0),
         logs: [...item.logs].reverse()
       };
     });
@@ -624,6 +661,7 @@ export default async function handler(req, res) {
       targets: DAILY_TARGETS,
       weeklyTargets: WEEKLY_TARGETS,
       todayTotals,
+      todayActivity,
       weeklyTotals,
       todayMicros,
       todayLogs,

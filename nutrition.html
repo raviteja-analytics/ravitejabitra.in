@@ -772,9 +772,113 @@
       pointer-events: none;
     }
     .macro-ring-card:hover .card-corner-icon,
-    .sport-kpi-card:hover .card-corner-icon {
+    .sport-kpi-card:hover .card-corner-icon,
+    .activity-kpi-card:hover .card-corner-icon {
       color: var(--card-accent, #38bdf8);
       transform: translate(2px, -2px);
+    }
+
+    /* ── DAILY ACTIVITY, EXPENDITURE & SLEEP HERO CARDS ────────── */
+    .activity-hero-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    @media(max-width: 900px) {
+      .activity-hero-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .activity-kpi-card {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 20px 22px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .activity-kpi-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.6), 0 0 20px var(--card-glow, rgba(56, 189, 248, 0.2));
+      border-color: var(--card-border, rgba(56, 189, 248, 0.4));
+    }
+    .card-act-steps {
+      --card-accent: #38bdf8;
+      --card-border: rgba(56, 189, 248, 0.4);
+      --card-glow: rgba(56, 189, 248, 0.25);
+    }
+    .card-act-burn {
+      --card-accent: #f97316;
+      --card-border: rgba(249, 115, 22, 0.4);
+      --card-glow: rgba(249, 115, 22, 0.25);
+    }
+    .card-act-sleep {
+      --card-accent: #a78bfa;
+      --card-border: rgba(167, 139, 250, 0.4);
+      --card-glow: rgba(167, 139, 250, 0.25);
+    }
+    .activity-kpi-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: var(--card-accent, #38bdf8);
+      opacity: 0.85;
+    }
+    .activity-kpi-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .activity-kpi-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .activity-pct-pill {
+      font-size: 0.72rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: var(--card-accent, #38bdf8);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 2px 8px;
+      border-radius: 9999px;
+    }
+    .activity-kpi-val {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .activity-val-num {
+      font-size: 1.85rem;
+      font-weight: 900;
+      font-family: var(--font-mono);
+      color: #ffffff;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .activity-val-unit {
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .activity-kpi-sub {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.76rem;
+      color: var(--muted);
+      margin-bottom: 12px;
+      font-family: var(--font-mono);
     }
 
     /* Today Live Date Badge */
@@ -1043,6 +1147,76 @@
         <div class="macro-sub" id="valCalories">0 / 2,800 kcal</div>
       </div>
 
+    </div>
+
+    <!-- ── 1.2. DAILY ACTIVITY, BURN & SLEEP RECOVERY ─────────────── -->
+    <div class="panel-header-row" style="margin-top: 4px; margin-bottom: 12px;">
+      <div class="panel-title">
+        <span>🏃‍♂️ Daily Activity, Energy Expenditure & Sleep Recovery</span>
+      </div>
+      <span class="panel-subtitle">Logged via Telegram @raviteja_fuel_bot</span>
+    </div>
+
+    <div class="activity-hero-grid">
+      <!-- Card 1: Daily Steps -->
+      <div class="activity-kpi-card card-act-steps" onclick="openNutrientBreakdown('steps')" title="Click for Daily Steps breakdown">
+        <div class="card-corner-icon">↗</div>
+        <div class="activity-kpi-top">
+          <span class="activity-kpi-title">👣 Daily Steps</span>
+          <span class="activity-pct-pill" id="pctDailySteps">0%</span>
+        </div>
+        <div class="activity-kpi-val">
+          <span id="valDailySteps" class="activity-val-num">0</span>
+          <span class="activity-val-unit">/ 10,000 steps</span>
+        </div>
+        <div class="activity-kpi-sub">
+          <span>Distance: <b id="distDailySteps" style="color: #38bdf8;">0.0</b> km</span>
+          <span>Daily Cardio Base</span>
+        </div>
+        <div class="sport-progress-bar-bg">
+          <div class="sport-progress-bar-fill" id="barDailySteps" style="width: 0%; background: #38bdf8;"></div>
+        </div>
+      </div>
+
+      <!-- Card 2: Active Calories Burned -->
+      <div class="activity-kpi-card card-act-burn" onclick="openNutrientBreakdown('caloriesBurned')" title="Click for Calorie Burn & Net Balance breakdown">
+        <div class="card-corner-icon">↗</div>
+        <div class="activity-kpi-top">
+          <span class="activity-kpi-title">🔥 Calories Burned</span>
+          <span class="activity-pct-pill" id="badgeNetBalance">Active Burn</span>
+        </div>
+        <div class="activity-kpi-val">
+          <span id="valCaloriesBurned" class="activity-val-num">0</span>
+          <span class="activity-val-unit">kcal burned</span>
+        </div>
+        <div class="activity-kpi-sub">
+          <span>Net Intake: <b id="valNetCalories" style="color: #f97316;">0</b> kcal</span>
+          <span id="subNetCalc">Intake (0) - Burn (0)</span>
+        </div>
+        <div class="sport-progress-bar-bg">
+          <div class="sport-progress-bar-fill" id="barCaloriesBurned" style="width: 0%; background: #f97316;"></div>
+        </div>
+      </div>
+
+      <!-- Card 3: Sleep Duration & Recovery -->
+      <div class="activity-kpi-card card-act-sleep" onclick="openNutrientBreakdown('sleep')" title="Click for Sleep & CNS Recovery breakdown">
+        <div class="card-corner-icon">↗</div>
+        <div class="activity-kpi-top">
+          <span class="activity-kpi-title">😴 Sleep Duration</span>
+          <span class="activity-pct-pill" id="badgeSleepQuality">Pending EOD</span>
+        </div>
+        <div class="activity-kpi-val">
+          <span id="valSleepHours" class="activity-val-num">0.0</span>
+          <span class="activity-val-unit">hrs / 8.0h</span>
+        </div>
+        <div class="activity-kpi-sub">
+          <span><b id="subSleepFormatted" style="color: #a78bfa;">0h 0m</b> • Target: 7-8h</span>
+          <span>Yesterday's Rest • CNS Repair</span>
+        </div>
+        <div class="sport-progress-bar-bg">
+          <div class="sport-progress-bar-fill" id="barSleepHours" style="width: 0%; background: #a78bfa;"></div>
+        </div>
+      </div>
     </div>
 
     <!-- ── 1.5. SPORTS SCIENCE: ELECTROLYTES & TRACE MINERAL PANELS ── -->
@@ -1588,6 +1762,50 @@
         document.getElementById('pctCalories').innerText = `${calPct}%`;
         document.getElementById('valCalories').innerText = `${totals.calories.toLocaleString()} / ${targets.calories.toLocaleString()} kcal`;
 
+        // 1.2. Update Daily Activity, Calorie Burn & Sleep
+        const act = data.todayActivity || { steps: 0, caloriesBurned: 0, sleepHours: 0 };
+        const steps = act.steps || 0;
+        const stepsTarget = act.stepsTarget || 10000;
+        const stepsPct = Math.min(100, Math.round((steps / stepsTarget) * 100));
+        if (document.getElementById('valDailySteps')) document.getElementById('valDailySteps').innerText = steps.toLocaleString();
+        if (document.getElementById('pctDailySteps')) document.getElementById('pctDailySteps').innerText = `${stepsPct}%`;
+        if (document.getElementById('barDailySteps')) document.getElementById('barDailySteps').style.width = `${stepsPct}%`;
+        if (document.getElementById('distDailySteps')) document.getElementById('distDailySteps').innerText = (steps * 0.00076).toFixed(1);
+
+        const burned = act.caloriesBurned || 0;
+        const burnTarget = act.caloriesBurnedTarget || 500;
+        const burnPct = Math.min(100, Math.round((burned / burnTarget) * 100));
+        const netKcal = (totals.calories || 0) - burned;
+        if (document.getElementById('valCaloriesBurned')) document.getElementById('valCaloriesBurned').innerText = burned.toLocaleString();
+        if (document.getElementById('barCaloriesBurned')) document.getElementById('barCaloriesBurned').style.width = `${burnPct}%`;
+        if (document.getElementById('valNetCalories')) document.getElementById('valNetCalories').innerText = netKcal.toLocaleString();
+        if (document.getElementById('subNetCalc')) document.getElementById('subNetCalc').innerText = `Intake (${(totals.calories || 0).toLocaleString()}) - Burn (${burned.toLocaleString()})`;
+
+        const sleepHours = act.sleepHours || 0;
+        const sleepTarget = act.sleepTarget || 8.0;
+        const sleepPct = Math.min(100, Math.round((sleepHours / sleepTarget) * 100));
+        const sh = Math.floor(sleepHours);
+        const sm = Math.round((sleepHours % 1) * 60);
+        if (document.getElementById('valSleepHours')) document.getElementById('valSleepHours').innerText = sleepHours > 0 ? sleepHours.toFixed(1) : '0.0';
+        if (document.getElementById('subSleepFormatted')) document.getElementById('subSleepFormatted').innerText = sleepHours > 0 ? `${sh}h ${sm}m` : '0h 0m';
+        if (document.getElementById('barSleepHours')) document.getElementById('barSleepHours').style.width = `${sleepPct}%`;
+        const badgeSleep = document.getElementById('badgeSleepQuality');
+        if (badgeSleep) {
+          if (sleepHours >= 7.5) {
+            badgeSleep.innerText = 'Optimal CNS';
+            badgeSleep.style.color = '#34d399';
+          } else if (sleepHours >= 6.0) {
+            badgeSleep.innerText = 'Good Rest';
+            badgeSleep.style.color = '#38bdf8';
+          } else if (sleepHours > 0) {
+            badgeSleep.innerText = 'Low Recovery';
+            badgeSleep.style.color = '#fbbf24';
+          } else {
+            badgeSleep.innerText = 'Pending EOD';
+            badgeSleep.style.color = 'var(--muted)';
+          }
+        }
+
         // 1.5. Update Electrolytes & Trace Minerals
         // Sodium (Target: 3500 mg)
         const naPct = Math.min(100, Math.round((micros.sodiumMg / (targets.sodiumMg || 3500)) * 100));
@@ -1978,7 +2196,10 @@
       zinc: { name: 'Zinc (Zn)', icon: '🛡️', unit: 'mg', targetKey: 'zincMg', color: '#a855f7' },
       vitaminC: { name: 'Vitamin C', icon: '🍊', unit: 'mg', targetKey: 'vitaminCMg', color: '#10b981' },
       vitaminD: { name: 'Vitamin D3', icon: '☀️', unit: 'IU', targetKey: 'vitaminD3Iu', color: '#fbbf24' },
-      vitaminB12: { name: 'Vitamin B12', icon: '🧬', unit: 'mcg', targetKey: 'vitaminB12Mcg', color: '#38bdf8' }
+      vitaminB12: { name: 'Vitamin B12', icon: '🧬', unit: 'mcg', targetKey: 'vitaminB12Mcg', color: '#38bdf8' },
+      steps: { name: 'Daily Steps', icon: '👣', unit: 'steps', targetKey: 'stepsTarget', color: '#38bdf8' },
+      caloriesBurned: { name: 'Calories Burned', icon: '🔥', unit: 'kcal', targetKey: 'caloriesBurnedTarget', color: '#f97316' },
+      sleep: { name: 'Sleep & Recovery', icon: '😴', unit: 'hrs', targetKey: 'sleepTarget', color: '#a78bfa' }
     };
 
     const PIE_COLORS = [
@@ -2095,47 +2316,138 @@
       const data = window._latestNutritionData || {};
       const logs = data.todayLogs || [];
       const targets = data.targets || {};
-      const targetVal = targets[cfg.targetKey] || 0;
+      const targetVal = targets[cfg.targetKey] || (nutrientKey === 'steps' ? 10000 : (nutrientKey === 'caloriesBurned' ? 500 : (nutrientKey === 'sleep' ? 8.0 : 0)));
 
-      // Extract sources
-      const sourcesMap = {};
-      logs.forEach(l => {
-        const val = extractNutrientFromLog(l, nutrientKey);
-        if (val > 0) {
-          const title = (l.brand && l.brand !== 'Whole Food' ? l.brand + ' ' : '') + (l.itemName || 'Meal');
-          if (!sourcesMap[title]) {
-            sourcesMap[title] = {
-              title,
-              amount: 0,
+      let items = [];
+      let totalAmount = 0;
+      let customSubtitle = null;
+
+      if (nutrientKey === 'steps') {
+        const act = data.todayActivity || {};
+        totalAmount = act.steps || 0;
+        const target = act.stepsTarget || 10000;
+        const remaining = Math.max(0, target - totalAmount);
+        customSubtitle = 'Daily step count, distance covered & aerobic cardio foundation';
+        if (totalAmount > 0) {
+          items.push({
+            title: 'Logged Steps (Cardio Base)',
+            amount: totalAmount,
+            count: 1,
+            lastTime: 'Today',
+            color: '#38bdf8',
+            pct: Math.min(100, Math.round((totalAmount / target) * 1000) / 10),
+            desc: `Approx. ${(totalAmount * 0.00076).toFixed(2)} km distance covered (~${Math.round(totalAmount / 100)} mins active)`
+          });
+          if (remaining > 0) {
+            items.push({
+              title: 'Remaining to 10k Target',
+              amount: remaining,
               count: 0,
-              lastTime: l.time || 'Today',
-              sampleLog: l
-            };
+              lastTime: 'Target',
+              color: 'rgba(255, 255, 255, 0.15)',
+              pct: Math.round((remaining / target) * 1000) / 10,
+              desc: `Approx. ${(remaining * 0.00076).toFixed(2)} km to reach marathon baseline`
+            });
           }
-          sourcesMap[title].amount += val;
-          sourcesMap[title].count += 1;
-          sourcesMap[title].lastTime = l.time || sourcesMap[title].lastTime;
         }
-      });
+      } else if (nutrientKey === 'caloriesBurned') {
+        const act = data.todayActivity || {};
+        const burned = act.caloriesBurned || 0;
+        const intake = (data.todayTotals && data.todayTotals.calories) || 0;
+        totalAmount = burned;
+        customSubtitle = 'Active daily workout expenditure vs gross food energy intake';
+        if (burned > 0 || intake > 0) {
+          items.push({
+            title: 'Active Energy Burned',
+            amount: burned,
+            count: 1,
+            lastTime: 'Today',
+            color: '#f97316',
+            pct: intake > 0 ? Math.round((burned / intake) * 1000) / 10 : 100,
+            desc: 'Physical workouts, running & daily non-exercise activity thermogenesis (NEAT)'
+          });
+          if (intake > burned) {
+            items.push({
+              title: 'Net Retained Fuel',
+              amount: intake - burned,
+              count: 0,
+              lastTime: 'Balance',
+              color: '#34d399',
+              pct: Math.round(((intake - burned) / intake) * 1000) / 10,
+              desc: `Net energy (${intake} food - ${burned} burn) replenishing muscle glycogen`
+            });
+          }
+        }
+      } else if (nutrientKey === 'sleep') {
+        const act = data.todayActivity || {};
+        const sleepHours = act.sleepHours || 0;
+        totalAmount = sleepHours;
+        const target = act.sleepTarget || 8.0;
+        const remaining = Math.max(0, target - sleepHours);
+        customSubtitle = "Yesterday's sleep duration & central nervous system (CNS) repair";
+        if (sleepHours > 0) {
+          items.push({
+            title: "Yesterday's Sleep (CNS Recovery)",
+            amount: sleepHours,
+            count: 1,
+            lastTime: 'Last Night',
+            color: '#a78bfa',
+            pct: Math.min(100, Math.round((sleepHours / target) * 1000) / 10),
+            desc: `${Math.floor(sleepHours)}h ${Math.round((sleepHours % 1) * 60)}m of rest fueling today's cellular recovery`
+          });
+          if (remaining > 0) {
+            items.push({
+              title: 'Target Sleep Deficit',
+              amount: Math.round(remaining * 10) / 10,
+              count: 0,
+              lastTime: 'Target',
+              color: 'rgba(255, 255, 255, 0.15)',
+              pct: Math.round((remaining / target) * 1000) / 10,
+              desc: 'Hours needed to hit the optimal 8.0h athletic recovery window'
+            });
+          }
+        }
+      } else {
+        // Extract sources
+        const sourcesMap = {};
+        logs.forEach(l => {
+          const val = extractNutrientFromLog(l, nutrientKey);
+          if (val > 0) {
+            const title = (l.brand && l.brand !== 'Whole Food' ? l.brand + ' ' : '') + (l.itemName || 'Meal');
+            if (!sourcesMap[title]) {
+              sourcesMap[title] = {
+                title,
+                amount: 0,
+                count: 0,
+                lastTime: l.time || 'Today',
+                sampleLog: l
+              };
+            }
+            sourcesMap[title].amount += val;
+            sourcesMap[title].count += 1;
+            sourcesMap[title].lastTime = l.time || sourcesMap[title].lastTime;
+          }
+        });
 
-      const items = Object.values(sourcesMap).sort((a, b) => b.amount - a.amount);
-      const totalAmount = Math.round(items.reduce((s, it) => s + it.amount, 0) * 10) / 10;
+        items = Object.values(sourcesMap).sort((a, b) => b.amount - a.amount);
+        totalAmount = Math.round(items.reduce((s, it) => s + it.amount, 0) * 10) / 10;
 
-      items.forEach((it, idx) => {
-        it.pct = totalAmount > 0 ? Math.round((it.amount / totalAmount) * 1000) / 10 : 0;
-        it.color = PIE_COLORS[idx % PIE_COLORS.length];
-      });
+        items.forEach((it, idx) => {
+          it.pct = totalAmount > 0 ? Math.round((it.amount / totalAmount) * 1000) / 10 : 0;
+          it.color = PIE_COLORS[idx % PIE_COLORS.length];
+        });
+      }
 
       // Update titles
       document.getElementById('bdIcon').innerText = cfg.icon;
       document.getElementById('bdTitle').innerText = `${cfg.name} Breakdown`;
-      document.getElementById('bdSub').innerText = `Real-time food and supplement sources for ${cfg.name} today`;
+      document.getElementById('bdSub').innerText = customSubtitle || `Real-time food and supplement sources for ${cfg.name} today`;
       document.getElementById('bdTotalVal').innerHTML = `${totalAmount.toLocaleString()} <span style="font-size: 0.95rem; color: var(--muted);">${cfg.unit}</span>`;
       
       const pctTarget = targetVal > 0 ? Math.round((totalAmount / targetVal) * 100) : 0;
-      document.getElementById('bdPctTarget').innerText = targetVal > 0 ? `${pctTarget}% of ${targetVal.toLocaleString()} ${cfg.unit} target` : `${items.length} contributing food${items.length === 1 ? '' : 's'}`;
+      document.getElementById('bdPctTarget').innerText = targetVal > 0 ? `${pctTarget}% of ${targetVal.toLocaleString()} ${cfg.unit} target` : `${items.length} contributing component${items.length === 1 ? '' : 's'}`;
 
-      document.getElementById('bdSourcesCount').innerText = `${items.length} source${items.length === 1 ? '' : 's'}`;
+      document.getElementById('bdSourcesCount').innerText = `${items.length} component${items.length === 1 ? '' : 's'}`;
 
       // Reset center label
       const resetCenterLabel = () => {
@@ -2156,8 +2468,8 @@
         `;
         document.getElementById('bdSourcesList').innerHTML = `
           <div style="text-align: center; padding: 48px 20px; color: var(--muted); font-size: 0.9rem;">
-            No ${cfg.name} sources logged yet today.<br>
-            Snap a label or text your meal to <a href="https://t.me/raviteja_fuel_bot" target="_blank" style="color: var(--accent); font-weight: 700;">@raviteja_fuel_bot</a> to see its pie breakdown!
+            No ${cfg.name} logged yet today.<br>
+            Text e.g. <code>${cfg.name.toLowerCase()}</code> or send metrics to <a href="https://t.me/raviteja_fuel_bot" target="_blank" style="color: var(--accent); font-weight: 700;">@raviteja_fuel_bot</a> to see its live breakdown!
           </div>
         `;
         return;
@@ -2235,7 +2547,7 @@
               <div>
                 <div style="font-weight: 800; font-size: 0.92rem; color: #ffffff;">${escapeHtml(it.title)}</div>
                 <div style="font-size: 0.74rem; color: var(--muted); margin-top: 2px;">
-                  ${it.count > 1 ? `${it.count} servings logged • ` : ''}Last: ${it.lastTime}
+                  ${it.desc ? escapeHtml(it.desc) : ((it.count > 1 ? `${it.count} servings logged • ` : '') + 'Last: ' + it.lastTime)}
                 </div>
               </div>
             </div>

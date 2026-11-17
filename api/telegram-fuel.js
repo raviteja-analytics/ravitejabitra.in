@@ -384,6 +384,65 @@ Return ONLY a raw, valid JSON object (no markdown, no backticks) with this schem
   return JSON.parse(cleaned);
 }
 
+// Parse EOD Daily Activity, Calories Burned & Sleep Metrics
+function parseActivityMetrics(text) {
+  if (!text) return null;
+  // Clean out square bracket notes like [it will be for yesterday right]
+  const clean = text.replace(/\[.*?\]/g, ' ').trim();
+  // Normalize commas in numbers e.g. 7,500 -> 7500
+  const normalized = clean.replace(/(\d),(\d)/g, (m, p1, p2) => p1 + p2);
+  const lines = normalized.split(/[\r\n,;]+/).map(s => s.trim()).filter(Boolean);
+
+  let steps = null;
+  let burned = null;
+  let sleep = null;
+
+  for (const line of lines) {
+    // 1. Steps (e.g. "steps 7000", "7000 steps", "steps: 10k")
+    if (steps === null) {
+      const m1 = line.match(/(?:^|\b)(?:steps?|step\s*count)[:\s]+([\d.]+)\s*(k)?\b/i);
+      const m2 = line.match(/(?:^|\b)([\d.]+)\s*(k)?\s*steps?\b/i);
+      const match = m1 || m2;
+      if (match) {
+        let val = parseFloat(match[1]);
+        if (match[2] && match[2].toLowerCase() === 'k') val *= 1000;
+        if (!isNaN(val) && val > 0) steps = Math.round(val);
+      }
+    }
+
+    // 2. Calories Burned (e.g. "calories burned 300", "burned 300", "burn 350 kcal", "active calories 400")
+    if (burned === null) {
+      const m1 = line.match(/(?:^|\b)(?:calories?\s*burned|cal\s*burned|active\s*calories?|active\s*burn|burned|burn)[:\s]+([\d.]+)\s*(?:kcal|calories|cals)?\b/i);
+      const m2 = line.match(/(?:^|\b)([\d.]+)\s*(?:kcal|calories|cals)?\s*(?:calories?\s*burned|cal\s*burned|burned)\b/i);
+      const match = m1 || m2;
+      if (match) {
+        let val = parseFloat(match[1]);
+        if (!isNaN(val) && val > 0) burned = Math.round(val);
+      }
+    }
+
+    // 3. Sleep (e.g. "sleep 7hrs", "sleep 7.5 hrs", "slept 7 hours 30 mins", "sleep 7h", "sleep 8")
+    if (sleep === null) {
+      const m1 = line.match(/(?:^|\b)(?:sleep|slept)[:\s]+([\d.]+)\s*(?:hrs?|hours?|h)?(?:\s*(\d+)\s*(?:mins?|m))?\b/i);
+      const m2 = line.match(/(?:^|\b)([\d.]+)\s*(?:hrs?|hours?|h)\s*(?:of\s*)?(?:sleep|slept)\b/i);
+      const match = m1 || m2;
+      if (match) {
+        let h = parseFloat(match[1]);
+        let mins = parseFloat(match[2] || 0);
+        if (!isNaN(h) && h > 0) {
+          if (!isNaN(mins) && mins > 0) h = h + (mins / 60);
+          sleep = Math.round(h * 10) / 10;
+        }
+      }
+    }
+  }
+
+  if (steps !== null || burned !== null || sleep !== null) {
+    return { steps, burned, sleep };
+  }
+  return null;
+}
+
 // Parse Pantry Rows from Google Sheets
 function parsePantryRows(rawPantry) {
   if (!Array.isArray(rawPantry) || rawPantry.length === 0) return [];
@@ -846,10 +905,14 @@ export default async function handler(req, res) {
       `<b>2. Instant One-Shot Commands:</b>\n` +
       `• <code>/log 2 boiled eggs</code> ➔ Logs directly to today\n` +
       `• <code>/save 100g sweet potato</code> ➔ Saves directly to pantry\n\n` +
-      `<b>3. Snap Any Label (Photo):</b>\n` +
-      `• Snap any packaged brand or supplement label to auto-register.\n\n` +
+      `<b>3. Snap Any Label or Meal (Photo):</b>\n` +
+      `• Snap packaged product label to auto-register to pantry catalog.\n` +
+      `• Snap plate of food (with optional weight notes in caption) to auto-log meals.\n\n` +
+      `<b>4. EOD Daily Steps, Calories Burned & Sleep:</b>\n` +
+      `• Text at end-of-day (all in one message or separately):\n` +
+      `  <code>sleep 7hrs\ncalories burned 300\nsteps 7000</code>\n\n` +
       `<b>Quick Shortcuts:</b>\n` +
-      `• <code>/today</code> - Today's running fuel & meals (with 🗑️ delete buttons)\n` +
+      `• <code>/today</code> - Today's running fuel, activity & meals (with 🗑️ delete buttons)\n` +
       `• <code>/delete &lt;item&gt;</code> - Delete a specific meal (e.g. <code>/delete oats</code>)\n` +
       `• <code>/undo</code> - Undo last logged meal\n` +
       `• <code>/pantry</code> - View all registered pantry items\n\n` +
@@ -893,11 +956,13 @@ export default async function handler(req, res) {
 
   if (text === "/today" || text === "/macros" || text === "/meals") {
     let detailedLogs = [];
+    let todayAct = null;
     try {
       const res = await fetch(`https://www.ravitejabitra.in/api/nutrition-data`);
       if (res.ok) {
         const data = await res.json();
         detailedLogs = data.todayLogs || [];
+        todayAct = data.todayActivity || null;
       }
     } catch(e) {}
 
@@ -926,8 +991,21 @@ export default async function handler(req, res) {
       mealsList = `\n<i>No meals logged yet today.</i>\n`;
     }
 
+    let actSummary = "";
+    if (todayAct && (todayAct.steps > 0 || todayAct.caloriesBurned > 0 || todayAct.sleepHours > 0)) {
+      const parts = [];
+      if (todayAct.steps > 0) parts.push(`👣 <b>${todayAct.steps.toLocaleString()}</b> steps`);
+      if (todayAct.caloriesBurned > 0) parts.push(`🔥 <b>${todayAct.caloriesBurned}</b> kcal burned`);
+      if (todayAct.sleepHours > 0) parts.push(`😴 <b>${todayAct.sleepHours}h</b> sleep`);
+      actSummary = `\n🏃‍♂️ <b>Daily Activity & Recovery:</b>\n• ` + parts.join(' • ') + `\n`;
+      if (todayAct.caloriesBurned > 0 && totalCal > 0) {
+        actSummary += `• ⚖️ <b>Net Calorie Balance:</b> ${Math.round(totalCal - todayAct.caloriesBurned)} Net kcal\n`;
+      }
+    }
+
     const summary = `📊 <b>Today's Fuel Summary</b>\n` +
       mealsList +
+      actSummary +
       `\n━━━━━━━━━━━━━━━━━━━\n` +
       `🥩 <b>Protein:</b> ${Math.round(totalP)}g / ${DAILY_TARGETS.protein}g (${Math.min(100, Math.round((totalP/DAILY_TARGETS.protein)*100))}%)` + (totalP >= DAILY_TARGETS.protein ? ' 🏆' : '') + `\n` +
       `🍞 <b>Carbs:</b> ${Math.round(totalC)}g / ${DAILY_TARGETS.carbs}g\n` +
@@ -1004,6 +1082,67 @@ export default async function handler(req, res) {
       `🗑️ <b>Removed:</b> <i>"${targetItem}"</i> from today's fuel!\n\nYour live dashboard has recalculated: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`,
       messageId
     );
+    return res.status(200).send("OK");
+  }
+
+  // ── B.5. EOD DAILY ACTIVITY, CALORIES BURNED & SLEEP TRACKING ─────
+  const activity = parseActivityMetrics(text);
+  if (activity) {
+    const structuredMsg = `[ACTIVITY_METRICS: steps=${activity.steps !== null ? activity.steps : ''}, burned=${activity.burned !== null ? activity.burned : ''}, sleep=${activity.sleep !== null ? activity.sleep : ''}] | Daily Activity & Recovery: ${activity.steps ? activity.steps.toLocaleString() + ' steps' : ''}${activity.burned ? ' • ' + activity.burned + ' kcal burned' : ''}${activity.sleep ? ' • ' + activity.sleep + 'h sleep' : ''}`;
+
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sheet: "nutrition",
+        timestamp: new Date().toISOString(),
+        date: dateStr,
+        time: timeStr,
+        itemName: "Daily Activity & Recovery",
+        brand: "Activity Tracker",
+        quantity: 1,
+        servingUnit: "day",
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fats: 0,
+        fiber: 0,
+        sugar: 0,
+        rawMessage: structuredMsg
+      })
+    });
+
+    // Fetch running food calories to show net energy balance
+    let totalFoodCal = 0;
+    try {
+      const logs = await getTodayNutritionLogs(dateStr);
+      totalFoodCal = logs.reduce((sum, r) => sum + (Number(r["Calories"] || r.calories) || 0), 0);
+    } catch(e) {}
+
+    const stepsStr = activity.steps !== null
+      ? `👣 <b>Steps:</b> <b>${activity.steps.toLocaleString()}</b> / 10,000 (${Math.min(100, Math.round((activity.steps / 10000) * 100))}%)`
+      : '';
+    const burnStr = activity.burned !== null
+      ? `🔥 <b>Active Burned:</b> <b>${activity.burned} kcal</b>`
+      : '';
+    const sleepStr = activity.sleep !== null
+      ? `😴 <b>Sleep Duration:</b> <b>${activity.sleep} hrs</b> <i>(Yesterday's Rest • CNS Repair)</i>`
+      : '';
+
+    let netBalanceStr = '';
+    if (activity.burned !== null && totalFoodCal > 0) {
+      const net = totalFoodCal - activity.burned;
+      netBalanceStr = `\n⚖️ <b>Net Energy Balance:</b>\n• Food Intake: <b>${Math.round(totalFoodCal)} kcal</b> - Burn: <b>${activity.burned} kcal</b> = <b>${Math.round(net)} Net kcal</b>\n`;
+    }
+
+    const receipt = `🏃‍♂️ <b>Daily Activity & Recovery Logged!</b>\n\n` +
+      [stepsStr, burnStr, sleepStr].filter(Boolean).join('\n') + `\n` +
+      `━━━━━━━━━━━━━━━━━━━\n` +
+      netBalanceStr +
+      `📅 <b>Date:</b> ${dateStr}\n\n` +
+      `👉 View Live Cards: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
+
+    await sendTelegramMessage(chatId, receipt, messageId);
     return res.status(200).send("OK");
   }
 
