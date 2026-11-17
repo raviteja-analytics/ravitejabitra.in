@@ -760,31 +760,47 @@
     .macro-ring-card, .sport-kpi-card {
       cursor: pointer;
     }
-    .card-breakdown-hint {
+    .card-corner-icon {
       position: absolute;
-      top: 8px;
-      right: 8px;
-      font-size: 0.65rem;
+      top: 10px;
+      right: 12px;
+      font-size: 0.85rem;
       font-weight: 700;
-      color: var(--muted);
-      opacity: 0;
-      transform: translateY(2px);
-      transition: all 0.2s ease;
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 6px;
-      padding: 2px 6px;
+      color: rgba(255, 255, 255, 0.22);
+      transition: all 0.25s ease;
+      font-family: var(--font-mono);
       pointer-events: none;
-      display: flex;
-      align-items: center;
-      gap: 3px;
     }
-    .macro-ring-card:hover .card-breakdown-hint,
-    .sport-kpi-card:hover .card-breakdown-hint {
-      opacity: 1;
-      transform: translateY(0);
-      color: #38bdf8;
-      border-color: rgba(56, 189, 248, 0.4);
+    .macro-ring-card:hover .card-corner-icon,
+    .sport-kpi-card:hover .card-corner-icon {
+      color: var(--card-accent, #38bdf8);
+      transform: translate(2px, -2px);
+    }
+
+    /* Today Live Date Badge */
+    .today-date-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 9999px;
+      padding: 7px 18px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+    .live-dot-pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+      animation: livePulse 2s infinite ease-in-out;
+    }
+    @keyframes livePulse {
+      0% { transform: scale(0.9); opacity: 0.7; }
+      50% { transform: scale(1.25); opacity: 1; box-shadow: 0 0 14px #10b981; }
+      100% { transform: scale(0.9); opacity: 0.7; }
     }
 
     .bd-main-grid {
@@ -909,14 +925,26 @@
       </div>
     </div>
 
-    <!-- View Switcher: Today's Fuel vs History & Trends -->
-    <div class="view-switcher-row">
-      <button class="view-pill-btn active" id="btnFuelLive" onclick="switchFuelTab('live')">
-        <span>⚡</span> Today's Fuel
-      </button>
-      <button class="view-pill-btn" id="btnFuelHistory" onclick="switchFuelTab('history')">
-        <span>📊</span> Macro History & Trends
-      </button>
+    <!-- View Switcher & Live Today's Date -->
+    <div class="view-switcher-row" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 24px;">
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <button class="view-pill-btn active" id="btnFuelLive" onclick="switchFuelTab('live')">
+          <span>⚡</span> Today's Fuel
+        </button>
+        <button class="view-pill-btn" id="btnFuelHistory" onclick="switchFuelTab('history')">
+          <span>📊</span> Macro History & Trends
+        </button>
+      </div>
+
+      <!-- Live Date Display Badge -->
+      <div class="today-date-badge" id="todayDateBadge">
+        <span class="live-dot-pulse"></span>
+        <span style="font-size: 0.72rem; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.1em;">TODAY</span>
+        <span style="color: rgba(255, 255, 255, 0.25);">•</span>
+        <span id="todayFormattedDate" style="font-size: 0.88rem; font-weight: 800; color: #ffffff; font-family: var(--font-mono);">
+          Tuesday, 17 November 2026
+        </span>
+      </div>
     </div>
 
     <!-- ── VIEW 1: TODAY'S LIVE FUEL DASHBOARD ───────────────────── -->
@@ -927,7 +955,7 @@
       
       <!-- Protein Ring -->
       <div class="macro-ring-card card-protein" onclick="openNutrientBreakdown('protein')" title="Click for Protein source pie chart">
-        <div class="card-breakdown-hint">Pie Chart ↗</div>
+        <div class="card-corner-icon">↗</div>
         <div class="pulse-ring-wrapper">
           <div class="pulse-halo"></div>
           <svg class="macro-ring-svg" viewBox="0 0 90 90">
@@ -942,7 +970,7 @@
 
       <!-- Carbs Ring -->
       <div class="macro-ring-card card-carbs" onclick="openNutrientBreakdown('carbs')" title="Click for Carbs source pie chart">
-        <div class="card-breakdown-hint">Pie Chart ↗</div>
+        <div class="card-corner-icon">↗</div>
         <div class="pulse-ring-wrapper">
           <div class="pulse-halo"></div>
           <svg class="macro-ring-svg" viewBox="0 0 90 90">
@@ -957,7 +985,7 @@
 
       <!-- Fats Ring -->
       <div class="macro-ring-card card-fats" onclick="openNutrientBreakdown('fats')" title="Click for Fats source pie chart">
-        <div class="card-breakdown-hint">Pie Chart ↗</div>
+        <div class="card-corner-icon">↗</div>
         <div class="pulse-ring-wrapper">
           <div class="pulse-halo"></div>
           <svg class="macro-ring-svg" viewBox="0 0 90 90">
@@ -972,7 +1000,7 @@
 
       <!-- Fiber Ring -->
       <div class="macro-ring-card card-fiber" onclick="openNutrientBreakdown('fiber')" title="Click for Fiber source pie chart">
-        <div class="card-breakdown-hint">Pie Chart ↗</div>
+        <div class="card-corner-icon">↗</div>
         <div class="pulse-ring-wrapper">
           <div class="pulse-halo"></div>
           <svg class="macro-ring-svg" viewBox="0 0 90 90">
@@ -987,7 +1015,7 @@
 
       <!-- Sugar Ring -->
       <div class="macro-ring-card card-sugar" onclick="openNutrientBreakdown('sugar')" title="Click for Sugar source pie chart">
-        <div class="card-breakdown-hint">Pie Chart ↗</div>
+        <div class="card-corner-icon">↗</div>
         <div class="pulse-ring-wrapper">
           <div class="pulse-halo"></div>
           <svg class="macro-ring-svg" viewBox="0 0 90 90">
@@ -1002,7 +1030,7 @@
 
       <!-- Calories Ring -->
       <div class="macro-ring-card card-calories" onclick="openNutrientBreakdown('calories')" title="Click for Calories source pie chart">
-        <div class="card-breakdown-hint">Pie Chart ↗</div>
+        <div class="card-corner-icon">↗</div>
         <div class="pulse-ring-wrapper">
           <div class="pulse-halo"></div>
           <svg class="macro-ring-svg" viewBox="0 0 90 90">
@@ -1031,7 +1059,7 @@
       <div class="electrolytes-grid" style="margin-bottom: 24px;">
         <!-- Sodium -->
         <div class="sport-kpi-card" style="--card-accent: #38bdf8;" onclick="openNutrientBreakdown('sodium')" title="Click for Sodium source pie chart">
-          <div class="card-breakdown-hint">Pie Chart ↗</div>
+          <div class="card-corner-icon">↗</div>
           <div class="sport-kpi-top">
             <span>🧂 Sodium (Na)</span>
             <span id="pctSodium">0%</span>
@@ -1048,7 +1076,7 @@
 
         <!-- Potassium -->
         <div class="sport-kpi-card" style="--card-accent: #fbbf24;" onclick="openNutrientBreakdown('potassium')" title="Click for Potassium source pie chart">
-          <div class="card-breakdown-hint">Pie Chart ↗</div>
+          <div class="card-corner-icon">↗</div>
           <div class="sport-kpi-top">
             <span>🍌 Potassium (K)</span>
             <span id="pctPotassium">0%</span>
@@ -1065,7 +1093,7 @@
 
         <!-- Magnesium -->
         <div class="sport-kpi-card" style="--card-accent: #c084fc;" onclick="openNutrientBreakdown('magnesium')" title="Click for Magnesium source pie chart">
-          <div class="card-breakdown-hint">Pie Chart ↗</div>
+          <div class="card-corner-icon">↗</div>
           <div class="sport-kpi-top">
             <span>💊 Magnesium (Mg)</span>
             <span id="pctMagnesium">0%</span>
@@ -1082,7 +1110,7 @@
 
         <!-- Calcium -->
         <div class="sport-kpi-card" style="--card-accent: #34d399;" onclick="openNutrientBreakdown('calcium')" title="Click for Calcium source pie chart">
-          <div class="card-breakdown-hint">Pie Chart ↗</div>
+          <div class="card-corner-icon">↗</div>
           <div class="sport-kpi-top">
             <span>🥛 Calcium (Ca)</span>
             <span id="pctCalcium">0%</span>
@@ -1109,7 +1137,7 @@
       <div class="micros-grid">
         <!-- Omega-3 -->
         <div class="sport-kpi-card" style="--card-accent: #f43f5e;" onclick="openNutrientBreakdown('omega3')" title="Click for Omega-3 source pie chart">
-          <div class="card-breakdown-hint">Pie Chart ↗</div>
+          <div class="card-corner-icon">↗</div>
           <div class="sport-kpi-top">
             <span>🐟 Omega-3 (EPA/DHA)</span>
             <span id="pctOmega">0%</span>
@@ -1134,7 +1162,7 @@
 
         <!-- Creatine Monohydrate -->
         <div class="sport-kpi-card" style="--card-accent: #38bdf8;" onclick="openNutrientBreakdown('creatine')" title="Click for Creatine source pie chart">
-          <div class="card-breakdown-hint">Pie Chart ↗</div>
+          <div class="card-corner-icon">↗</div>
           <div class="sport-kpi-top">
             <span>⚡ Creatine Monohydrate</span>
             <span id="statusCreatine" style="color: #fbbf24; font-weight: 800;">PENDING</span>
@@ -1151,7 +1179,7 @@
 
         <!-- Iron & Zinc -->
         <div class="sport-kpi-card" style="--card-accent: #a855f7;" onclick="openNutrientBreakdown('iron')" title="Click for Iron & Zinc source pie chart">
-          <div class="card-breakdown-hint">Pie Chart ↗</div>
+          <div class="card-corner-icon">↗</div>
           <div class="sport-kpi-top">
             <span>🩸 Iron & 🛡️ Zinc</span>
             <span id="pctIronZinc">Tracked</span>
@@ -1170,7 +1198,7 @@
 
         <!-- Key Vitamins (D3, B12, C) -->
         <div class="sport-kpi-card" style="--card-accent: #10b981;" onclick="openNutrientBreakdown('vitaminC')" title="Click for Vitamins source pie chart">
-          <div class="card-breakdown-hint">Pie Chart ↗</div>
+          <div class="card-corner-icon">↗</div>
           <div class="sport-kpi-top">
             <span>☀️ D3 • 🧬 B12 • 🍊 Vit C</span>
             <span>Active</span>
@@ -1489,12 +1517,33 @@
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
+    function updateTodayDateDisplay(dateStr) {
+      const el = document.getElementById('todayFormattedDate');
+      if (!el) return;
+      let d = new Date();
+      if (dateStr && dateStr.includes('-')) {
+        const parts = dateStr.split('-');
+        if (parts.length === 3) {
+          d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        }
+      }
+      const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      const dayName = days[d.getDay()];
+      const monthName = months[d.getMonth()];
+      const dayNum = d.getDate();
+      const year = d.getFullYear();
+
+      el.innerText = `${dayName}, ${dayNum} ${monthName} ${year}`;
+    }
+
     async function fetchLiveNutritionData(isManual = false) {
       try {
         const res = await fetch('/api/nutrition-data');
         if (!res.ok) throw new Error("Failed to fetch nutrition data");
         const data = await res.json();
         window._latestNutritionData = data;
+        updateTodayDateDisplay(data.todayStr);
 
         const targets = data.targets || { protein: 150, carbs: 380, fats: 70, fiber: 38, sugar: 35, calories: 2800 };
         const totals = data.todayTotals || { protein: 0, carbs: 0, fats: 0, fiber: 0, sugar: 0, calories: 0 };
@@ -2251,6 +2300,7 @@
     initStars();
 
     // Initial Load
+    updateTodayDateDisplay();
     fetchLiveNutritionData();
 
     // Initial URL Hash check (e.g. direct link to /nutrition#breakdown=protein)
