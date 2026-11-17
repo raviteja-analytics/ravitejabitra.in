@@ -405,6 +405,9 @@ export default async function handler(req, res) {
     let ironMg = 0;
     let zincMg = 0;
     let omega3Mg = 0;
+    let fishOilMg = 0;
+    let epaMg = 0;
+    let dhaMg = 0;
     let vitaminB12Mcg = 0;
     let vitaminCMg = 0;
     let vitaminD3Iu = 0;
@@ -435,16 +438,22 @@ export default async function handler(req, res) {
       zincMg += extractNutrientValue(v, /zinc[:\s]+([\d.]+)\s*mg/i);
 
       // Omega-3 / EPA / DHA
-      const epa = extractNutrientValue(v, /epa[:\s]+([\d.]+)\s*mg/i);
-      const dha = extractNutrientValue(v, /dha[:\s]+([\d.]+)\s*mg/i);
-      const totalOmega = extractNutrientValue(v, /(?:total\s+)?omega(?:-3)?[:\s]+([\d.]+)\s*mg/i);
-      if (totalOmega > 0) {
-        omega3Mg += totalOmega;
-      } else if (epa > 0 || dha > 0) {
-        omega3Mg += (epa + dha);
-      } else if (/fish\s*oil/i.test(l.itemName)) {
-        omega3Mg += (l.quantity || 1) * 1000;
+      let epa = extractNutrientValue(v, /epa[:\s]+([\d.]+)\s*mg/i);
+      let dha = extractNutrientValue(v, /dha[:\s]+([\d.]+)\s*mg/i);
+      let totalOmega = extractNutrientValue(v, /(?:total\s+)?omega(?:-3)?[:\s]+([\d.]+)\s*mg/i);
+
+      if (/fish\s*oil/i.test(l.itemName) || /hk\s*vital/i.test(l.itemName) || /omega/i.test(l.itemName)) {
+        const qty = l.quantity || 1;
+        // Standard fish oil capsule (1000mg oil = 180mg EPA + 120mg DHA = 300mg active Omega-3)
+        if (epa === 0) epa = qty * 180;
+        if (dha === 0) dha = qty * 120;
+        if (totalOmega === 0) totalOmega = qty * 1000;
       }
+
+      epaMg += epa;
+      dhaMg += dha;
+      omega3Mg += (epa + dha);
+      fishOilMg += (totalOmega > 0 ? totalOmega : (epa + dha));
 
       // Vitamin B12
       vitaminB12Mcg += extractNutrientValue(v, /vitamin\s*b12[:\s]+([\d.]+)\s*mcg/i);
@@ -472,7 +481,11 @@ export default async function handler(req, res) {
       calciumMg: Math.round(calciumMg),
       ironMg: Math.round(ironMg * 10) / 10,
       zincMg: Math.round(zincMg * 10) / 10,
-      omega3Mg: Math.round(omega3Mg),
+      omega3Mg: Math.round(omega3Mg), // 300 mg active EPA + DHA
+      fishOilMg: Math.round(fishOilMg), // 1,000 mg bulk fish oil
+      epaMg: Math.round(epaMg), // 180 mg EPA
+      dhaMg: Math.round(dhaMg), // 120 mg DHA
+      carrierLipidsMg: Math.max(0, Math.round(fishOilMg - omega3Mg)), // 700 mg carrier fats
       vitaminB12Mcg: Math.round(vitaminB12Mcg * 10) / 10,
       vitaminCMg: Math.round(vitaminCMg),
       vitaminD3Iu: Math.round(vitaminD3Iu),

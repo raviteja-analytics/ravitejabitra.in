@@ -994,8 +994,16 @@
             <span id="pctOmega">0%</span>
           </div>
           <div class="sport-kpi-val" id="valOmega">0 <span style="font-size: 0.95rem; color: var(--muted); font-weight: 600;">mg</span></div>
+          <div class="omega-breakdown" style="display: flex; gap: 8px; margin: 6px 0 8px 0; font-size: 0.74rem;">
+            <span style="background: rgba(244, 63, 94, 0.12); color: #f43f5e; padding: 2px 8px; border-radius: 6px; font-weight: 700; border: 1px solid rgba(244, 63, 94, 0.25);">
+              EPA: <b id="valEpa">0</b> mg
+            </span>
+            <span style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; padding: 2px 8px; border-radius: 6px; font-weight: 700; border: 1px solid rgba(56, 189, 248, 0.25);">
+              DHA: <b id="valDha">0</b> mg
+            </span>
+          </div>
           <div class="sport-kpi-sub">
-            <span>Target: 1,000 - 2,000 mg</span>
+            <span id="subOmega">Active: 300 mg • 700 mg Carrier Lipids</span>
             <span>Anti-Inflammatory</span>
           </div>
           <div class="sport-progress-bar-bg">
@@ -1281,9 +1289,20 @@
         document.getElementById('pctCalcium').innerText = `${caPct}%`;
         document.getElementById('barCalcium').style.width = `${caPct}%`;
 
-        // Omega-3 (Target: 1500 mg)
-        const omPct = Math.min(100, Math.round((micros.omega3Mg / (targets.omega3Mg || 1500)) * 100));
-        document.getElementById('valOmega').innerHTML = `${micros.omega3Mg.toLocaleString()} <span style="font-size: 0.95rem; color: var(--muted); font-weight: 600;">mg</span>`;
+        // Omega-3
+        const epaVal = micros.epaMg || (micros.omega3Mg >= 300 ? 180 : 0);
+        const dhaVal = micros.dhaMg || (micros.omega3Mg >= 300 ? 120 : 0);
+        const activeOmega = (epaVal + dhaVal) || micros.omega3Mg || 0;
+        const totalFishOil = micros.fishOilMg || (activeOmega > 0 ? 1000 : 0);
+        const omPct = Math.min(100, Math.round((totalFishOil / (targets.omega3Mg || 1000)) * 100));
+
+        document.getElementById('valOmega').innerHTML = `${totalFishOil.toLocaleString()} <span style="font-size: 0.82rem; color: var(--muted); font-weight: 600;">mg Oil</span> <span style="font-size: 0.78rem; color: #f43f5e; font-weight: 700; margin-left: 4px;">(${activeOmega}mg Active)</span>`;
+        if (document.getElementById('valEpa')) document.getElementById('valEpa').innerText = epaVal;
+        if (document.getElementById('valDha')) document.getElementById('valDha').innerText = dhaVal;
+        if (document.getElementById('subOmega')) {
+          const carrier = Math.max(0, totalFishOil - activeOmega);
+          document.getElementById('subOmega').innerText = `${activeOmega}mg Active • ${carrier}mg Carrier Lipids`;
+        }
         document.getElementById('pctOmega').innerText = `${omPct}%`;
         document.getElementById('barOmega').style.width = `${omPct}%`;
 
