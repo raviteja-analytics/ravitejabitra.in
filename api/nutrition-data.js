@@ -133,6 +133,16 @@ function parsePantryRows(rawPantry) {
   return result;
 }
 
+function scaleVitalsString(vitalsStr, multiplier) {
+  if (!vitalsStr || multiplier === 1) return vitalsStr || "";
+  return vitalsStr.replace(/([\w\s()-]+):\s*([\d.]+)\s*(mg|mcg|g|iu|µg)?/gi, (match, name, val, unit) => {
+    const num = parseFloat(val);
+    if (isNaN(num)) return match;
+    const scaled = Math.round((num * multiplier) * 10) / 10;
+    return `${name.trim()}: ${scaled} ${unit || ''}`.trim();
+  });
+}
+
 function parseNutritionLogEntry(r, pantryCatalog = []) {
   if (!r || typeof r !== 'object') return null;
 
@@ -156,7 +166,7 @@ function parseNutritionLogEntry(r, pantryCatalog = []) {
   }
 
   const cleanText = String(rawMsg).replace(/\[Vitals:\s*.*?\]/i, '').trim();
-  if (!cleanText || /^(can you\s+)?delete\b/i.test(cleanText)) return null;
+  if (!cleanText || /^(can you\s+)?delete\b/i.test(cleanText) || cleanText.includes("[DELETE_LAST]")) return null;
 
   let itemName = r["Item Name"] || r.itemName || "";
   let brand = r["Brand"] || r.brand || "";
@@ -233,13 +243,16 @@ function parseNutritionLogEntry(r, pantryCatalog = []) {
       fiber = Math.round((matchedItem.fiber * multiplier) * 10) / 10;
       sugar = Math.round((matchedItem.sugar * multiplier) * 10) / 10;
       calories = Math.round(matchedItem.calories * multiplier);
-      if (!vitals && matchedItem.vitals) vitals = matchedItem.vitals;
+      if (!vitals && matchedItem.vitals) {
+        vitals = scaleVitalsString(matchedItem.vitals, multiplier);
+      }
     } else {
       itemName = cleanText;
     }
   }
 
   return {
+    rawTimestamp,
     date: rowDate,
     time: rowTime,
     itemName: itemName || cleanText,
@@ -309,9 +322,43 @@ export default async function handler(req, res) {
     const todayStr = `${yyyy}-${mm}-${dd}`;
 
     // 4. Clean & normalize food logs using robust parsing & pantry matching
-    const cleanedLogs = Array.isArray(rawLogs)
-      ? rawLogs.map(r => parseNutritionLogEntry(r, pantry)).filter(Boolean)
-      : [];
+    const parsedLogs = [];
+    if (Array.isArray(rawLogs)) {
+      for (const r of rawLogs) {
+        const rawMsg = String(r["Raw Message"] || r.rawMessage || r[""] || Object.values(r)[1] || "");
+        if (rawMsg.includes("[DELETE_LAST]") || /^delete\s+last\b/i.test(rawMsg)) {
+          if (parsedLogs.length > 0) parsedLogs.pop();
+          continue;
+        }
+        const entry = parseNutritionLogEntry(r, pantry);
+        if (entry) parsedLogs.push(entry);
+      }
+    }
+
+    // Deduplicate rapid duplicate retries (same item and quantity within 15 mins)
+    const cleanedLogs = [];
+    for (let i = 0; i < parsedLogs.length; i++) {
+      const cur = parsedLogs[i];
+      const isDupe = cleanedLogs.some(prev => {
+        if (prev.date !== cur.date) return false;
+        const sameName = prev.itemName.toLowerCase() === cur.itemName.toLowerCase();
+        const sameQty = prev.quantity === cur.quantity;
+        if (!sameName || !sameQty) return false;
+
+        if (prev.rawTimestamp && cur.rawTimestamp) {
+          const t1 = new Date(prev.rawTimestamp).getTime();
+          const t2 = new Date(cur.rawTimestamp).getTime();
+          if (!isNaN(t1) && !isNaN(t2) && Math.abs(t2 - t1) < 15 * 60 * 1000) {
+            return true;
+          }
+        }
+        return prev.time === cur.time || Math.abs(prev.calories - cur.calories) < 2;
+      });
+
+      if (!isDupe) {
+        cleanedLogs.push(cur);
+      }
+    }
 
     const todayLogs = cleanedLogs.filter(l => l.date === todayStr);
 

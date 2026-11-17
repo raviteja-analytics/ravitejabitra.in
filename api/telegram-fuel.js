@@ -212,40 +212,65 @@ async function callGemini(contents, generationConfig = null) {
 
 // Call Gemini Vision to Extract Nutrition Facts + Vital Micronutrients from Photo
 async function extractNutritionFromImage(base64Data, mimeType, optionalCaption) {
-  const prompt = `You are an expert nutritional, supplement, and sports science data extractor.
-Analyze this photo of a product's label carefully. 
-It could be standard food (peanut butter, oats, whey) OR a targeted supplement (Fish Oil, Omega-3 capsules, Multivitamins, Magnesium Glycinate, ZMA, Creatine, Pre-workout, Electrolytes, Zinc, Vitamin D3).
+  const prompt = `You are an expert sports nutrition, supplement, and clinical data extractor.
+Analyze this photo of a product's nutritional label with 100% mathematical precision.
+It could be packaged food (protein oats, peanut butter, whey, tofu, milk) OR a supplement (Fish Oil, Magnesium Glycinate, ZMA, Creatine, Multivitamins, Electrolytes).
 ${optionalCaption ? `User added this note/brand name: "${optionalCaption}".` : ''}
 
-CRITICAL INSTRUCTION:
-Do NOT limit extraction to only standard macros (protein, carbs, fats). 
-If this product contains active ingredients or micronutrients:
-- For Fish Oil: Extract Total Omega-3, EPA (Eicosapentaenoic Acid), DHA (Docosahexaenoic Acid).
-- For Magnesium / ZMA: Extract Elemental Magnesium, Zinc, Vitamin B6, etc.
-- For Creatine: Extract Creatine Monohydrate (grams/mg).
-- For Multivitamins: Extract Vitamin D3, B12, C, Zinc, Iron, Biotin, etc.
-- For Electrolytes: Extract Sodium, Potassium, Magnesium, Chloride.
-- For Pre-workouts: Extract Caffeine, Beta-Alanine, L-Citrulline, etc.
+CRITICAL INSTRUCTION 1: PREVENT "PER 100g" VS "PER SERVING" CONFUSION:
+Most nutrition labels (especially in India) display facts in TWO COLUMNS:
+- Column A: "Per 100g" / "Per 100ml"
+- Column B: "Per Serving" (e.g. 50g, 33g, 1 scoop, 2 biscuits, 1 capsule)
+Or sometimes the table ONLY has "Per 100g", but states "Serving Size: 40g".
+Or the table ONLY has "Per Serving (30g)".
+
+YOU MUST EXPLICITLY SEPARATE THEM:
+1. Identify the official Serving Size specified on the pack (e.g., "50g", "1 scoop (33g)", "1 capsule", "2 tablets", "100g").
+2. Set "servingUnit" to that official serving size (e.g. "50g" or "1 scoop (33g)").
+3. The macros in the root object (calories, protein, carbs, fats, fiber, sugar) MUST MATCH THAT SPECIFIC SERVING SIZE:
+   - If servingUnit is 50g: extract the 50g numbers (e.g. Protein 13g, Calories 196 kcal). DO NOT put 100g values (26g) into a 50g serving!
+   - If the label ONLY gives "Per 100g" with a 40g serving size: calculate (value_100g * 40 / 100).
+   - If the label ONLY gives "Per Serving": use the per-serving numbers directly.
+4. Also extract "per100g" values into the per100g object.
+
+CRITICAL INSTRUCTION 2: MICRONUTRIENTS & VITAL ACTIVE INGREDIENTS:
+Extract active micronutrients for the specified serving:
+- For Fish Oil: Total Omega-3, EPA, DHA.
+- For Magnesium / ZMA: Elemental Magnesium, Zinc, Vitamin B6.
+- For Creatine: Creatine Monohydrate.
+- For Multivitamins: Vitamin D3, B12, C, Zinc, Iron, Biotin.
+- For Electrolytes & Oats: Sodium, Potassium, Magnesium, Calcium.
 
 Output ONLY a raw, valid JSON object (without markdown fences, no backticks, no other text) with this exact schema:
 {
-  "itemName": "Specific product name (e.g. Triple Strength Fish Oil, Magnesium Glycinate, Pro Impact Whey)",
-  "brand": "Brand name (e.g. TrueBasics, HealthyHey, NAC, MuscleBlaze)",
-  "category": "Fish Oil / Omega-3 | Mineral / Magnesium | Vitamin | Creatine | Protein | Whole Food | Other",
-  "servingUnit": "Serving label (e.g. 1 capsule, 2 tablets, 1 scoop, 2 tbsp, 100g, 30g)",
-  "servingWeight": "Weight in grams/ml if stated (e.g. 1.25g, 33g, 32g)",
-  "calories": number (kcal per serving, 0 if negligible/not listed),
-  "protein": number (grams of protein per serving, 0 if not listed),
-  "carbs": number (grams of total carbs per serving, 0 if not listed),
-  "fats": number (grams of total fat per serving, 0 if not listed),
-  "fiber": number (grams of dietary fiber, 0 if not listed),
-  "sugar": number (grams of total sugar, 0 if not listed),
+  "itemName": "Specific product name (e.g. High Protein Oats Chocolate, Impact Whey, Magnesium Glycinate)",
+  "brand": "Brand name (e.g. Pintola, Nakpro, Carbamide Forte)",
+  "category": "Protein | Supplement | Whole Food | Cereal | Dairy | Other",
+  "servingUnit": "Official single serving (e.g. 50g, 1 scoop (33g), 2 tablets, 1 capsule, 100g)",
+  "servingWeight": "Weight in grams/ml if applicable (e.g. 50g, 33g, 100g)",
+  "calories": number (kcal per single servingUnit),
+  "protein": number (grams of protein per single servingUnit),
+  "carbs": number (grams of total carbs per single servingUnit),
+  "fats": number (grams of total fat per single servingUnit),
+  "fiber": number (grams of dietary fiber per single servingUnit),
+  "sugar": number (grams of total sugar per single servingUnit),
   "vitalNutrients": {
-    "EPA": "560 mg",
-    "DHA": "400 mg",
-    "Total Omega-3": "1250 mg"
+    "Sodium": "65 mg",
+    "Magnesium": "88 mg"
   },
-  "aliases": "Comma-separated keywords/shorthand that the user might text to log this item, e.g. fish oil, omega 3, omega capsules, truebasics fish oil"
+  "per100g": {
+    "calories": number (kcal per 100g/ml),
+    "protein": number (grams of protein per 100g/ml),
+    "carbs": number (grams of carbs per 100g/ml),
+    "fats": number (grams of fats per 100g/ml),
+    "fiber": number (grams of fiber per 100g/ml),
+    "sugar": number (grams of sugar per 100g/ml),
+    "vitalNutrients": {
+      "Sodium": "130 mg",
+      "Magnesium": "176 mg"
+    }
+  },
+  "aliases": "Comma-separated lowercase keywords for texting/logging this item, plus [Per100g: ...]"
 }`;
 
   const contents = [
@@ -279,37 +304,58 @@ ${JSON.stringify(pantryItems, null, 2)}
 
 The user sent this food / supplement text: "${userText}"
 
-TASK:
-1. First, check if the text matches any registered item in their Pantry Catalog (e.g. "whey", "nakpro", "fish oil", "omega", "peanut butter", "magnesium", "honey").
-   If it matches:
-   - Scale calories, protein, carbs, fats, fiber, sugar, and vital nutrients to match the quantity consumed.
-   - Set matchedPantry: true.
-2. If it is NOT in their pantry (e.g. generic whole foods like "100g sweet potato", "1 apple", "2 boiled eggs", "150g chicken breast", "1 banana", "1 cup oats", "10 almonds"):
-   - Look up official USDA FoodData Central nutritional facts for that exact portion.
-   - Set brand: "Whole Food".
-   - Set matchedPantry: false.
-   - For generic whole foods, also provide a standard serving (e.g. 100g or 1 medium piece) in pantryServingUnit so it can be added to their Pantry Catalog if desired.
+CRITICAL QUANTITY & PORTION SCALING ACCURACY:
+1. Parse the user's portion input (e.g. "100g", "50g", "200g", "1 scoop", "2 scoops", "2 boiled eggs", "150g chicken breast", "1 apple").
+2. Matching against Pantry:
+   - Look at the pantry item's servingUnit and servingWeight.
+   - Example 1: Pantry item is "High Protein Oats Chocolate", servingUnit "50g" with 13g protein, 196 kcal, 88mg Magnesium:
+     - User texts "100g" (or "100g of pintola protein oats"):
+       * Portion = 100g.
+       * Multiplier = 100g / 50g = 2.0.
+       * Calories = 196 * 2 = 392 kcal.
+       * Protein = 13 * 2 = 26g.
+       * Carbs = 27.3 * 2 = 54.6g.
+       * Fats = 3.9 * 2 = 7.8g.
+       * Fiber = 4.8 * 2 = 9.6g.
+       * Sugar = 7 * 2 = 14g.
+       * Magnesium = 88 * 2 = 176 mg.
+       * Sodium = 65 * 2 = 130 mg.
+     - User texts "50g" or "1 scoop" or "1 serving":
+       * Multiplier = 1.0.
+       * Protein = 13g, Calories = 196 kcal, Magnesium = 88mg.
+   - Example 2: If an item in pantry is ALREADY registered with servingUnit "100g" (e.g. 100g sweet potato or 100g chicken):
+     - If user texts "100g": Multiplier = 1.0! DO NOT DOUBLE IT!
+   - ALWAYS SCALE vitalNutrients proportionally with the multiplier!
+3. For Generic Whole Foods (sweet potato, boiled eggs, chicken breast, chicken thigh, apple, banana):
+   - Standard USDA values:
+     * Boiled Egg: 1 egg (50g) = 70 kcal, 6.3g Protein, 0.4g Carbs, 4.8g Fat. (2 eggs = 140 kcal, 12.6g Protein).
+     * Chicken Breast (cooked): 100g = 165 kcal, 31g Protein, 0g Carbs, 3.6g Fat. (1 breast ~172g = 284 kcal, 53.4g Protein).
+     * Chicken Thigh (cooked): 100g = 179 kcal, 24.8g Protein, 0g Carbs, 8.2g Fat.
+     * Boiled Sweet Potato: 100g = 86 kcal, 1.6g Protein, 20g Carbs, 0.1g Fat, 3g Fiber.
+     * Apple: 100g = 52 kcal, 0.3g Protein, 13.8g Carbs, 2.4g Fiber. (1 medium apple ~180g = 95 kcal).
+     * Banana: 100g = 89 kcal, 1.1g Protein, 22.8g Carbs, 2.6g Fiber, 12.2g Sugar. (1 medium banana ~118g = 105 kcal).
+     * White Rice (cooked): 100g = 130 kcal, 2.7g Protein, 28g Carbs, 0.3g Fat.
 
 Return ONLY a raw, valid JSON object (no markdown, no backticks) with this schema:
 {
   "matchedPantry": boolean,
-  "itemName": "Specific Food or Product Name (e.g. Sweet Potato, Boiled Egg, Chicken Breast, Nakpro Impact Whey)",
+  "itemName": "Specific Food or Product Name",
   "brand": "Brand Name or 'Whole Food'",
   "category": "Whole Food | Protein | Supplement | Fruit | Vegetable | Dairy | Poultry",
   "quantity": number (portion amount consumed, e.g. 1, 2, 100, 150),
   "servingUnit": "Unit consumed (e.g. g, piece, boiled egg, scoop, tbsp, capsule, cup)",
-  "pantryServingUnit": "Standard single serving unit for saving to catalog (e.g. 100g, 1 piece, 1 egg)",
+  "pantryServingUnit": "Standard single serving unit for saving to catalog (e.g. 50g, 100g, 1 piece, 1 egg)",
   "calories": number (rounded integer for this portion),
-  "protein": number (grams rounded to 1 decimal),
-  "carbs": number (grams rounded to 1 decimal),
-  "fats": number (grams rounded to 1 decimal),
-  "fiber": number (grams rounded to 1 decimal),
-  "sugar": number (grams rounded to 1 decimal),
+  "protein": number (grams rounded to 1 decimal for this portion),
+  "carbs": number (grams rounded to 1 decimal for this portion),
+  "fats": number (grams rounded to 1 decimal for this portion),
+  "fiber": number (grams rounded to 1 decimal for this portion),
+  "sugar": number (grams rounded to 1 decimal for this portion),
   "vitalNutrients": {
-    "Key Nutrient 1": "value with unit (e.g. Vitamin A: 709 mcg)",
-    "Key Nutrient 2": "value with unit (e.g. Potassium: 337 mg)"
+    "Sodium": "130 mg",
+    "Magnesium": "176 mg"
   },
-  "aliases": "Comma-separated lowercase keywords for logging this item in the future"
+  "aliases": "Comma-separated lowercase keywords"
 }`;
 
   const contents = [{ parts: [{ text: prompt }] }];
@@ -740,6 +786,33 @@ export default async function handler(req, res) {
       `🌐 Live Dashboard: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
 
     await sendTelegramMessage(chatId, summary);
+    return res.status(200).send("OK");
+  }
+
+  if (text === "/undo" || text === "/delete") {
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sheet: "nutrition",
+        timestamp: new Date().toISOString(),
+        date: dateStr,
+        time: timeStr,
+        itemName: "DELETED",
+        brand: "",
+        quantity: 0,
+        servingUnit: "",
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fats: 0,
+        fiber: 0,
+        sugar: 0,
+        rawMessage: `[DELETE_LAST]`
+      })
+    });
+
+    await sendTelegramMessage(chatId, "🗑️ <b>Last food entry removed/undone!</b>\nYour live dashboard has been updated: <a href=\"https://www.ravitejabitra.in/nutrition\">ravitejabitra.in/nutrition</a>", messageId);
     return res.status(200).send("OK");
   }
 
