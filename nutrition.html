@@ -907,6 +907,102 @@
       100% { transform: scale(0.9); opacity: 0.7; }
     }
 
+    /* ── VIEW DROPDOWN ─────────────────────────────────────────── */
+    .view-dropdown-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+    .view-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      min-width: 260px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 14px;
+      padding: 6px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(56, 189, 248, 0.15);
+      z-index: 100;
+      display: none;
+    }
+    .view-dropdown-menu.show {
+      display: block;
+    }
+    .view-dropdown-item {
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text);
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s ease;
+    }
+    .view-dropdown-item:hover {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      transform: translateX(3px);
+    }
+    .view-dropdown-item.active {
+      background: rgba(56, 189, 248, 0.2);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+
+    /* ── LIVE HYDRATION BAR (LINKED TO HYDRO) ──────────────────── */
+    .live-hydro-pill {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      border-radius: 14px;
+      padding: 7px 16px;
+      min-width: 220px;
+      text-decoration: none;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 15px rgba(56, 189, 248, 0.08);
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+    .live-hydro-pill:hover {
+      border-color: #38bdf8;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 22px rgba(56, 189, 248, 0.25);
+      transform: translateY(-2px);
+    }
+    .hydro-pill-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .hydro-drop-pulse {
+      animation: hydroPulse 2.5s infinite ease-in-out;
+      display: inline-block;
+      font-size: 0.85rem;
+    }
+    @keyframes hydroPulse {
+      0% { transform: scale(1); filter: drop-shadow(0 0 2px #38bdf8); }
+      50% { transform: scale(1.18); filter: drop-shadow(0 0 8px #38bdf8); }
+      100% { transform: scale(1); filter: drop-shadow(0 0 2px #38bdf8); }
+    }
+    .hydro-progress-track {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+    .hydro-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #0284c7, #38bdf8);
+      border-radius: 9999px;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+      transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
     .bd-main-grid {
       display: grid;
       grid-template-columns: 1fr 1.35fr;
@@ -1029,18 +1125,44 @@
       </div>
     </div>
 
-    <!-- View Switcher & Live Today's Date -->
+    <!-- View Switcher, Live Hydration Bar & Today's Date -->
     <div class="view-switcher-row" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 24px;">
-      <div style="display: flex; gap: 10px; align-items: center;">
-        <button class="view-pill-btn active" id="btnFuelLive" onclick="switchFuelTab('live')">
-          <span>⚡</span> Today's Fuel
+      <!-- Left: Compact View Dropdown (Today's Fuel vs History) -->
+      <div class="view-dropdown-wrapper" id="viewDropdownWrap">
+        <button class="view-pill-btn active" id="btnViewDropdown" onclick="toggleViewDropdown(event)" style="display: inline-flex; align-items: center; gap: 8px;">
+          <span id="currentViewIcon">⚡</span>
+          <span id="currentViewLabel">Today's Fuel</span>
+          <span style="font-size: 0.68rem; opacity: 0.6; margin-left: 2px;">▼</span>
         </button>
-        <button class="view-pill-btn" id="btnFuelHistory" onclick="switchFuelTab('history')">
-          <span>📊</span> Macro History & Trends
-        </button>
+        <div class="view-dropdown-menu" id="viewDropdownMenu">
+          <div class="view-dropdown-item active" id="optFuelLive" onclick="selectViewTab('live')">
+            <span>⚡</span> Today's Fuel (Daily Dashboard)
+          </div>
+          <div class="view-dropdown-item" id="optFuelHistory" onclick="selectViewTab('history')">
+            <span>📊</span> Macro History & Trends
+          </div>
+        </div>
       </div>
 
-      <!-- Live Date Display Badge -->
+      <!-- Center: Live Hydration Bar linked to Hydro -->
+      <a href="/water" class="live-hydro-pill" id="liveHydroPill" title="Open Hydro 4L Tracker">
+        <div class="hydro-pill-header">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span class="hydro-drop-pulse">💧</span>
+            <span style="font-size: 0.72rem; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.08em;">HYDRO</span>
+          </div>
+          <div style="font-family: var(--font-mono); font-weight: 800; font-size: 0.82rem;">
+            <span id="hydroLitersVal" style="color: #ffffff;">0.0L</span>
+            <span id="hydroTargetVal" style="color: var(--muted); font-size: 0.72rem;">/ 4.0L</span>
+            <span id="hydroPctVal" style="color: #38bdf8; margin-left: 4px; font-size: 0.74rem;">(0%)</span>
+          </div>
+        </div>
+        <div class="hydro-progress-track">
+          <div class="hydro-progress-bar" id="hydroBarFill" style="width: 0%;"></div>
+        </div>
+      </a>
+
+      <!-- Right: Live Date Display Badge -->
       <div class="today-date-badge" id="todayDateBadge">
         <span class="live-dot-pulse"></span>
         <span style="font-size: 0.72rem; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.1em;">TODAY</span>
@@ -1154,7 +1276,6 @@
       <div class="panel-title">
         <span>🏃‍♂️ Daily Activity, Energy Expenditure & Sleep Recovery</span>
       </div>
-      <span class="panel-subtitle">Logged via Telegram @raviteja_fuel_bot</span>
     </div>
 
     <div class="activity-hero-grid">
@@ -1762,6 +1883,15 @@
         document.getElementById('pctCalories').innerText = `${calPct}%`;
         document.getElementById('valCalories').innerText = `${totals.calories.toLocaleString()} / ${targets.calories.toLocaleString()} kcal`;
 
+        // 1.1 Update Hydration Bar linked to Hydro
+        const waterLiters = (micros && micros.waterLiters) || 0;
+        const waterTarget = (targets && targets.waterLiters) || 4.0;
+        const waterPct = Math.min(100, Math.round((waterLiters / waterTarget) * 100));
+        if (document.getElementById('hydroLitersVal')) document.getElementById('hydroLitersVal').innerText = `${waterLiters.toFixed(1)}L`;
+        if (document.getElementById('hydroTargetVal')) document.getElementById('hydroTargetVal').innerText = `/ ${waterTarget.toFixed(1)}L`;
+        if (document.getElementById('hydroPctVal')) document.getElementById('hydroPctVal').innerText = `(${waterPct}%)`;
+        if (document.getElementById('hydroBarFill')) document.getElementById('hydroBarFill').style.width = `${waterPct}%`;
+
         // 1.2. Update Daily Activity, Calorie Burn & Sleep
         const act = data.todayActivity || { steps: 0, caloriesBurned: 0, sleepHours: 0 };
         const steps = act.steps || 0;
@@ -1970,6 +2100,25 @@
       }
     }
 
+    function toggleViewDropdown(e) {
+      if (e) e.stopPropagation();
+      const menu = document.getElementById('viewDropdownMenu');
+      if (menu) menu.classList.toggle('show');
+    }
+
+    function selectViewTab(tab) {
+      switchFuelTab(tab);
+      const menu = document.getElementById('viewDropdownMenu');
+      if (menu) menu.classList.remove('show');
+    }
+
+    document.addEventListener('click', (e) => {
+      const wrap = document.getElementById('viewDropdownWrap');
+      if (wrap && !wrap.contains(e.target)) {
+        document.getElementById('viewDropdownMenu')?.classList.remove('show');
+      }
+    });
+
     // View Switcher: Today's Fuel vs History vs Breakdown
     function switchFuelTab(tab) {
       window._currentTab = tab;
@@ -1977,16 +2126,20 @@
       const histView = document.getElementById('fuelHistoryView');
       const bdView = document.getElementById('fuelBreakdownView');
       const switcherRow = document.querySelector('.view-switcher-row');
-      const btnLive = document.getElementById('btnFuelLive');
-      const btnHist = document.getElementById('btnFuelHistory');
+      const currentLabel = document.getElementById('currentViewLabel');
+      const currentIcon = document.getElementById('currentViewIcon');
+      const optLive = document.getElementById('optFuelLive');
+      const optHist = document.getElementById('optFuelHistory');
 
       if (tab === 'history') {
         if (liveView) liveView.style.display = 'none';
         if (histView) histView.style.display = 'block';
         if (bdView) bdView.style.display = 'none';
         if (switcherRow) switcherRow.style.display = 'flex';
-        if (btnLive) btnLive.classList.remove('active');
-        if (btnHist) btnHist.classList.add('active');
+        if (currentLabel) currentLabel.innerText = "Macro History & Trends";
+        if (currentIcon) currentIcon.innerText = "📊";
+        if (optLive) optLive.classList.remove('active');
+        if (optHist) optHist.classList.add('active');
       } else if (tab === 'breakdown') {
         if (liveView) liveView.style.display = 'none';
         if (histView) histView.style.display = 'none';
@@ -1998,8 +2151,10 @@
         if (histView) histView.style.display = 'none';
         if (bdView) bdView.style.display = 'none';
         if (switcherRow) switcherRow.style.display = 'flex';
-        if (btnLive) btnLive.classList.add('active');
-        if (btnHist) btnHist.classList.remove('active');
+        if (currentLabel) currentLabel.innerText = "Today's Fuel";
+        if (currentIcon) currentIcon.innerText = "⚡";
+        if (optLive) optLive.classList.add('active');
+        if (optHist) optHist.classList.remove('active');
       }
     }
 
