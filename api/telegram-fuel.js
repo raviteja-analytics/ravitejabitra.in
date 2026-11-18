@@ -69,6 +69,54 @@ function normalizeToISTDateStr(val) {
   return s.split('T')[0];
 }
 
+// In-Memory cache for pending food choices (to stay strictly within Telegram's 64-byte callback_data limit)
+const _pendingFoods = new Map();
+
+function storePendingFood(item) {
+  const id = Math.random().toString(36).substring(2, 8);
+  _pendingFoods.set(id, item);
+  setTimeout(() => _pendingFoods.delete(id), 30 * 60 * 1000);
+
+  // Encode safe fallback into string: "id:P_C_F_Cal_Qty_Name" (<45 chars total)
+  const shortName = encodeURIComponent((item.itemName || "Item").slice(0, 20));
+  return `${id}:${item.protein || 0}_${item.carbs || 0}_${item.fats || 0}_${item.calories || 0}_${item.quantity || 1}_${shortName}`;
+}
+
+function resolvePendingFood(paramStr) {
+  if (!paramStr) return null;
+  const colonIdx = paramStr.indexOf(":");
+  const id = colonIdx !== -1 ? paramStr.slice(0, colonIdx) : paramStr;
+
+  if (_pendingFoods.has(id)) {
+    return _pendingFoods.get(id);
+  }
+
+  // Fallback if container was cold-started
+  if (colonIdx !== -1) {
+    const parts = paramStr.slice(colonIdx + 1).split("_");
+    if (parts.length >= 6) {
+      return {
+        protein: parseFloat(parts[0]) || 0,
+        carbs: parseFloat(parts[1]) || 0,
+        fats: parseFloat(parts[2]) || 0,
+        calories: parseFloat(parts[3]) || 0,
+        quantity: parseFloat(parts[4]) || 1,
+        itemName: decodeURIComponent(parts.slice(5).join("_")),
+        servingUnit: "serving",
+        brand: "",
+        vitalsSummary: ""
+      };
+    }
+  }
+
+  try {
+    const json = Buffer.from(paramStr, "base64").toString("utf-8");
+    return JSON.parse(json);
+  } catch(e) {
+    return null;
+  }
+}
+
 // Telegram Helpers
 async function sendTelegramMessage(chatId, text, replyToMsgId = null, replyMarkup = null) {
   try {
@@ -96,6 +144,7 @@ async function sendTelegramMessage(chatId, text, replyToMsgId = null, replyMarku
       delete payload.parse_mode;
       payload.text = text.replace(/<[^>]*>/g, '');
       delete payload.reply_to_message_id;
+      delete payload.reply_markup; // Strip any invalid buttons on retry so text ALWAYS arrives
       const retryRes = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -825,8 +874,11 @@ export default async function handler(req, res) {
       const action = colonIdx !== -1 ? data.slice(0, colonIdx) : data;
 
       if (action === "log") {
-        const payloadStr = Buffer.from(data.slice(colonIdx + 1), "base64").toString("utf-8");
-        const item = JSON.parse(payloadStr);
+        const item = resolvePendingFood(data.slice(colonIdx + 1));
+        if (!item) {
+          await answerTelegramCallbackQuery(cbId, "⚠️ Item expired or not found. Please re-send the food text!");
+          return res.status(200).send("OK");
+        }
         await answerTelegramCallbackQuery(cbId, "Logging to today's fuel...");
         const logPromise = logFoodToDailySheet(item, dateStr, timeStr, `${item.quantity} ${item.servingUnit} ${item.itemName}`);
 
@@ -858,8 +910,11 @@ export default async function handler(req, res) {
         await logPromise;
       } 
       else if (action === "pantry") {
-        const payloadStr = Buffer.from(data.slice(colonIdx + 1), "base64").toString("utf-8");
-        const item = JSON.parse(payloadStr);
+        const item = resolvePendingFood(data.slice(colonIdx + 1));
+        if (!item) {
+          await answerTelegramCallbackQuery(cbId, "⚠️ Item expired or not found. Please re-send the food text!");
+          return res.status(200).send("OK");
+        }
         await answerTelegramCallbackQuery(cbId, "Saving to pantry catalog...");
         
         // Single serving representation for pantry
@@ -1784,7 +1839,7 @@ export default async function handler(req, res) {
     }
 
     // 3. DEFAULT: Interactive Choice Menu with Log Food, Save to Pantry, Edit Already Logged Food
-    const payloadBase64 = Buffer.from(JSON.stringify(compactPayload)).toString("base64");
+    const shortToken = storePendingFood(compactPayload);
 
     let vitalsPreview = "";
     if (vitalsList.length > 0) {
@@ -1803,10 +1858,10 @@ export default async function handler(req, res) {
     const replyMarkup = {
       inline_keyboard: [
         [
-          { text: "⚡ Log to Today's Fuel", callback_data: `log:${payloadBase64}` }
+          { text: "⚡ Log to Today's Fuel", callback_data: `log:${shortToken}` }
         ],
         [
-          { text: "📦 Save to Pantry Database", callback_data: `pantry:${payloadBase64}` }
+          { text: "📦 Save to Pantry Database", callback_data: `pantry:${shortToken}` }
         ],
         [
           { text: "✏️ Edit Already Logged Food", callback_data: "menu_edit" }
