@@ -110,6 +110,19 @@ async function sendTelegramMessage(chatId, text, replyToMsgId = null, replyMarku
   }
 }
 
+async function sendTelegramChatAction(chatId, action = "typing") {
+  try {
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendChatAction`;
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, action: action })
+    });
+  } catch (err) {
+    // Non-blocking
+  }
+}
+
 async function editTelegramMessageText(chatId, messageId, text, replyMarkup = null) {
   try {
     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageText`;
@@ -528,23 +541,50 @@ function parsePantryRows(rawPantry) {
   return result;
 }
 
-// Fetch Pantry Catalog from Google Sheet
+// Fetch Pantry Catalog from Google Sheet (with In-Memory Caching for Instant Responses)
+let _pantryCache = null;
+let _pantryCacheTime = 0;
+
 async function getPantryCatalog() {
+  const now = Date.now();
+  if (_pantryCache && (now - _pantryCacheTime < 15 * 60 * 1000)) {
+    return _pantryCache;
+  }
   try {
-    const res = await fetch(`${GOOGLE_SCRIPT_URL}?sheet=catalog`);
-    if (!res.ok) return [];
+    const res = await fetch(`${GOOGLE_SCRIPT_URL}?sheet=catalog`, { signal: AbortSignal.timeout(3500) });
+    if (!res.ok) return _pantryCache || [];
     const items = await res.json();
-    return parsePantryRows(items);
+    const parsed = parsePantryRows(items);
+    if (parsed.length > 0) {
+      _pantryCache = parsed;
+      _pantryCacheTime = now;
+    }
+    return parsed;
   } catch (err) {
-    console.error("Error fetching pantry catalog:", err);
-    return [];
+    console.error("Error fetching pantry catalog:", err.message);
+    return _pantryCache || [];
   }
 }
 
-// Fetch Today's Nutrition Logs from Google Sheet
+// Fetch Today's Nutrition Logs (Fast Path: checks local API first, falls back to raw sheet)
 async function getTodayNutritionLogs(todayDateStr) {
   try {
-    const res = await fetch(`${GOOGLE_SCRIPT_URL}?sheet=nutrition`);
+    const res = await fetch("https://www.ravitejabitra.in/api/nutrition-data", { signal: AbortSignal.timeout(2500) });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.todayLogs) && data.todayLogs.length > 0) {
+        return data.todayLogs.map(l => ({
+          protein: l.protein || 0,
+          calories: l.calories || 0
+        }));
+      }
+    }
+  } catch (e) {
+    // Fall back to direct sheet
+  }
+
+  try {
+    const res = await fetch(`${GOOGLE_SCRIPT_URL}?sheet=nutrition`, { signal: AbortSignal.timeout(3500) });
     if (!res.ok) return [];
     const items = await res.json();
     if (!Array.isArray(items)) return [];
@@ -566,7 +606,7 @@ async function getTodayNutritionLogs(todayDateStr) {
       };
     }).filter(Boolean);
   } catch (err) {
-    console.error("Error fetching nutrition logs:", err);
+    console.error("Error fetching nutrition logs:", err.message);
     return [];
   }
 }
@@ -574,7 +614,7 @@ async function getTodayNutritionLogs(todayDateStr) {
 // Fetch Rich Food Logs for Today (with macro details for interactive editing)
 async function getTodayFoodLogs(todayDateStr) {
   try {
-    const res = await fetch("https://www.ravitejabitra.in/api/nutrition-data");
+    const res = await fetch("https://www.ravitejabitra.in/api/nutrition-data", { signal: AbortSignal.timeout(2500) });
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data.todayLogs) && data.todayLogs.length > 0) {
@@ -586,7 +626,7 @@ async function getTodayFoodLogs(todayDateStr) {
   }
 
   try {
-    const res = await fetch(`${GOOGLE_SCRIPT_URL}?sheet=nutrition`);
+    const res = await fetch(`${GOOGLE_SCRIPT_URL}?sheet=nutrition`, { signal: AbortSignal.timeout(3500) });
     if (!res.ok) return [];
     const items = await res.json();
     if (!Array.isArray(items)) return [];
@@ -689,6 +729,7 @@ async function getTodayFoodLogs(todayDateStr) {
 
 // Execute Save to Pantry Sheet
 async function saveItemToPantrySheet(item) {
+  _pantryCache = null;
   const vitalsSummary = item.vitalsSummary || "";
   await fetch(GOOGLE_SCRIPT_URL, {
     method: "POST",
@@ -1114,7 +1155,7 @@ export default async function handler(req, res) {
   // ════════════════════════════════════════════════════════════════════
   // ── 2. INCOMING MESSAGES ──────────────────────────────────────────
   // ════════════════════════════════════════════════════════════════════
-  const msg = update.message;
+  const msg = update.message || update.edited_message;
   if (!msg) return res.status(200).send("OK");
 
   const chatId = msg.chat?.id;
@@ -1130,6 +1171,9 @@ export default async function handler(req, res) {
     );
     return res.status(200).send("OK");
   }
+
+  // Send immediate typing action so user/Telegram sees the bot responding instantly
+  sendTelegramChatAction(chatId, "typing").catch(() => {});
 
   const { dateStr, timeStr } = getISTDateTime(msg.date);
 

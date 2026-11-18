@@ -1,4 +1,12 @@
 {
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "functions": {
+    "api/telegram-fuel.js": {
+      "maxDuration": 60
+    },
+    "api/nutrition-data.js": {
+      "maxDuration": 30
+    }
+  }
 }
