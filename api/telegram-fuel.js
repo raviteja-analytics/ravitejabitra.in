@@ -189,9 +189,9 @@ async function downloadTelegramPhotoBase64(fileId) {
   }
 }
 
-// Call Gemini (with automatic fallback to available flash models)
+// Call Gemini (with automatic fallback to available flash models and 6s timeout)
 async function callGemini(contents, generationConfig = null) {
-  const models = ['gemini-flash-lite-latest', 'gemini-2.5-flash'];
+  const models = ['gemini-2.5-flash', 'gemini-flash-lite-latest'];
   let lastError = null;
 
   for (const model of models) {
@@ -203,7 +203,8 @@ async function callGemini(contents, generationConfig = null) {
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(6000)
       });
 
       if (!res.ok) {
@@ -551,7 +552,7 @@ async function getPantryCatalog() {
     return _pantryCache;
   }
   try {
-    const res = await fetch(`${GOOGLE_SCRIPT_URL}?sheet=catalog`, { signal: AbortSignal.timeout(3500) });
+    const res = await fetch(`${GOOGLE_SCRIPT_URL}?sheet=catalog`, { signal: AbortSignal.timeout(2000) });
     if (!res.ok) return _pantryCache || [];
     const items = await res.json();
     const parsed = parsePantryRows(items);
@@ -827,7 +828,7 @@ export default async function handler(req, res) {
         const payloadStr = Buffer.from(data.slice(colonIdx + 1), "base64").toString("utf-8");
         const item = JSON.parse(payloadStr);
         await answerTelegramCallbackQuery(cbId, "Logging to today's fuel...");
-        await logFoodToDailySheet(item, dateStr, timeStr, `${item.quantity} ${item.servingUnit} ${item.itemName}`);
+        const logPromise = logFoodToDailySheet(item, dateStr, timeStr, `${item.quantity} ${item.servingUnit} ${item.itemName}`);
 
         const todayLogs = await getTodayNutritionLogs(dateStr);
         const totalP = todayLogs.reduce((sum, r) => sum + (Number(r["Protein"] || r.protein) || 0), 0) + (item.protein || 0);
@@ -854,6 +855,7 @@ export default async function handler(req, res) {
         };
 
         await editTelegramMessageText(chatId, messageId, confirmation, replyMarkup);
+        await logPromise;
       } 
       else if (action === "pantry") {
         const payloadStr = Buffer.from(data.slice(colonIdx + 1), "base64").toString("utf-8");
