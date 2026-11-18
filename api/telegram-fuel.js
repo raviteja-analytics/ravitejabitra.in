@@ -240,6 +240,15 @@ ${optionalCaption ? `• CRITICAL - USER NOTE / CAPTION PROVIDED: "${optionalCap
   * sugar: number (grams of sugar)
   * vitalNutrients: object with key electrolytes & minerals if significant (e.g. {"Sodium": "650 mg", "Potassium": "420 mg", "Iron": "2.5 mg"})
 
+CRITICAL CULINARY ACCURACY FOR STREET FOOD, CHAAT, INDIAN SNACKS & GENERIC FOOD:
+- Dahi Puri: 3 pieces contains ONLY ~2.0 to 2.5g protein total (spiced curd, puris, potato filling), ~20-22g carbs, ~3.5-4.5g fat, ~3-4g sugar, ~120-140 kcal. NEVER estimate 7.5g protein for 3 pieces! 6 pieces (1 plate) is ~4.5-5.0g protein, ~240-270 kcal.
+- Pani Puri / Golgappa: 6 pieces = ~2.5-3.0g protein, ~30g carbs, ~4g fat, ~2g sugar, ~170-190 kcal.
+- Sev Puri: 6 pieces = ~4g protein, ~32g carbs, ~10g fat, ~3g sugar, ~230 kcal.
+- Samosa: 1 medium (100g) = ~3.5g protein, ~30g carbs, ~14g fat, ~2g sugar, ~260 kcal.
+- REALISTIC SUGAR & PROTEIN:
+  * Do NOT inflate sugars for savory street foods. Chutney and curd contribute only 2-4g sugar per plate unless drenched in sugar syrup.
+  * Do NOT hallucinate high protein in street food snacks, chaats, or savory pastries.
+
 STEP 3: IF "pantry_label" (PACKAGED NUTRITION / SUPPLEMENT FACTS LABEL):
 - Identify official single serving (servingUnit, e.g. "50g", "1 scoop (33g)", "1 capsule", "100g").
 - Extract root macros strictly matching that servingUnit (NOT 100g values if serving is 50g!).
@@ -351,6 +360,14 @@ CRITICAL QUANTITY & PORTION SCALING ACCURACY:
      * Apple: 100g = 52 kcal, 0.3g Protein, 13.8g Carbs, 2.4g Fiber. (1 medium apple ~180g = 95 kcal).
      * Banana: 100g = 89 kcal, 1.1g Protein, 22.8g Carbs, 2.6g Fiber, 12.2g Sugar. (1 medium banana ~118g = 105 kcal).
      * White Rice (cooked): 100g = 130 kcal, 2.7g Protein, 28g Carbs, 0.3g Fat.
+4. For Street Foods, Chaat, Indian Snacks & Cooked Dishes:
+   - Dahi Puri: 3 pieces contains ONLY ~2.0 to 2.5g protein total (spiced curd, puris, potato filling), ~20-22g carbs, ~3.5-4.5g fat, ~3-4g sugar, ~120-140 kcal. NEVER estimate 7.5g protein for 3 pieces! 6 pieces (1 plate) is ~4.5-5.0g protein, ~240-270 kcal.
+   - Pani Puri / Golgappa: 6 pieces = ~2.5-3.0g protein, ~30g carbs, ~4g fat, ~2g sugar, ~170-190 kcal.
+   - Sev Puri: 6 pieces = ~4g protein, ~32g carbs, ~10g fat, ~3g sugar, ~230 kcal.
+   - Samosa: 1 medium (100g) = ~3.5g protein, ~30g carbs, ~14g fat, ~2g sugar, ~260 kcal.
+   - REALISTIC SUGAR & PROTEIN:
+     * Do NOT inflate sugars for savory street foods. Chutney and curd contribute only 2-4g sugar per plate unless drenched in sugar syrup.
+     * Do NOT hallucinate high protein in street food snacks, chaats, or savory pastries.
 
 Return ONLY a raw, valid JSON object (no markdown, no backticks) with this schema:
 {
@@ -554,6 +571,122 @@ async function getTodayNutritionLogs(todayDateStr) {
   }
 }
 
+// Fetch Rich Food Logs for Today (with macro details for interactive editing)
+async function getTodayFoodLogs(todayDateStr) {
+  try {
+    const res = await fetch("https://www.ravitejabitra.in/api/nutrition-data");
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.todayLogs) && data.todayLogs.length > 0) {
+        return data.todayLogs;
+      }
+    }
+  } catch (e) {
+    console.warn("Could not fetch from nutrition-data API, reading raw sheet:", e.message);
+  }
+
+  try {
+    const res = await fetch(`${GOOGLE_SCRIPT_URL}?sheet=nutrition`);
+    if (!res.ok) return [];
+    const items = await res.json();
+    if (!Array.isArray(items)) return [];
+
+    const logs = [];
+    for (const r of items) {
+      const vals = Object.values(r);
+      let rawTimestamp = r["Timestamp"] || r.timestamp || r["Date"] || r.date || r[" "] || vals[0] || "";
+      let rawMsg = String(r["Raw Message"] || r.rawMessage || r[""] || vals[1] || vals[0] || "");
+      if (typeof rawTimestamp === 'string' && !/^\d{4}-\d{2}-\d{2}/.test(rawTimestamp) && /^\d{4}-\d{2}-\d{2}/.test(rawMsg)) {
+        const tmp = rawTimestamp; rawTimestamp = rawMsg; rawMsg = tmp;
+      }
+      const dStr = normalizeToISTDateStr(rawTimestamp);
+      if (dStr !== todayDateStr) continue;
+
+      if (rawMsg.includes("[DELETE_LAST]") || rawMsg.includes("[ACTIVITY_METRICS:") || /^(can you\s+)?delete\b/i.test(rawMsg)) {
+        if (rawMsg.includes("[DELETE_LAST]") && logs.length > 0) logs.pop();
+        continue;
+      }
+
+      const delMatch = rawMsg.match(/\[DELETE_ITEM:\s*(.*?)\]/i);
+      if (delMatch) {
+        const tgt = delMatch[1].toLowerCase().trim();
+        for (let k = logs.length - 1; k >= 0; k--) {
+          if ((logs[k].itemName || "").toLowerCase().includes(tgt) || tgt.includes((logs[k].itemName || "").toLowerCase())) {
+            logs.splice(k, 1);
+            break;
+          }
+        }
+        continue;
+      }
+
+      const updMatch = rawMsg.match(/\[UPDATE_ITEM:\s*([^|]+)\s*\|\s*(\{.*?\})\]/i);
+      if (updMatch) {
+        const tgt = updMatch[1].toLowerCase().trim();
+        try {
+          const patch = JSON.parse(updMatch[2]);
+          for (let k = logs.length - 1; k >= 0; k--) {
+            if ((logs[k].itemName || "").toLowerCase().includes(tgt) || tgt.includes((logs[k].itemName || "").toLowerCase())) {
+              if (patch.quantity !== undefined) logs[k].quantity = Number(patch.quantity);
+              if (patch.protein !== undefined) logs[k].protein = Number(patch.protein);
+              if (patch.carbs !== undefined) logs[k].carbs = Number(patch.carbs);
+              if (patch.fats !== undefined) logs[k].fats = Number(patch.fats);
+              if (patch.sugar !== undefined) logs[k].sugar = Number(patch.sugar);
+              if (patch.fiber !== undefined) logs[k].fiber = Number(patch.fiber);
+              if (patch.calories !== undefined) logs[k].calories = Number(patch.calories);
+              break;
+            }
+          }
+        } catch (e) {}
+        continue;
+      }
+
+      let p = Number(r["Protein"] || r.protein) || 0;
+      let c = Number(r["Carbs"] || r.carbs) || 0;
+      let f = Number(r["Fats"] || r.fats) || 0;
+      let cal = Number(r["Calories"] || r.calories) || 0;
+      let s = Number(r["Sugar"] || r.sugar) || 0;
+      let fib = Number(r["Fiber"] || r.fiber) || 0;
+
+      const pMatch = rawMsg.match(/([\d.]+)\s*g\s*P\b/i);
+      const cMatch = rawMsg.match(/([\d.]+)\s*g\s*C\b/i);
+      const fMatch = rawMsg.match(/([\d.]+)\s*g\s*F\b/i);
+      const calMatch = rawMsg.match(/([\d.]+)\s*(?:kcal|calories)\b/i);
+      const sMatch = rawMsg.match(/([\d.]+)\s*g\s*(?:Sug|Sugar)\b/i);
+      const fibMatch = rawMsg.match(/([\d.]+)\s*g\s*(?:Fib|Fiber)\b/i);
+
+      if (pMatch) p = parseFloat(pMatch[1]);
+      if (cMatch) c = parseFloat(cMatch[1]);
+      if (fMatch) f = parseFloat(fMatch[1]);
+      if (calMatch) cal = parseFloat(calMatch[1]);
+      if (sMatch) s = parseFloat(sMatch[1]);
+      if (fibMatch) fib = parseFloat(fibMatch[1]);
+
+      let itemName = r["Item Name"] || r.itemName || "";
+      if (!itemName) {
+        const parts = rawMsg.split('|').map(x => x.trim());
+        itemName = parts.length > 1 ? parts[1] : parts[0];
+      }
+
+      logs.push({
+        itemName: String(itemName).trim(),
+        brand: String(r["Brand"] || r.brand || ""),
+        quantity: Number(r["Quantity"] || r.quantity) || 1,
+        servingUnit: String(r["Serving Unit"] || r.servingUnit || "serving"),
+        calories: Math.round(cal),
+        protein: Math.round(p * 10) / 10,
+        carbs: Math.round(c * 10) / 10,
+        fats: Math.round(f * 10) / 10,
+        sugar: Math.round(s * 10) / 10,
+        fiber: Math.round(fib * 10) / 10
+      });
+    }
+    return logs;
+  } catch (err) {
+    console.error("Error reading food logs:", err);
+    return [];
+  }
+}
+
 // Execute Save to Pantry Sheet
 async function saveItemToPantrySheet(item) {
   const vitalsSummary = item.vitalsSummary || "";
@@ -645,13 +778,13 @@ export default async function handler(req, res) {
     const { dateStr, timeStr } = getISTDateTime();
 
     try {
-      // Data format: "act:base64Data"
+      // Data format: "act:base64Data" or "act:target"
       const colonIdx = data.indexOf(":");
       const action = colonIdx !== -1 ? data.slice(0, colonIdx) : data;
-      const payloadStr = colonIdx !== -1 ? Buffer.from(data.slice(colonIdx + 1), "base64").toString("utf-8") : "{}";
-      const item = JSON.parse(payloadStr);
 
       if (action === "log") {
+        const payloadStr = Buffer.from(data.slice(colonIdx + 1), "base64").toString("utf-8");
+        const item = JSON.parse(payloadStr);
         await answerTelegramCallbackQuery(cbId, "Logging to today's fuel...");
         await logFoodToDailySheet(item, dateStr, timeStr, `${item.quantity} ${item.servingUnit} ${item.itemName}`);
 
@@ -670,9 +803,20 @@ export default async function handler(req, res) {
           `🔥 <b>Total Calories:</b> ${Math.round(totalCal)} / ${DAILY_TARGETS.calories} kcal\n\n` +
           `👉 View on site: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
 
-        await editTelegramMessageText(chatId, messageId, confirmation);
+        const replyMarkup = {
+          inline_keyboard: [
+            [
+              { text: `✏️ Adjust Macros / Portions`, callback_data: `pick_edit:${encodeURIComponent(item.itemName)}` },
+              { text: `🗑️ Delete`, callback_data: `del:${encodeURIComponent(item.itemName)}` }
+            ]
+          ]
+        };
+
+        await editTelegramMessageText(chatId, messageId, confirmation, replyMarkup);
       } 
       else if (action === "pantry") {
+        const payloadStr = Buffer.from(data.slice(colonIdx + 1), "base64").toString("utf-8");
+        const item = JSON.parse(payloadStr);
         await answerTelegramCallbackQuery(cbId, "Saving to pantry catalog...");
         
         // Single serving representation for pantry
@@ -696,9 +840,233 @@ export default async function handler(req, res) {
 
         await editTelegramMessageText(chatId, messageId, card);
       }
+      else if (action === "menu_edit") {
+        await answerTelegramCallbackQuery(cbId, "Loading today's food logs...");
+        const logs = await getTodayFoodLogs(dateStr);
+        if (logs.length === 0) {
+          await editTelegramMessageText(
+            chatId,
+            messageId,
+            `✏️ <b>Edit Logged Food</b>\n\nNo food entries logged yet today (${dateStr})!\n\n💡 <i>Text any food (e.g. <code>2 boiled eggs</code> or <code>100g sweet potato</code>) to start logging fuel.</i>`
+          );
+        } else {
+          const buttons = logs.map((l, idx) => {
+            const name = l.brand && l.brand !== 'Whole Food' ? `${l.brand} ${l.itemName}` : l.itemName;
+            const label = `${idx + 1}. ${name.slice(0, 20)} (${l.protein}g P, ${l.calories} kcal)`;
+            return [{
+              text: label,
+              callback_data: `pick_edit:${encodeURIComponent(l.itemName)}`
+            }];
+          });
+          buttons.push([{ text: "❌ Close Menu", callback_data: "close_menu" }]);
+
+          await editTelegramMessageText(
+            chatId,
+            messageId,
+            `✏️ <b>Select an entry from today to adjust or edit:</b>\n\n` +
+            `<i>Found ${logs.length} logged item${logs.length > 1 ? 's' : ''} for today (${dateStr}). Tap the food you want to modify:</i>`,
+            { inline_keyboard: buttons }
+          );
+        }
+      }
+      else if (action === "pick_edit") {
+        const targetName = decodeURIComponent(data.slice(colonIdx + 1).trim());
+        await answerTelegramCallbackQuery(cbId, `Loading ${targetName.slice(0, 15)}...`);
+        const logs = await getTodayFoodLogs(dateStr);
+        const entry = logs.find(l => 
+          (l.itemName || "").toLowerCase().includes(targetName.toLowerCase()) || 
+          targetName.toLowerCase().includes((l.itemName || "").toLowerCase())
+        ) || logs[0];
+
+        if (!entry) {
+          await editTelegramMessageText(chatId, messageId, `⚠️ Food item "${targetName}" was not found or was deleted.`);
+        } else {
+          const editMenuText = `✏️ <b>Editing Fuel Entry:</b> <b>${entry.brand && entry.brand !== 'Whole Food' ? entry.brand + ' ' : ''}${entry.itemName}</b>\n` +
+            `📏 <b>Logged Portion:</b> ${entry.quantity || 1} ${entry.servingUnit || 'serving'}\n` +
+            `━━━━━━━━━━━━━━━━━━━\n` +
+            `• 🥩 <b>Protein:</b> <b>${entry.protein || 0}g</b>\n` +
+            `• 🍞 <b>Carbs:</b> ${entry.carbs || 0}g\n` +
+            `• 🥑 <b>Fats:</b> ${entry.fats || 0}g\n` +
+            `• 🍬 <b>Sugar:</b> ${entry.sugar || 0}g\n` +
+            `• 🌾 <b>Fiber:</b> ${entry.fiber || 0}g\n` +
+            `• 🔥 <b>Calories:</b> <b>${entry.calories || 0} kcal</b>\n` +
+            `━━━━━━━━━━━━━━━━━━━\n` +
+            `<i>Which value would you like to adjust?</i>`;
+
+          const encoded = encodeURIComponent(entry.itemName);
+          const replyMarkup = {
+            inline_keyboard: [
+              [
+                { text: `🥩 Adjust Protein (${entry.protein || 0}g)`, callback_data: `adj_f:${encoded}:protein` },
+                { text: `🍞 Adjust Carbs (${entry.carbs || 0}g)`, callback_data: `adj_f:${encoded}:carbs` }
+              ],
+              [
+                { text: `🥑 Adjust Fats (${entry.fats || 0}g)`, callback_data: `adj_f:${encoded}:fats` },
+                { text: `🍬 Adjust Sugar (${entry.sugar || 0}g)`, callback_data: `adj_f:${encoded}:sugar` }
+              ],
+              [
+                { text: `🔥 Adjust Calories (${entry.calories || 0})`, callback_data: `adj_f:${encoded}:calories` },
+                { text: `⚖️ Adjust Quantity (${entry.quantity || 1})`, callback_data: `adj_f:${encoded}:quantity` }
+              ],
+              [
+                { text: `🗑️ Delete Entry`, callback_data: `del:${encoded}` },
+                { text: `« Back to Food List`, callback_data: "menu_edit" }
+              ]
+            ]
+          };
+
+          await editTelegramMessageText(chatId, messageId, editMenuText, replyMarkup);
+        }
+      }
+      else if (action === "adj_f") {
+        const parts = data.split(":");
+        const encodedName = parts[1];
+        const field = parts[2];
+        const targetName = decodeURIComponent(encodedName);
+        await answerTelegramCallbackQuery(cbId, `Adjusting ${field}...`);
+
+        const logs = await getTodayFoodLogs(dateStr);
+        const entry = logs.find(l => 
+          (l.itemName || "").toLowerCase().includes(targetName.toLowerCase()) || 
+          targetName.toLowerCase().includes((l.itemName || "").toLowerCase())
+        ) || { itemName: targetName, protein: 0, carbs: 0, fats: 0, sugar: 0, calories: 0, quantity: 1 };
+
+        const currentVal = entry[field] !== undefined ? entry[field] : 0;
+        let presets = [];
+        let unit = "g";
+        let fieldLabel = field.toUpperCase();
+
+        if (field === "protein") {
+          unit = "g";
+          fieldLabel = "🥩 Protein";
+          presets = [
+            [{ text: "1.0g", val: "1.0" }, { text: "2.0g", val: "2.0" }, { text: "2.5g", val: "2.5" }, { text: "3.5g", val: "3.5" }],
+            [{ text: "5.0g", val: "5.0" }, { text: "10g", val: "10.0" }, { text: "15g", val: "15.0" }, { text: "20g", val: "20.0" }],
+            [{ text: "-5.0g", val: "-5.0" }, { text: "-2.0g", val: "-2.0" }, { text: "+2.0g", val: "+2.0" }, { text: "+5.0g", val: "+5.0" }]
+          ];
+        } else if (field === "sugar") {
+          unit = "g";
+          fieldLabel = "🍬 Sugar";
+          presets = [
+            [{ text: "0g", val: "0.0" }, { text: "2.0g", val: "2.0" }, { text: "4.0g", val: "4.0" }, { text: "6.0g", val: "6.0" }],
+            [{ text: "-5.0g", val: "-5.0" }, { text: "-2.0g", val: "-2.0" }, { text: "+2.0g", val: "+2.0" }, { text: "+5.0g", val: "+5.0" }]
+          ];
+        } else if (field === "carbs") {
+          unit = "g";
+          fieldLabel = "🍞 Carbs";
+          presets = [
+            [{ text: "10g", val: "10.0" }, { text: "20g", val: "20.0" }, { text: "30g", val: "30.0" }, { text: "45g", val: "45.0" }],
+            [{ text: "-10g", val: "-10.0" }, { text: "-5.0g", val: "-5.0" }, { text: "+5.0g", val: "+5.0" }, { text: "+10g", val: "+10.0" }]
+          ];
+        } else if (field === "fats") {
+          unit = "g";
+          fieldLabel = "🥑 Fats";
+          presets = [
+            [{ text: "2.0g", val: "2.0" }, { text: "4.0g", val: "4.0" }, { text: "8.0g", val: "8.0" }, { text: "12g", val: "12.0" }],
+            [{ text: "-4.0g", val: "-4.0" }, { text: "-2.0g", val: "-2.0" }, { text: "+2.0g", val: "+2.0" }, { text: "+4.0g", val: "+4.0" }]
+          ];
+        } else if (field === "calories") {
+          unit = "kcal";
+          fieldLabel = "🔥 Calories";
+          presets = [
+            [{ text: "100 kcal", val: "100" }, { text: "140 kcal", val: "140" }, { text: "200 kcal", val: "200" }, { text: "280 kcal", val: "280" }],
+            [{ text: "-100", val: "-100" }, { text: "-50", val: "-50" }, { text: "+50", val: "+50" }, { text: "+100", val: "+100" }]
+          ];
+        } else if (field === "quantity") {
+          unit = entry.servingUnit || "serving";
+          fieldLabel = "⚖️ Quantity";
+          presets = [
+            [{ text: "0.5", val: "0.5" }, { text: "1.0", val: "1.0" }, { text: "1.5", val: "1.5" }, { text: "2.0", val: "2.0" }],
+            [{ text: "-1", val: "-1" }, { text: "-0.5", val: "-0.5" }, { text: "+0.5", val: "+0.5" }, { text: "+1", val: "+1" }]
+          ];
+        }
+
+        const keyboard = presets.map(row => 
+          row.map(btn => ({
+            text: btn.text,
+            callback_data: `apply_adj:${encodedName}:${field}:${btn.val}`
+          }))
+        );
+
+        keyboard.push([
+          { text: `« Back to ${targetName.slice(0, 15)}`, callback_data: `pick_edit:${encodedName}` },
+          { text: "📋 Food List", callback_data: "menu_edit" }
+        ]);
+
+        const promptText = `${fieldLabel} Adjustment for <b>${entry.brand && entry.brand !== 'Whole Food' ? entry.brand + ' ' : ''}${entry.itemName}</b>\n\n` +
+          `• Current ${field}: <b>${currentVal} ${unit}</b>\n\n` +
+          `<i>Tap a quick preset button below to update:</i>\n\n` +
+          `💡 <i>Tip: You can also text <code>/set ${field} &lt;number&gt;</code> anytime (e.g. <code>/set ${field} 2.5</code>)!</i>`;
+
+        await editTelegramMessageText(chatId, messageId, promptText, { inline_keyboard: keyboard });
+      }
+      else if (action === "apply_adj") {
+        const parts = data.split(":");
+        const encodedName = parts[1];
+        const field = parts[2];
+        const rawVal = parts[3];
+        const targetName = decodeURIComponent(encodedName);
+        await answerTelegramCallbackQuery(cbId, `Saving adjustment...`);
+
+        const logs = await getTodayFoodLogs(dateStr);
+        const entry = logs.find(l => 
+          (l.itemName || "").toLowerCase().includes(targetName.toLowerCase()) || 
+          targetName.toLowerCase().includes((l.itemName || "").toLowerCase())
+        ) || { itemName: targetName };
+
+        const currentVal = entry[field] !== undefined ? Number(entry[field]) : 0;
+        let finalVal = parseFloat(rawVal);
+        if (rawVal.startsWith("-") || rawVal.startsWith("+")) {
+          finalVal = Math.max(0, Math.round((currentVal + parseFloat(rawVal)) * 10) / 10);
+        }
+
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sheet: "nutrition",
+            timestamp: new Date().toISOString(),
+            date: dateStr,
+            time: timeStr,
+            itemName: targetName,
+            brand: "",
+            quantity: field === 'quantity' ? finalVal : 0,
+            servingUnit: "",
+            calories: field === 'calories' ? finalVal : 0,
+            protein: field === 'protein' ? finalVal : 0,
+            carbs: field === 'carbs' ? finalVal : 0,
+            fats: field === 'fats' ? finalVal : 0,
+            fiber: field === 'fiber' ? finalVal : 0,
+            sugar: field === 'sugar' ? finalVal : 0,
+            rawMessage: `[UPDATE_ITEM: ${targetName} | {"${field}": ${finalVal}}]`
+          })
+        });
+
+        const replyMarkup = {
+          inline_keyboard: [
+            [
+              { text: `✏️ Adjust Another Macro for ${targetName.slice(0, 14)}`, callback_data: `pick_edit:${encodedName}` }
+            ],
+            [
+              { text: `📋 Select Another Food to Edit`, callback_data: "menu_edit" }
+            ]
+          ]
+        };
+
+        const successText = `✅ <b>Adjusted: ${entry.brand && entry.brand !== 'Whole Food' ? entry.brand + ' ' : ''}${targetName}</b>\n\n` +
+          `• <b>${field.toUpperCase()}:</b> <b>${finalVal}</b> (was ${currentVal})\n\n` +
+          `📈 <i>Your live fuel dashboard and breakdown pie charts have recalibrated!</i>\n` +
+          `👉 View Live: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
+
+        await editTelegramMessageText(chatId, messageId, successText, replyMarkup);
+      }
+      else if (action === "close_menu") {
+        await answerTelegramCallbackQuery(cbId, "Menu closed");
+        await editTelegramMessageText(chatId, messageId, `👌 Menu closed. Text <code>/today</code> or <code>/edit</code> anytime!`);
+      }
       else if (action === "del") {
         await answerTelegramCallbackQuery(cbId, "Deleting item...");
-        const target = colonIdx !== -1 ? data.slice(colonIdx + 1).trim() : "";
+        const target = colonIdx !== -1 ? decodeURIComponent(data.slice(colonIdx + 1).trim()) : "";
 
         await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
@@ -722,10 +1090,17 @@ export default async function handler(req, res) {
           })
         });
 
+        const replyMarkup = {
+          inline_keyboard: [
+            [{ text: `📋 Back to Food List`, callback_data: "menu_edit" }]
+          ]
+        };
+
         await editTelegramMessageText(
           chatId,
           messageId,
-          `🗑️ <b>Deleted:</b> <i>${target}</i>\n\nYour dashboard has been updated!\n👉 View: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`
+          `🗑️ <b>Deleted:</b> <i>${target}</i>\n\nYour dashboard has been updated!\n👉 View: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`,
+          replyMarkup
         );
       }
     } catch (err) {
@@ -1146,6 +1521,118 @@ export default async function handler(req, res) {
     return res.status(200).send("OK");
   }
 
+  // ── B.6. EDIT / ADJUST LOGGED FOOD COMMANDS ─────────────────────
+  if (text === "/edit" || text === "/modify" || text === "/adjust") {
+    const logs = await getTodayFoodLogs(dateStr);
+    if (logs.length === 0) {
+      await sendTelegramMessage(
+        chatId,
+        `✏️ <b>Edit Logged Food</b>\n\nNo food entries logged yet today (${dateStr})!\n\n💡 <i>Text any food (e.g. <code>2 boiled eggs</code> or <code>100g sweet potato</code>) to start logging fuel.</i>`,
+        messageId
+      );
+      return res.status(200).send("OK");
+    }
+
+    const buttons = logs.map((l, idx) => {
+      const name = l.brand && l.brand !== 'Whole Food' ? `${l.brand} ${l.itemName}` : l.itemName;
+      const label = `${idx + 1}. ${name.slice(0, 20)} (${l.protein}g P, ${l.calories} kcal)`;
+      return [{
+        text: label,
+        callback_data: `pick_edit:${encodeURIComponent(l.itemName)}`
+      }];
+    });
+
+    buttons.push([{ text: "❌ Close Menu", callback_data: "close_menu" }]);
+
+    await sendTelegramMessage(
+      chatId,
+      `✏️ <b>Select an entry from today to adjust or edit:</b>\n\n` +
+      `<i>Found ${logs.length} logged item${logs.length > 1 ? 's' : ''} for today (${dateStr}). Tap the food you want to modify:</i>`,
+      messageId,
+      { inline_keyboard: buttons }
+    );
+    return res.status(200).send("OK");
+  }
+
+  // Handle /set <field> <value> or /set <item> <field> <value>
+  if (text.startsWith("/set ") || text.startsWith("set ")) {
+    const cleanCmd = text.replace(/^\/?set\s+/i, '').trim();
+    const parts = cleanCmd.split(/\s+/);
+    let targetItem = "";
+    let field = "";
+    let val = null;
+
+    if (parts.length === 2) {
+      field = parts[0].toLowerCase();
+      val = parseFloat(parts[1]);
+    } else if (parts.length >= 3) {
+      val = parseFloat(parts[parts.length - 1]);
+      field = parts[parts.length - 2].toLowerCase();
+      targetItem = parts.slice(0, parts.length - 2).join(" ");
+    }
+
+    const fieldMap = {
+      p: "protein", protein: "protein",
+      c: "carbs", carb: "carbs", carbs: "carbs",
+      f: "fats", fat: "fats", fats: "fats",
+      cal: "calories", cals: "calories", calorie: "calories", calories: "calories",
+      s: "sugar", sug: "sugar", sugar: "sugar",
+      qty: "quantity", quantity: "quantity"
+    };
+
+    const validField = fieldMap[field];
+    if (validField && !isNaN(val)) {
+      const logs = await getTodayFoodLogs(dateStr);
+      let targetEntry = null;
+      if (targetItem) {
+        targetEntry = logs.find(l => (l.itemName || "").toLowerCase().includes(targetItem.toLowerCase()));
+      }
+      if (!targetEntry && logs.length > 0) {
+        targetEntry = logs[logs.length - 1];
+      }
+
+      if (targetEntry) {
+        const itemResolved = targetEntry.itemName;
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sheet: "nutrition",
+            timestamp: new Date().toISOString(),
+            date: dateStr,
+            time: timeStr,
+            itemName: itemResolved,
+            brand: "",
+            quantity: validField === 'quantity' ? val : 0,
+            servingUnit: "",
+            calories: validField === 'calories' ? val : 0,
+            protein: validField === 'protein' ? val : 0,
+            carbs: validField === 'carbs' ? val : 0,
+            fats: validField === 'fats' ? val : 0,
+            fiber: validField === 'fiber' ? val : 0,
+            sugar: validField === 'sugar' ? val : 0,
+            rawMessage: `[UPDATE_ITEM: ${itemResolved} | {"${validField}": ${val}}]`
+          })
+        });
+
+        const receipt = `✅ <b>Adjusted: ${itemResolved}</b>\n\n` +
+          `• <b>${validField.toUpperCase()}:</b> set to <b>${val}</b>\n\n` +
+          `📈 <i>Your live dashboard has updated!</i>\n` +
+          `👉 View: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
+
+        const replyMarkup = {
+          inline_keyboard: [
+            [{ text: `✏️ Adjust Another Macro`, callback_data: `pick_edit:${encodeURIComponent(itemResolved)}` }],
+            [{ text: `📋 Food List`, callback_data: "menu_edit" }]
+          ]
+        };
+
+        await sendTelegramMessage(chatId, receipt, messageId, replyMarkup);
+        return res.status(200).send("OK");
+      }
+    }
+  }
+
   // ── C. USER SENT FOOD TEXT: PROCESS VIA USDA / PANTRY ────────────
   try {
     // Check for explicit prefix shortcuts
@@ -1213,31 +1700,75 @@ export default async function handler(req, res) {
       return res.status(200).send("OK");
     }
 
-    // 2. Default: Seamless automatic logging to Today Fuel!
-    // Directly logs to Google Sheets without asking or requiring button clicks
-    await logFoodToDailySheet(compactPayload, dateStr, timeStr, queryText);
+    // 2. If user used explicit "/log" shortcut -> Log directly to today
+    if (explicitAction === "log") {
+      await logFoodToDailySheet(compactPayload, dateStr, timeStr, queryText);
 
-    const todayLogs = await getTodayNutritionLogs(dateStr);
-    const totalP = todayLogs.reduce((sum, r) => sum + (Number(r["Protein"] || r.protein) || 0), 0) + (compactPayload.protein || 0);
-    const totalCal = todayLogs.reduce((sum, r) => sum + (Number(r["Calories"] || r.calories) || 0), 0) + (compactPayload.calories || 0);
-    const pPct = Math.min(100, Math.round((totalP / DAILY_TARGETS.protein) * 100));
+      const todayLogs = await getTodayNutritionLogs(dateStr);
+      const totalP = todayLogs.reduce((sum, r) => sum + (Number(r["Protein"] || r.protein) || 0), 0) + (compactPayload.protein || 0);
+      const totalCal = todayLogs.reduce((sum, r) => sum + (Number(r["Calories"] || r.calories) || 0), 0) + (compactPayload.calories || 0);
+      const pPct = Math.min(100, Math.round((totalP / DAILY_TARGETS.protein) * 100));
+
+      let vitalsPreview = "";
+      if (vitalsList.length > 0) {
+        vitalsPreview = `💊 <b>Vitals:</b> <i>${vitalsSummary}</i>\n`;
+      }
+
+      const receipt = `⚡ <b>Logged: ${compactPayload.quantity} ${compactPayload.servingUnit} ${compactPayload.brand && compactPayload.brand !== 'Whole Food' ? compactPayload.brand + ' ' : ''}${compactPayload.itemName}</b>\n\n` +
+        `• 🥩 +<b>${compactPayload.protein}g</b> Protein • 🍞 +${compactPayload.carbs}g Carbs\n` +
+        `• 🥑 +${compactPayload.fats}g Fat • 🍬 +${compactPayload.sugar}g Sugar • 🌾 +${compactPayload.fiber}g Fiber\n` +
+        `• 🔥 +<b>${compactPayload.calories}</b> kcal\n` +
+        vitalsPreview +
+        `━━━━━━━━━━━━━━━━━━━\n` +
+        `📈 <b>Today's Fuel:</b> <b>${Math.round(totalP)}g</b> / ${DAILY_TARGETS.protein}g Protein (${pPct}%)\n` +
+        `🔥 <b>Total Calories:</b> ${Math.round(totalCal)} / ${DAILY_TARGETS.calories} kcal\n\n` +
+        `👉 View on site: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
+
+      const replyMarkup = {
+        inline_keyboard: [
+          [
+            { text: `✏️ Adjust Macros / Portions`, callback_data: `pick_edit:${encodeURIComponent(compactPayload.itemName)}` },
+            { text: `🗑️ Delete`, callback_data: `del:${encodeURIComponent(compactPayload.itemName)}` }
+          ]
+        ]
+      };
+
+      await sendTelegramMessage(chatId, receipt, messageId, replyMarkup);
+      return res.status(200).send("OK");
+    }
+
+    // 3. DEFAULT: Interactive Choice Menu with Log Food, Save to Pantry, Edit Already Logged Food
+    const payloadBase64 = Buffer.from(JSON.stringify(compactPayload)).toString("base64");
 
     let vitalsPreview = "";
     if (vitalsList.length > 0) {
       vitalsPreview = `💊 <b>Vitals:</b> <i>${vitalsSummary}</i>\n`;
     }
 
-    const receipt = `⚡ <b>Logged: ${compactPayload.quantity} ${compactPayload.servingUnit} ${compactPayload.brand && compactPayload.brand !== 'Whole Food' ? compactPayload.brand + ' ' : ''}${compactPayload.itemName}</b>\n\n` +
-      `• 🥩 +<b>${compactPayload.protein}g</b> Protein • 🍞 +${compactPayload.carbs}g Carbs\n` +
-      `• 🥑 +${compactPayload.fats}g Fat • 🍬 +${compactPayload.sugar}g Sugar • 🌾 +${compactPayload.fiber}g Fiber\n` +
-      `• 🔥 +<b>${compactPayload.calories}</b> kcal\n` +
+    const previewMsg = `🍽️ <b>Nutrition Analysis:</b>\n` +
+      `<b>${compactPayload.quantity} ${compactPayload.servingUnit} ${compactPayload.brand && compactPayload.brand !== 'Whole Food' ? compactPayload.brand + ' ' : ''}${compactPayload.itemName}</b>\n\n` +
+      `• 🥩 <b>Protein:</b> <b>${compactPayload.protein}g</b> • 🍞 <b>Carbs:</b> ${compactPayload.carbs}g\n` +
+      `• 🥑 <b>Fats:</b> ${compactPayload.fats}g • 🍬 <b>Sugar:</b> ${compactPayload.sugar}g • 🌾 <b>Fiber:</b> ${compactPayload.fiber}g\n` +
+      `• 🔥 <b>Calories:</b> <b>${compactPayload.calories} kcal</b>\n` +
       vitalsPreview +
       `━━━━━━━━━━━━━━━━━━━\n` +
-      `📈 <b>Today's Fuel:</b> <b>${Math.round(totalP)}g</b> / ${DAILY_TARGETS.protein}g Protein (${pPct}%)\n` +
-      `🔥 <b>Total Calories:</b> ${Math.round(totalCal)} / ${DAILY_TARGETS.calories} kcal\n\n` +
-      `👉 View on site: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
+      `<i>What would you like to do with this food?</i>`;
 
-    await sendTelegramMessage(chatId, receipt, messageId);
+    const replyMarkup = {
+      inline_keyboard: [
+        [
+          { text: "⚡ Log to Today's Fuel", callback_data: `log:${payloadBase64}` }
+        ],
+        [
+          { text: "📦 Save to Pantry Database", callback_data: `pantry:${payloadBase64}` }
+        ],
+        [
+          { text: "✏️ Edit Already Logged Food", callback_data: "menu_edit" }
+        ]
+      ]
+    };
+
+    await sendTelegramMessage(chatId, previewMsg, messageId, replyMarkup);
     return res.status(200).send("OK");
 
   } catch (err) {

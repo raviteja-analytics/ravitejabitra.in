@@ -1082,6 +1082,200 @@
       filter: brightness(1.22) drop-shadow(0 0 8px currentColor);
       transform: scale(1.04);
     }
+
+    .btn-adjust-fuel {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #38bdf8;
+      font-size: 0.74rem;
+      font-weight: 800;
+      padding: 5px 11px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+    .btn-adjust-fuel:hover {
+      background: rgba(56, 189, 248, 0.25);
+      border-color: #38bdf8;
+      transform: translateY(-1px);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+    }
+
+    /* Adjust Food Modal */
+    .fuel-modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(7, 11, 22, 0.85);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+      animation: modalFadeIn 0.2s ease;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .fuel-modal-dialog {
+      background: #0f172a;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 30px rgba(56, 189, 248, 0.2);
+      overflow: hidden;
+      transform: translateY(0);
+      animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalSlideUp {
+      from { transform: translateY(16px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .fuel-modal-header {
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(30, 41, 59, 0.45);
+    }
+    .modal-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: color 0.15s ease;
+    }
+    .modal-close-btn:hover { color: #ffffff; }
+    .fuel-modal-body {
+      padding: 22px 24px;
+    }
+    .modal-label {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+      display: block;
+      color: var(--muted);
+    }
+    .modal-input {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      padding: 9px 13px;
+      color: #ffffff;
+      font-size: 0.95rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      outline: none;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+    .modal-input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+    }
+    .macro-input-group {
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 10px 14px;
+    }
+    .macro-quick-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .macro-quick-btn:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: #38bdf8;
+      color: #38bdf8;
+    }
+    .modal-pill-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text);
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .modal-pill-btn:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: #38bdf8;
+      color: #ffffff;
+    }
+    .btn-modal-save {
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 0.85rem;
+      padding: 10px 22px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 16px rgba(2, 132, 199, 0.4);
+      transition: all 0.2s ease;
+    }
+    .btn-modal-save:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(56, 189, 248, 0.5);
+    }
+    .btn-modal-cancel {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 10px 18px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-modal-cancel:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .btn-modal-delete {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #f87171;
+      font-weight: 700;
+      font-size: 0.82rem;
+      padding: 10px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-modal-delete:hover {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: #ef4444;
+      color: #ffffff;
+    }
   </style>
 </head>
 <body>
@@ -1779,6 +1973,134 @@
       </div>
     </div>
     <!-- ── END VIEW 3: NUTRIENT SOURCE PIE CHART BREAKDOWN ──────────── -->
+
+    <!-- ── ADJUST FOOD MODAL ──────────────────────────────────────── -->
+    <div id="adjustFoodModal" class="fuel-modal-backdrop" style="display: none;">
+      <div class="fuel-modal-dialog">
+        <!-- Header -->
+        <div class="fuel-modal-header">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.4rem;">✏️</span>
+            <div>
+              <h3 id="adjModalTitle" style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #ffffff;">Adjust Fuel Entry</h3>
+              <span id="adjModalSub" style="font-size: 0.74rem; color: var(--muted); font-family: var(--font-mono);">Modify quantity or override macros directly</span>
+            </div>
+          </div>
+          <button class="modal-close-btn" onclick="closeAdjustModal()">✕</button>
+        </div>
+
+        <!-- Body with inputs -->
+        <div class="fuel-modal-body">
+          <!-- Quantity & Serving Row -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+            <div>
+              <label class="modal-label">Portion / Quantity</label>
+              <input type="number" id="adjModalQty" class="modal-input" step="0.1" min="0" oninput="onModalQuantityInput()">
+            </div>
+            <div>
+              <label class="modal-label">Serving Unit</label>
+              <input type="text" id="adjModalUnit" class="modal-input">
+            </div>
+          </div>
+
+          <!-- Quick Quantity Scalers -->
+          <div style="display: flex; gap: 8px; margin-bottom: 18px; align-items: center; flex-wrap: wrap;">
+            <span style="font-size: 0.72rem; color: var(--muted); font-weight: 700;">Scale Portion:</span>
+            <button type="button" class="modal-pill-btn" onclick="scaleFoodPortion(0.5)">0.5x</button>
+            <button type="button" class="modal-pill-btn" onclick="scaleFoodPortion(1.0)">1.0x (Reset)</button>
+            <button type="button" class="modal-pill-btn" onclick="scaleFoodPortion(1.5)">1.5x</button>
+            <button type="button" class="modal-pill-btn" onclick="scaleFoodPortion(2.0)">2.0x</button>
+          </div>
+
+          <!-- Macros Grid: Protein, Carbs, Fats, Sugar -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+            <!-- Protein -->
+            <div class="macro-input-group" style="border-left: 3px solid #38bdf8;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label class="modal-label" style="color: #38bdf8;">🥩 Protein (g)</label>
+                <div style="display: flex; gap: 4px;">
+                  <button type="button" class="macro-quick-btn" onclick="nudgeMacro('adjModalProtein', -5)">-5g</button>
+                  <button type="button" class="macro-quick-btn" onclick="nudgeMacro('adjModalProtein', -2)">-2g</button>
+                  <button type="button" class="macro-quick-btn" onclick="nudgeMacro('adjModalProtein', +2)">+2g</button>
+                </div>
+              </div>
+              <input type="number" id="adjModalProtein" class="modal-input" step="0.1" min="0">
+            </div>
+
+            <!-- Carbs -->
+            <div class="macro-input-group" style="border-left: 3px solid #fbbf24;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label class="modal-label" style="color: #fbbf24;">🍞 Carbs (g)</label>
+                <div style="display: flex; gap: 4px;">
+                  <button type="button" class="macro-quick-btn" onclick="nudgeMacro('adjModalCarbs', -5)">-5g</button>
+                  <button type="button" class="macro-quick-btn" onclick="nudgeMacro('adjModalCarbs', +5)">+5g</button>
+                </div>
+              </div>
+              <input type="number" id="adjModalCarbs" class="modal-input" step="0.1" min="0">
+            </div>
+
+            <!-- Fats -->
+            <div class="macro-input-group" style="border-left: 3px solid #f87171;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label class="modal-label" style="color: #f87171;">🥑 Fats (g)</label>
+                <div style="display: flex; gap: 4px;">
+                  <button type="button" class="macro-quick-btn" onclick="nudgeMacro('adjModalFats', -2)">-2g</button>
+                  <button type="button" class="macro-quick-btn" onclick="nudgeMacro('adjModalFats', +2)">+2g</button>
+                </div>
+              </div>
+              <input type="number" id="adjModalFats" class="modal-input" step="0.1" min="0">
+            </div>
+
+            <!-- Sugar -->
+            <div class="macro-input-group" style="border-left: 3px solid #f472b6;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label class="modal-label" style="color: #f472b6;">🍬 Sugar (g)</label>
+                <div style="display: flex; gap: 4px;">
+                  <button type="button" class="macro-quick-btn" onclick="setMacroDirect('adjModalSugar', 2)">2g</button>
+                  <button type="button" class="macro-quick-btn" onclick="nudgeMacro('adjModalSugar', -3)">-3g</button>
+                  <button type="button" class="macro-quick-btn" onclick="nudgeMacro('adjModalSugar', +2)">+2g</button>
+                </div>
+              </div>
+              <input type="number" id="adjModalSugar" class="modal-input" step="0.1" min="0">
+            </div>
+          </div>
+
+          <!-- Calories & Fiber -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+            <div class="macro-input-group" style="border-left: 3px solid #34d399;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label class="modal-label" style="color: #34d399;">🔥 Calories (kcal)</label>
+                <div style="display: flex; gap: 4px;">
+                  <button type="button" class="macro-quick-btn" onclick="nudgeMacro('adjModalCalories', -50)">-50</button>
+                  <button type="button" class="macro-quick-btn" onclick="nudgeMacro('adjModalCalories', +50)">+50</button>
+                </div>
+              </div>
+              <input type="number" id="adjModalCalories" class="modal-input" step="1" min="0">
+            </div>
+            <div class="macro-input-group" style="border-left: 3px solid #a78bfa;">
+              <label class="modal-label" style="color: #a78bfa;">🌾 Fiber (g)</label>
+              <input type="number" id="adjModalFiber" class="modal-input" step="0.1" min="0">
+            </div>
+          </div>
+
+          <!-- Status Banner -->
+          <div id="adjModalStatus" style="display: none; padding: 10px 14px; border-radius: 10px; font-size: 0.82rem; margin-bottom: 16px; font-weight: 700; text-align: center;"></div>
+
+          <!-- Action Buttons Footer -->
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <button type="button" class="btn-modal-delete" onclick="deleteCurrentFoodEntry()">
+              <span>🗑️ Delete Entry</span>
+            </button>
+            <div style="display: flex; gap: 10px;">
+              <button type="button" class="btn-modal-cancel" onclick="closeAdjustModal()">Cancel</button>
+              <button type="button" id="btnSaveAdjustment" class="btn-modal-save" onclick="saveFoodAdjustment()">
+                <span>💾 Save Adjustment</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Bottom Telegram Banner -->
     <div class="bot-sync-footer-card">
@@ -2692,10 +3014,13 @@
         }
       });
 
+      // Save breakdown items for interactive modal
+      window._breakdownItems = items;
+
       // Render Leaderboard items
       document.getElementById('bdSourcesList').innerHTML = items.map((it, idx) => `
         <div class="bd-source-item" id="bd_row_${idx}" onmouseenter="highlightNutrientItem(${idx}, true)" onmouseleave="highlightNutrientItem(${idx}, false)">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 10px;">
               <span style="font-family: var(--font-mono); font-size: 0.76rem; font-weight: 800; color: var(--muted); width: 22px;">#${idx + 1}</span>
               <div style="width: 12px; height: 12px; border-radius: 4px; background: ${it.color}; box-shadow: 0 0 8px ${it.color};"></div>
@@ -2706,13 +3031,20 @@
                 </div>
               </div>
             </div>
-            <div style="text-align: right;">
-              <div style="font-weight: 800; font-family: var(--font-mono); font-size: 1.05rem; color: #ffffff;">
-                ${it.amount.toLocaleString()} <span style="font-size: 0.78rem; color: var(--muted);">${cfg.unit}</span>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="text-align: right;">
+                <div style="font-weight: 800; font-family: var(--font-mono); font-size: 1.05rem; color: #ffffff;">
+                  ${it.amount.toLocaleString()} <span style="font-size: 0.78rem; color: var(--muted);">${cfg.unit}</span>
+                </div>
+                <div style="font-size: 0.76rem; font-weight: 700; font-family: var(--font-mono); color: ${it.color};">
+                  ${it.pct}%
+                </div>
               </div>
-              <div style="font-size: 0.76rem; font-weight: 700; font-family: var(--font-mono); color: ${it.color};">
-                ${it.pct}%
-              </div>
+              ${it.sampleLog ? `
+                <button type="button" class="btn-adjust-fuel" onclick="openAdjustModal(${idx})" title="Adjust quantity or macros for ${escapeHtml(it.title)}">
+                  <span>✏️ Adjust</span>
+                </button>
+              ` : ''}
             </div>
           </div>
 
@@ -2721,6 +3053,234 @@
           </div>
         </div>
       `).join('');
+    }
+
+    // ── FOOD ADJUSTMENT & RECALIBRATION ENGINE ─────────────────────────
+    window._editingItem = null;
+    window._editingBaseline = null;
+
+    function openAdjustModal(itemIdx) {
+      const items = window._breakdownItems || [];
+      const item = items[itemIdx];
+      if (!item || !item.sampleLog) return;
+
+      const log = item.sampleLog;
+      window._editingItem = log;
+      window._editingBaseline = {
+        quantity: log.quantity || 1,
+        protein: log.protein || 0,
+        carbs: log.carbs || 0,
+        fats: log.fats || 0,
+        sugar: log.sugar || 0,
+        fiber: log.fiber || 0,
+        calories: log.calories || 0,
+        servingUnit: log.servingUnit || "serving"
+      };
+
+      const title = (log.brand && log.brand !== 'Whole Food' ? log.brand + ' ' : '') + (log.itemName || 'Meal');
+      document.getElementById('adjModalTitle').innerText = `Adjust: ${title}`;
+      document.getElementById('adjModalSub').innerText = `Override specific macros or scale portion size for this entry`;
+
+      document.getElementById('adjModalQty').value = log.quantity || 1;
+      document.getElementById('adjModalUnit').value = log.servingUnit || "serving";
+      document.getElementById('adjModalProtein').value = log.protein || 0;
+      document.getElementById('adjModalCarbs').value = log.carbs || 0;
+      document.getElementById('adjModalFats').value = log.fats || 0;
+      document.getElementById('adjModalSugar').value = log.sugar || 0;
+      document.getElementById('adjModalFiber').value = log.fiber || 0;
+      document.getElementById('adjModalCalories').value = log.calories || 0;
+
+      const statusEl = document.getElementById('adjModalStatus');
+      statusEl.style.display = 'none';
+
+      document.getElementById('adjustFoodModal').style.display = 'flex';
+    }
+
+    function closeAdjustModal() {
+      document.getElementById('adjustFoodModal').style.display = 'none';
+      window._editingItem = null;
+      window._editingBaseline = null;
+    }
+
+    function nudgeMacro(inputId, delta) {
+      const el = document.getElementById(inputId);
+      if (!el) return;
+      let val = parseFloat(el.value) || 0;
+      val = Math.max(0, Math.round((val + delta) * 10) / 10);
+      el.value = val;
+    }
+
+    function setMacroDirect(inputId, val) {
+      const el = document.getElementById(inputId);
+      if (!el) return;
+      el.value = val;
+    }
+
+    function scaleFoodPortion(multiplier) {
+      if (!window._editingBaseline) return;
+      const base = window._editingBaseline;
+      const baseQty = base.quantity || 1;
+      const newQty = Math.round((baseQty * multiplier) * 10) / 10;
+
+      document.getElementById('adjModalQty').value = newQty;
+      document.getElementById('adjModalProtein').value = Math.max(0, Math.round((base.protein * multiplier) * 10) / 10);
+      document.getElementById('adjModalCarbs').value = Math.max(0, Math.round((base.carbs * multiplier) * 10) / 10);
+      document.getElementById('adjModalFats').value = Math.max(0, Math.round((base.fats * multiplier) * 10) / 10);
+      document.getElementById('adjModalSugar').value = Math.max(0, Math.round((base.sugar * multiplier) * 10) / 10);
+      document.getElementById('adjModalFiber').value = Math.max(0, Math.round((base.fiber * multiplier) * 10) / 10);
+      document.getElementById('adjModalCalories').value = Math.max(0, Math.round(base.calories * multiplier));
+    }
+
+    function onModalQuantityInput() {
+      if (!window._editingBaseline) return;
+      const currentQty = parseFloat(document.getElementById('adjModalQty').value);
+      const baseQty = window._editingBaseline.quantity || 1;
+      if (!isNaN(currentQty) && currentQty > 0 && baseQty > 0) {
+        const ratio = currentQty / baseQty;
+        scaleFoodPortion(ratio);
+      }
+    }
+
+    async function saveFoodAdjustment() {
+      if (!window._editingItem) return;
+      const saveBtn = document.getElementById('btnSaveAdjustment');
+      const statusEl = document.getElementById('adjModalStatus');
+
+      const target = window._editingItem.itemName;
+      const patch = {
+        quantity: parseFloat(document.getElementById('adjModalQty').value) || 1,
+        servingUnit: document.getElementById('adjModalUnit').value.trim() || "serving",
+        protein: Math.max(0, parseFloat(document.getElementById('adjModalProtein').value) || 0),
+        carbs: Math.max(0, parseFloat(document.getElementById('adjModalCarbs').value) || 0),
+        fats: Math.max(0, parseFloat(document.getElementById('adjModalFats').value) || 0),
+        sugar: Math.max(0, parseFloat(document.getElementById('adjModalSugar').value) || 0),
+        fiber: Math.max(0, parseFloat(document.getElementById('adjModalFiber').value) || 0),
+        calories: Math.max(0, Math.round(parseFloat(document.getElementById('adjModalCalories').value) || 0))
+      };
+
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = `<span>⏳ Saving...</span>`;
+      statusEl.style.display = 'block';
+      statusEl.style.background = 'rgba(56, 189, 248, 0.12)';
+      statusEl.style.color = '#38bdf8';
+      statusEl.innerText = `Saving adjustment for ${target}...`;
+
+      try {
+        await fetch('/api/nutrition-data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'update',
+            target: target,
+            patch: patch
+          })
+        });
+
+        // Update local state in window._latestNutritionData
+        if (window._latestNutritionData && Array.isArray(window._latestNutritionData.todayLogs)) {
+          const logItem = window._latestNutritionData.todayLogs.find(l => 
+            (l.itemName || "").toLowerCase().includes(target.toLowerCase()) || 
+            target.toLowerCase().includes((l.itemName || "").toLowerCase())
+          );
+          if (logItem) {
+            Object.assign(logItem, patch);
+          }
+
+          // Recalculate today totals
+          const logs = window._latestNutritionData.todayLogs;
+          window._latestNutritionData.todayTotals = {
+            protein: Math.round(logs.reduce((s, l) => s + (l.protein || 0), 0) * 10) / 10,
+            carbs: Math.round(logs.reduce((s, l) => s + (l.carbs || 0), 0) * 10) / 10,
+            fats: Math.round(logs.reduce((s, l) => s + (l.fats || 0), 0) * 10) / 10,
+            sugar: Math.round(logs.reduce((s, l) => s + (l.sugar || 0), 0) * 10) / 10,
+            fiber: Math.round(logs.reduce((s, l) => s + (l.fiber || 0), 0) * 10) / 10,
+            calories: Math.round(logs.reduce((s, l) => s + (l.calories || 0), 0))
+          };
+
+          // Re-render hero cards, breakdown view, and timeline
+          renderDailyHeroMacros(window._latestNutritionData);
+          if (window._activeNutrientKey) {
+            renderNutrientBreakdown(window._activeNutrientKey);
+          }
+          if (typeof renderFoodTimeline === 'function') {
+            renderFoodTimeline(window._latestNutritionData.todayLogs);
+          }
+        }
+
+        statusEl.style.background = 'rgba(52, 211, 153, 0.15)';
+        statusEl.style.color = '#34d399';
+        statusEl.innerText = `✅ Successfully adjusted ${target}!`;
+
+        setTimeout(() => {
+          closeAdjustModal();
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = `<span>💾 Save Adjustment</span>`;
+        }, 600);
+
+      } catch (err) {
+        console.error("Failed to save food adjustment:", err);
+        statusEl.style.background = 'rgba(239, 68, 68, 0.15)';
+        statusEl.style.color = '#f87171';
+        statusEl.innerText = `⚠️ Failed to save: ${err.message}`;
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = `<span>💾 Save Adjustment</span>`;
+      }
+    }
+
+    async function deleteCurrentFoodEntry() {
+      if (!window._editingItem) return;
+      const target = window._editingItem.itemName;
+      if (!confirm(`Are you sure you want to delete "${target}" from today's fuel?`)) return;
+
+      const statusEl = document.getElementById('adjModalStatus');
+      statusEl.style.display = 'block';
+      statusEl.style.background = 'rgba(239, 68, 68, 0.15)';
+      statusEl.style.color = '#f87171';
+      statusEl.innerText = `Deleting "${target}"...`;
+
+      try {
+        await fetch('/api/nutrition-data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'delete',
+            target: target
+          })
+        });
+
+        if (window._latestNutritionData && Array.isArray(window._latestNutritionData.todayLogs)) {
+          const idx = window._latestNutritionData.todayLogs.findIndex(l => 
+            (l.itemName || "").toLowerCase().includes(target.toLowerCase()) || 
+            target.toLowerCase().includes((l.itemName || "").toLowerCase())
+          );
+          if (idx !== -1) {
+            window._latestNutritionData.todayLogs.splice(idx, 1);
+          }
+
+          const logs = window._latestNutritionData.todayLogs;
+          window._latestNutritionData.todayTotals = {
+            protein: Math.round(logs.reduce((s, l) => s + (l.protein || 0), 0) * 10) / 10,
+            carbs: Math.round(logs.reduce((s, l) => s + (l.carbs || 0), 0) * 10) / 10,
+            fats: Math.round(logs.reduce((s, l) => s + (l.fats || 0), 0) * 10) / 10,
+            sugar: Math.round(logs.reduce((s, l) => s + (l.sugar || 0), 0) * 10) / 10,
+            fiber: Math.round(logs.reduce((s, l) => s + (l.fiber || 0), 0) * 10) / 10,
+            calories: Math.round(logs.reduce((s, l) => s + (l.calories || 0), 0))
+          };
+
+          renderDailyHeroMacros(window._latestNutritionData);
+          if (window._activeNutrientKey) {
+            renderNutrientBreakdown(window._activeNutrientKey);
+          }
+          if (typeof renderFoodTimeline === 'function') {
+            renderFoodTimeline(window._latestNutritionData.todayLogs);
+          }
+        }
+
+        closeAdjustModal();
+      } catch (err) {
+        console.error("Failed to delete food entry:", err);
+        statusEl.innerText = `⚠️ Failed to delete: ${err.message}`;
+      }
     }
 
     function highlightNutrientItem(idx, active) {

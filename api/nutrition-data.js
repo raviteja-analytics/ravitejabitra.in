@@ -310,6 +310,73 @@ function extractNutrientValue(vitalsStr, pattern, multiplier = 1) {
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  // Handle food updates / deletes from the web interface
+  if (req.method === "POST") {
+    try {
+      const body = req.body || {};
+      const action = body.action || "update";
+      const target = (body.target || "").trim();
+      const patch = body.patch || {};
+
+      if (!target) {
+        return res.status(400).json({ error: "Target item name is required" });
+      }
+
+      // Compute IST Date and Time
+      const istOffsetMs = 5.5 * 60 * 60 * 1000;
+      const nowIST = new Date(new Date().getTime() + (new Date().getTimezoneOffset() * 60000) + istOffsetMs);
+      const yyyy = nowIST.getFullYear();
+      const mm = String(nowIST.getMonth() + 1).padStart(2, '0');
+      const dd = String(nowIST.getDate()).padStart(2, '0');
+      const todayStr = `${yyyy}-${mm}-${dd}`;
+      let hours = nowIST.getHours();
+      const minutes = String(nowIST.getMinutes()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      const timeStr = `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+
+      let rawMsg = "";
+      if (action === "delete") {
+        rawMsg = `[DELETE_ITEM: ${target}]`;
+      } else {
+        rawMsg = `[UPDATE_ITEM: ${target} | ${JSON.stringify(patch)}]`;
+      }
+
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sheet: "nutrition",
+          timestamp: new Date().toISOString(),
+          date: todayStr,
+          time: timeStr,
+          itemName: target,
+          brand: "",
+          quantity: patch.quantity || 0,
+          servingUnit: patch.servingUnit || "",
+          calories: patch.calories || 0,
+          protein: patch.protein || 0,
+          carbs: patch.carbs || 0,
+          fats: patch.fats || 0,
+          fiber: patch.fiber || 0,
+          sugar: patch.sugar || 0,
+          rawMessage: rawMsg
+        })
+      });
+
+      return res.status(200).json({ success: true, action, target, patch });
+    } catch (e) {
+      console.error("POST /api/nutrition-data error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  }
 
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -391,6 +458,34 @@ export default async function handler(req, res) {
               parsedLogs.splice(k, 1);
               break;
             }
+          }
+          continue;
+        }
+
+        const updateMatch = rawMsg.match(/\[UPDATE_ITEM:\s*([^|]+)\s*\|\s*(\{.*?\})\]/i);
+        if (updateMatch) {
+          const target = updateMatch[1].toLowerCase().trim();
+          try {
+            const patch = JSON.parse(updateMatch[2]);
+            for (let k = parsedLogs.length - 1; k >= 0; k--) {
+              const entry = parsedLogs[k];
+              const name = (entry.itemName || "").toLowerCase();
+              const brand = (entry.brand || "").toLowerCase();
+              const raw = (entry.rawMessage || "").toLowerCase();
+              if (name.includes(target) || brand.includes(target) || raw.includes(target) || target.includes(name)) {
+                if (patch.quantity !== undefined && !isNaN(Number(patch.quantity))) entry.quantity = Number(patch.quantity);
+                if (patch.protein !== undefined && !isNaN(Number(patch.protein))) entry.protein = Math.round(Number(patch.protein) * 10) / 10;
+                if (patch.carbs !== undefined && !isNaN(Number(patch.carbs))) entry.carbs = Math.round(Number(patch.carbs) * 10) / 10;
+                if (patch.fats !== undefined && !isNaN(Number(patch.fats))) entry.fats = Math.round(Number(patch.fats) * 10) / 10;
+                if (patch.sugar !== undefined && !isNaN(Number(patch.sugar))) entry.sugar = Math.round(Number(patch.sugar) * 10) / 10;
+                if (patch.fiber !== undefined && !isNaN(Number(patch.fiber))) entry.fiber = Math.round(Number(patch.fiber) * 10) / 10;
+                if (patch.calories !== undefined && !isNaN(Number(patch.calories))) entry.calories = Math.round(Number(patch.calories));
+                if (patch.servingUnit !== undefined) entry.servingUnit = String(patch.servingUnit);
+                break;
+              }
+            }
+          } catch (e) {
+            console.error("Failed to parse UPDATE_ITEM patch:", e);
           }
           continue;
         }
