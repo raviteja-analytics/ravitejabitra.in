@@ -2024,7 +2024,7 @@
                   <button type="button" class="macro-quick-btn" onclick="nudgeMacro('adjModalProtein', +2)">+2g</button>
                 </div>
               </div>
-              <input type="number" id="adjModalProtein" class="modal-input" step="0.1" min="0">
+              <input type="number" id="adjModalProtein" class="modal-input" step="0.1" min="0" oninput="recalculateModalCalories()">
             </div>
 
             <!-- Carbs -->
@@ -2036,7 +2036,7 @@
                   <button type="button" class="macro-quick-btn" onclick="nudgeMacro('adjModalCarbs', +5)">+5g</button>
                 </div>
               </div>
-              <input type="number" id="adjModalCarbs" class="modal-input" step="0.1" min="0">
+              <input type="number" id="adjModalCarbs" class="modal-input" step="0.1" min="0" oninput="recalculateModalCalories()">
             </div>
 
             <!-- Fats -->
@@ -2048,7 +2048,7 @@
                   <button type="button" class="macro-quick-btn" onclick="nudgeMacro('adjModalFats', +2)">+2g</button>
                 </div>
               </div>
-              <input type="number" id="adjModalFats" class="modal-input" step="0.1" min="0">
+              <input type="number" id="adjModalFats" class="modal-input" step="0.1" min="0" oninput="recalculateModalCalories()">
             </div>
 
             <!-- Sugar -->
@@ -2071,6 +2071,7 @@
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                 <label class="modal-label" style="color: #34d399;">🔥 Calories (kcal)</label>
                 <div style="display: flex; gap: 4px;">
+                  <button type="button" class="macro-quick-btn" onclick="recalculateModalCalories()" title="Auto-compute: (P×4 + C×4 + F×9)">⚡ Auto</button>
                   <button type="button" class="macro-quick-btn" onclick="nudgeMacro('adjModalCalories', -50)">-50</button>
                   <button type="button" class="macro-quick-btn" onclick="nudgeMacro('adjModalCalories', +50)">+50</button>
                 </div>
@@ -3102,18 +3103,35 @@
       window._editingBaseline = null;
     }
 
+    function recalculateModalCalories() {
+      const p = parseFloat(document.getElementById('adjModalProtein')?.value) || 0;
+      const c = parseFloat(document.getElementById('adjModalCarbs')?.value) || 0;
+      const f = parseFloat(document.getElementById('adjModalFats')?.value) || 0;
+      const computed = Math.round((p * 4) + (c * 4) + (f * 9));
+      const calEl = document.getElementById('adjModalCalories');
+      if (calEl) {
+        calEl.value = Math.max(0, computed);
+      }
+    }
+
     function nudgeMacro(inputId, delta) {
       const el = document.getElementById(inputId);
       if (!el) return;
       let val = parseFloat(el.value) || 0;
       val = Math.max(0, Math.round((val + delta) * 10) / 10);
       el.value = val;
+      if (inputId === 'adjModalProtein' || inputId === 'adjModalCarbs' || inputId === 'adjModalFats') {
+        recalculateModalCalories();
+      }
     }
 
     function setMacroDirect(inputId, val) {
       const el = document.getElementById(inputId);
       if (!el) return;
       el.value = val;
+      if (inputId === 'adjModalProtein' || inputId === 'adjModalCarbs' || inputId === 'adjModalFats') {
+        recalculateModalCalories();
+      }
     }
 
     function scaleFoodPortion(multiplier) {
@@ -3128,7 +3146,7 @@
       document.getElementById('adjModalFats').value = Math.max(0, Math.round((base.fats * multiplier) * 10) / 10);
       document.getElementById('adjModalSugar').value = Math.max(0, Math.round((base.sugar * multiplier) * 10) / 10);
       document.getElementById('adjModalFiber').value = Math.max(0, Math.round((base.fiber * multiplier) * 10) / 10);
-      document.getElementById('adjModalCalories').value = Math.max(0, Math.round(base.calories * multiplier));
+      recalculateModalCalories();
     }
 
     function onModalQuantityInput() {
@@ -3138,6 +3156,86 @@
       if (!isNaN(currentQty) && currentQty > 0 && baseQty > 0) {
         const ratio = currentQty / baseQty;
         scaleFoodPortion(ratio);
+      }
+    }
+
+    function renderDailyHeroMacros(data) {
+      if (!data) return;
+      const targets = data.targets || { protein: 150, carbs: 380, fats: 70, fiber: 38, sugar: 35, calories: 2800 };
+      const totals = data.todayTotals || { protein: 0, carbs: 0, fats: 0, fiber: 0, sugar: 0, calories: 0 };
+
+      const pPct = Math.round((totals.protein / targets.protein) * 100);
+      const cPct = Math.round((totals.carbs / targets.carbs) * 100);
+      const fPct = Math.round((totals.fats / targets.fats) * 100);
+      const fibPct = Math.round((totals.fiber / (targets.fiber || 38)) * 100);
+      const sPct = Math.round((totals.sugar / (targets.sugar || 35)) * 100);
+      const calPct = Math.round((totals.calories / targets.calories) * 100);
+
+      setRingProgress('ringProtein', pPct);
+      setRingProgress('ringCarbs', cPct);
+      setRingProgress('ringFats', fPct);
+      setRingProgress('ringFiber', fibPct);
+      setRingProgress('ringSugar', sPct);
+      setRingProgress('ringCalories', calPct);
+
+      if (document.getElementById('pctProtein')) document.getElementById('pctProtein').innerText = `${pPct}%`;
+      if (document.getElementById('valProtein')) document.getElementById('valProtein').innerText = `${totals.protein} / ${targets.protein}g`;
+
+      if (document.getElementById('pctCarbs')) document.getElementById('pctCarbs').innerText = `${cPct}%`;
+      if (document.getElementById('valCarbs')) document.getElementById('valCarbs').innerText = `${totals.carbs} / ${targets.carbs}g`;
+
+      if (document.getElementById('pctFats')) document.getElementById('pctFats').innerText = `${fPct}%`;
+      if (document.getElementById('valFats')) document.getElementById('valFats').innerText = `${totals.fats} / ${targets.fats}g`;
+
+      if (document.getElementById('pctFiber')) document.getElementById('pctFiber').innerText = `${fibPct}%`;
+      if (document.getElementById('valFiber')) document.getElementById('valFiber').innerText = `${totals.fiber} / ${targets.fiber || 38}g`;
+
+      if (document.getElementById('pctSugar')) document.getElementById('pctSugar').innerText = `${sPct}%`;
+      if (document.getElementById('valSugar')) document.getElementById('valSugar').innerText = `${totals.sugar} / ${targets.sugar || 35}g`;
+
+      if (document.getElementById('pctCalories')) document.getElementById('pctCalories').innerText = `${calPct}%`;
+      if (document.getElementById('valCalories')) document.getElementById('valCalories').innerText = `${totals.calories.toLocaleString()} / ${targets.calories.toLocaleString()} kcal`;
+    }
+
+    function renderNutrientBreakdown(key) {
+      if (typeof renderBreakdownView === 'function') {
+        renderBreakdownView(key);
+      }
+    }
+
+    function renderFoodTimeline(logs) {
+      const logsList = document.getElementById('foodLogsList');
+      const logBadge = document.getElementById('logCountBadge');
+      if (!logsList) return;
+      const list = Array.isArray(logs) ? logs : [];
+      if (logBadge) logBadge.innerText = `${list.length} entr${list.length === 1 ? 'y' : 'ies'}`;
+
+      if (list.length === 0) {
+        logsList.innerHTML = `
+          <div style="text-align: center; padding: 48px 20px; color: var(--muted); font-size: 0.9rem; font-style: italic;">
+            Waiting for your first fuel log today!<br>
+            Text <code>1 scoop protein</code> or <code>1 cap fish oil</code> to <a href="https://t.me/raviteja_fuel_bot" target="_blank" style="color: var(--accent); font-weight: 700;">@raviteja_fuel_bot</a>.
+          </div>`;
+      } else {
+        const reversed = [...list].reverse();
+        logsList.innerHTML = reversed.map(l => {
+          const hasMacros = (l.protein > 0 || l.calories > 0);
+          return `
+          <div class="food-log-item">
+            <div>
+              <div class="food-item-title">${escapeHtml(l.brand && l.brand !== 'Whole Food' ? l.brand + ' ' : '')}${escapeHtml(l.itemName || 'Meal')}</div>
+              <div class="food-meta">${l.time || 'Today'} • ${l.quantity || 1} ${escapeHtml(l.servingUnit || 'serving')}</div>
+              ${l.vitals ? `<div style="font-size: 0.72rem; color: #c084fc; font-weight: 700; margin-top: 4px; display: flex; align-items: center; gap: 4px;">💊 ${escapeHtml(l.vitals)}</div>` : ''}
+            </div>
+            <div class="food-macro-badges">
+              ${l.protein > 0 ? `<span class="badge-protein">+${l.protein}g P</span>` : ''}
+              ${l.sugar > 0 ? `<span class="badge-calories" style="color: var(--sugar-color); background: rgba(244, 114, 182, 0.12); border-color: rgba(244, 114, 182, 0.3);">🍬 ${l.sugar}g</span>` : ''}
+              ${l.calories > 0 ? `<span class="badge-calories">+${l.calories} kcal</span>` : ''}
+              ${!hasMacros && l.vitals ? `<span class="badge-protein" style="color: #c084fc; border-color: rgba(192, 132, 252, 0.4); background: rgba(192, 132, 252, 0.12);">Active Vital</span>` : ''}
+            </div>
+          </div>
+          `;
+        }).join('');
       }
     }
 
@@ -3177,34 +3275,38 @@
         });
 
         // Update local state in window._latestNutritionData
-        if (window._latestNutritionData && Array.isArray(window._latestNutritionData.todayLogs)) {
-          const logItem = window._latestNutritionData.todayLogs.find(l => 
-            (l.itemName || "").toLowerCase().includes(target.toLowerCase()) || 
-            target.toLowerCase().includes((l.itemName || "").toLowerCase())
-          );
-          if (logItem) {
-            Object.assign(logItem, patch);
-          }
+        try {
+          if (window._latestNutritionData && Array.isArray(window._latestNutritionData.todayLogs)) {
+            const logItem = window._latestNutritionData.todayLogs.find(l => 
+              (l.itemName || "").toLowerCase().includes(target.toLowerCase()) || 
+              target.toLowerCase().includes((l.itemName || "").toLowerCase())
+            );
+            if (logItem) {
+              Object.assign(logItem, patch);
+            }
 
-          // Recalculate today totals
-          const logs = window._latestNutritionData.todayLogs;
-          window._latestNutritionData.todayTotals = {
-            protein: Math.round(logs.reduce((s, l) => s + (l.protein || 0), 0) * 10) / 10,
-            carbs: Math.round(logs.reduce((s, l) => s + (l.carbs || 0), 0) * 10) / 10,
-            fats: Math.round(logs.reduce((s, l) => s + (l.fats || 0), 0) * 10) / 10,
-            sugar: Math.round(logs.reduce((s, l) => s + (l.sugar || 0), 0) * 10) / 10,
-            fiber: Math.round(logs.reduce((s, l) => s + (l.fiber || 0), 0) * 10) / 10,
-            calories: Math.round(logs.reduce((s, l) => s + (l.calories || 0), 0))
-          };
+            // Recalculate today totals
+            const logs = window._latestNutritionData.todayLogs;
+            window._latestNutritionData.todayTotals = {
+              protein: Math.round(logs.reduce((s, l) => s + (l.protein || 0), 0) * 10) / 10,
+              carbs: Math.round(logs.reduce((s, l) => s + (l.carbs || 0), 0) * 10) / 10,
+              fats: Math.round(logs.reduce((s, l) => s + (l.fats || 0), 0) * 10) / 10,
+              sugar: Math.round(logs.reduce((s, l) => s + (l.sugar || 0), 0) * 10) / 10,
+              fiber: Math.round(logs.reduce((s, l) => s + (l.fiber || 0), 0) * 10) / 10,
+              calories: Math.round(logs.reduce((s, l) => s + (l.calories || 0), 0))
+            };
 
-          // Re-render hero cards, breakdown view, and timeline
-          renderDailyHeroMacros(window._latestNutritionData);
-          if (window._activeNutrientKey) {
-            renderNutrientBreakdown(window._activeNutrientKey);
+            // Re-render hero cards, breakdown view, and timeline
+            renderDailyHeroMacros(window._latestNutritionData);
+            if (window._activeNutrientKey) {
+              renderNutrientBreakdown(window._activeNutrientKey);
+            }
+            if (typeof renderFoodTimeline === 'function') {
+              renderFoodTimeline(window._latestNutritionData.todayLogs);
+            }
           }
-          if (typeof renderFoodTimeline === 'function') {
-            renderFoodTimeline(window._latestNutritionData.todayLogs);
-          }
+        } catch (uiErr) {
+          console.warn("UI update warning:", uiErr);
         }
 
         statusEl.style.background = 'rgba(52, 211, 153, 0.15)';
@@ -3248,32 +3350,36 @@
           })
         });
 
-        if (window._latestNutritionData && Array.isArray(window._latestNutritionData.todayLogs)) {
-          const idx = window._latestNutritionData.todayLogs.findIndex(l => 
-            (l.itemName || "").toLowerCase().includes(target.toLowerCase()) || 
-            target.toLowerCase().includes((l.itemName || "").toLowerCase())
-          );
-          if (idx !== -1) {
-            window._latestNutritionData.todayLogs.splice(idx, 1);
-          }
+        try {
+          if (window._latestNutritionData && Array.isArray(window._latestNutritionData.todayLogs)) {
+            const idx = window._latestNutritionData.todayLogs.findIndex(l => 
+              (l.itemName || "").toLowerCase().includes(target.toLowerCase()) || 
+              target.toLowerCase().includes((l.itemName || "").toLowerCase())
+            );
+            if (idx !== -1) {
+              window._latestNutritionData.todayLogs.splice(idx, 1);
+            }
 
-          const logs = window._latestNutritionData.todayLogs;
-          window._latestNutritionData.todayTotals = {
-            protein: Math.round(logs.reduce((s, l) => s + (l.protein || 0), 0) * 10) / 10,
-            carbs: Math.round(logs.reduce((s, l) => s + (l.carbs || 0), 0) * 10) / 10,
-            fats: Math.round(logs.reduce((s, l) => s + (l.fats || 0), 0) * 10) / 10,
-            sugar: Math.round(logs.reduce((s, l) => s + (l.sugar || 0), 0) * 10) / 10,
-            fiber: Math.round(logs.reduce((s, l) => s + (l.fiber || 0), 0) * 10) / 10,
-            calories: Math.round(logs.reduce((s, l) => s + (l.calories || 0), 0))
-          };
+            const logs = window._latestNutritionData.todayLogs;
+            window._latestNutritionData.todayTotals = {
+              protein: Math.round(logs.reduce((s, l) => s + (l.protein || 0), 0) * 10) / 10,
+              carbs: Math.round(logs.reduce((s, l) => s + (l.carbs || 0), 0) * 10) / 10,
+              fats: Math.round(logs.reduce((s, l) => s + (l.fats || 0), 0) * 10) / 10,
+              sugar: Math.round(logs.reduce((s, l) => s + (l.sugar || 0), 0) * 10) / 10,
+              fiber: Math.round(logs.reduce((s, l) => s + (l.fiber || 0), 0) * 10) / 10,
+              calories: Math.round(logs.reduce((s, l) => s + (l.calories || 0), 0))
+            };
 
-          renderDailyHeroMacros(window._latestNutritionData);
-          if (window._activeNutrientKey) {
-            renderNutrientBreakdown(window._activeNutrientKey);
+            renderDailyHeroMacros(window._latestNutritionData);
+            if (window._activeNutrientKey) {
+              renderNutrientBreakdown(window._activeNutrientKey);
+            }
+            if (typeof renderFoodTimeline === 'function') {
+              renderFoodTimeline(window._latestNutritionData.todayLogs);
+            }
           }
-          if (typeof renderFoodTimeline === 'function') {
-            renderFoodTimeline(window._latestNutritionData.todayLogs);
-          }
+        } catch (uiErr) {
+          console.warn("UI delete notice:", uiErr);
         }
 
         closeAdjustModal();
