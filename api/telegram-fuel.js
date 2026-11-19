@@ -74,8 +74,8 @@ function calculateDayTargets({ mode = 'run', distanceKm = 10, durationMin = 60, 
   let burnKcal = 0;
   let sweatHrs = 0;
   const isFast = mode === 'rest';
-  const protein = isFast ? 135 : 150;
-  const fiber = isFast ? 28 : 35;
+  const protein = isFast ? 125 : 150;
+  const fiber = isFast ? 25 : 35;
 
   if (mode === 'rest') {
     burnKcal = 0;
@@ -93,15 +93,15 @@ function calculateDayTargets({ mode = 'run', distanceKm = 10, durationMin = 60, 
     sweatHrs = dur / 60;
   }
 
-  const calories = 2000 + burnKcal;
-  const fats = isFast ? 60 : (mode === 'run' && distanceKm > 10
+  const calories = (isFast ? 1650 : 2000) + burnKcal;
+  const fats = isFast ? 50 : (mode === 'run' && distanceKm > 10
     ? Math.min(85, Math.round(65 + (distanceKm - 10) * 1.5))
     : 65);
   const carbs = Math.round((calories - (protein * 4) - (fats * 9)) / 4);
   const hydroLiters = Math.min(5.5, Number((3.2 + sweatHrs * 0.65).toFixed(1)));
   const sugar = mode === 'run'
     ? Math.min(140, Math.round(35 + sweatHrs * 25))
-    : (isFast ? 30 : 35);
+    : (isFast ? 25 : 35);
   const sodiumMg = Math.round(2500 + (sweatHrs * 900));
 
   return {
@@ -1712,11 +1712,11 @@ export default async function handler(req, res) {
 
       const msg = `🎯 <b>Select Training Day Mode</b>\n\n` +
         `Scale your daily targets (Calories, Carbs, Hydro, Sodium, Sugar, Fiber) to match today's scheduled training load.\n\n` +
-        `• <b>🧘 Rest / Fast:</b> 2,000 kcal | 135g P | 230g C | 3.2L Hydro\n` +
-        `• <b>🏋️ Upper Body:</b> 2,250 kcal | 150g P | 266g C | 3.8L Hydro\n` +
-        `• <b>🦵 Legs / Heavy:</b> 2,380 kcal | 150g P | 299g C | 4.0L Hydro\n` +
-        `• <b>🏃 10K Run (60m):</b> 2,690 kcal | 150g P | 376g C | 4.0L Hydro\n` +
-        `• <b>🏃 15K Long Run (135m):</b> 3,035 kcal | 150g P | 463g C | 5.0L Hydro\n\n` +
+        `• <b>🧘 Rest / Fast:</b> 1,650 kcal | 125g P | 175g C | 50g F | 3.2L Hydro\n` +
+        `• <b>🏋️ Upper Body:</b> 2,250 kcal | 150g P | 266g C | 3.7L Hydro\n` +
+        `• <b>🦵 Legs / Heavy:</b> 2,380 kcal | 150g P | 299g C | 3.9L Hydro\n` +
+        `• <b>🏃 10K Run (60m):</b> 2,690 kcal | 150g P | 376g C | 3.9L Hydro\n` +
+        `• <b>🏃 15K Long Run (135m):</b> 3,035 kcal | 150g P | 445g C | 4.7L Hydro\n\n` +
         `💡 <i>Or text directly:</i> <code>/mode run 12km 75m</code> <i>or</i> <code>/mode legs</code>`;
 
       await sendTelegramMessage(chatId, msg, messageId, modeMenu);

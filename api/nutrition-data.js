@@ -34,8 +34,8 @@ function calculateDayTargets({ mode = 'run', distanceKm = 10, durationMin = 60, 
   let burnKcal = 0;
   let sweatHrs = 0;
   const isFast = mode === 'rest';
-  const protein = isFast ? 135 : 150;
-  const fiber = isFast ? 28 : 35;
+  const protein = isFast ? 125 : 150;
+  const fiber = isFast ? 25 : 35;
 
   if (mode === 'rest') {
     burnKcal = 0;
@@ -53,15 +53,15 @@ function calculateDayTargets({ mode = 'run', distanceKm = 10, durationMin = 60, 
     sweatHrs = dur / 60;
   }
 
-  const calories = 2000 + burnKcal;
-  const fats = isFast ? 60 : (mode === 'run' && distanceKm > 10
+  const calories = (isFast ? 1650 : 2000) + burnKcal;
+  const fats = isFast ? 50 : (mode === 'run' && distanceKm > 10
     ? Math.min(85, Math.round(65 + (distanceKm - 10) * 1.5))
     : 65);
   const carbs = Math.round((calories - (protein * 4) - (fats * 9)) / 4);
   const hydroLiters = Math.min(5.5, Number((3.2 + sweatHrs * 0.65).toFixed(1)));
   const sugar = mode === 'run'
     ? Math.min(140, Math.round(35 + sweatHrs * 25))
-    : (isFast ? 30 : 35);
+    : (isFast ? 25 : 35);
   const sodiumMg = Math.round(2500 + (sweatHrs * 900));
 
   return {
