@@ -291,22 +291,47 @@ async function downloadTelegramPhotoBase64(fileId) {
   }
 }
 
-// Call Gemini (with automatic fallback to available flash models and 6s timeout)
+function formatUserFriendlyError(err) {
+  const msg = err?.message || String(err || "");
+  if (msg.includes("503") || msg.includes("high demand") || msg.includes("UNAVAILABLE")) {
+    return "Google AI experienced a temporary server demand spike. Please try again in a moment!";
+  }
+  if (msg.includes("timeout") || msg.includes("aborted")) {
+    return "Analysis timed out due to high network latency. Please try again!";
+  }
+  try {
+    const jsonMatch = msg.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+      if (parsed.error?.message) {
+        return parsed.error.message;
+      }
+    }
+  } catch (_) {}
+  return msg;
+}
+
+// Call Gemini (with multi-model cascade and 14s timeout for vision/JSON)
 async function callGemini(contents, generationConfig = null) {
-  const models = ['gemini-2.5-flash', 'gemini-flash-lite-latest'];
+  const models = ['gemini-2.5-flash', 'gemini-3-flash-preview', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
   let lastError = null;
 
   for (const model of models) {
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
       const body = { contents };
-      if (generationConfig) body.generationConfig = generationConfig;
+      if (generationConfig) {
+        body.generationConfig = {
+          ...generationConfig,
+          responseMimeType: generationConfig.responseMimeType || generationConfig.response_mime_type || "application/json"
+        };
+      }
 
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(6000)
+        signal: AbortSignal.timeout(14000)
       });
 
       if (!res.ok) {
@@ -1489,7 +1514,8 @@ export default async function handler(req, res) {
 
     } catch (err) {
       console.error("Error processing photo:", err);
-      await sendTelegramMessage(chatId, `⚠️ <b>Could not analyze photo</b>: ${err.message}\nMake sure the food or nutrition label is clearly visible!`, messageId);
+      const friendlyErr = formatUserFriendlyError(err);
+      await sendTelegramMessage(chatId, `⚠️ <b>Could not analyze photo</b>: ${friendlyErr}\nMake sure the food or nutrition label is clearly visible!`, messageId);
       return res.status(200).send("OK");
     }
   }
@@ -2107,9 +2133,10 @@ export default async function handler(req, res) {
 
   } catch (err) {
     console.error("Error analyzing food text:", err);
+    const friendlyErr = formatUserFriendlyError(err);
     await sendTelegramMessage(
       chatId,
-      `⚠️ <b>Could not analyze entry</b>: ${err.message}\nTry texting e.g. <code>100g sweet potato</code> or <code>1 scoop protein</code>`,
+      `⚠️ <b>Could not analyze entry</b>: ${friendlyErr}\nTry texting e.g. <code>100g sweet potato</code> or <code>1 scoop protein</code>`,
       messageId
     );
     return res.status(200).send("OK");
