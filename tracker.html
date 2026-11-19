@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="access-gate.css">
+<script src="access-gate.js"></script>
 
 <style>
   :root {
@@ -483,7 +485,10 @@
           <h2 style="font-size: 1.65rem; font-weight: 800; letter-spacing: -0.025em; color: var(--text);">Custom Budget & Nutrition Engine</h2>
           <p class="subtitle" style="font-size: 0.88rem; color: var(--muted); margin-top: 4px;">Real-time personal finance & athletic nutrition engine. Auto-saves locally in your browser.</p>
         </div>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+          <button class="btn-gate-relock" onclick="relockEngineAccess()" title="Lock dashboard on this device">
+            <span>🔒</span> Lock
+          </button>
           <button class="btn-outline" onclick="openCustomSectionModal()">+ Add New Section</button>
           <button class="btn-outline" onclick="exportDataJson()">Export JSON</button>
           <button class="btn-outline" onclick="openImportModal()">Import</button>

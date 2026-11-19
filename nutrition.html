@@ -13,6 +13,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="access-gate.css">
+  <script src="access-gate.js"></script>
 
   <style>
     :root {
@@ -1317,6 +1319,9 @@
       </div>
 
       <div style="display: flex; gap: 10px; align-items: center;">
+        <button class="btn-gate-relock" onclick="relockEngineAccess()" title="Lock dashboard on this device">
+          <span>🔒</span> Lock
+        </button>
         <button class="ctrl-pill-btn" onclick="fetchLiveNutritionData(true)">
           <span>🔄</span> Sync Now
         </button>
