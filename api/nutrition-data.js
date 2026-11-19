@@ -29,6 +29,80 @@ const DAILY_TARGETS = {
   creatineG: 5.0
 };
 
+// Base + Delta Dynamic Targets Engine (69 kg Marathon Runner)
+function calculateDayTargets({ mode = 'run', distanceKm = 10, durationMin = 60, weightKg = 69 }) {
+  let burnKcal = 0;
+  let sweatHrs = 0;
+  let protein = 150;
+  let fats = 65;
+  let fiber = 35;
+  let sugar = 35;
+
+  if (mode === 'rest') {
+    burnKcal = 0;
+    sweatHrs = 0;
+    protein = 135;
+    fats = 60;
+    fiber = 28;
+    sugar = 30;
+  } else if (mode === 'strength_upper') {
+    burnKcal = 250;
+    sweatHrs = 0.75;
+    protein = 150;
+    fats = 65;
+    fiber = 35;
+    sugar = 35;
+  } else if (mode === 'strength_legs') {
+    burnKcal = 380;
+    sweatHrs = 1.0;
+    protein = 150;
+    fats = 65;
+    fiber = 35;
+    sugar = 35;
+  } else if (mode === 'run') {
+    const dist = parseFloat(distanceKm) > 0 ? parseFloat(distanceKm) : 10;
+    const dur = parseFloat(durationMin) > 0 ? parseFloat(durationMin) : (dist * 6);
+    burnKcal = Math.round(dist * weightKg * 1.0);
+    sweatHrs = dur / 60;
+    protein = 150;
+    fats = 65;
+    fiber = 35;
+    sugar = Math.min(90, Math.round(35 + (sweatHrs * 25)));
+  }
+
+  const calories = 2000 + burnKcal;
+  const carbs = Math.round((calories - (protein * 4) - (fats * 9)) / 4);
+  const hydroLiters = Math.round((3.2 + (sweatHrs * 0.8)) * 10) / 10;
+  const sodiumMg = Math.round(2500 + (sweatHrs * 900));
+
+  return {
+    mode,
+    distanceKm: parseFloat(distanceKm) || 10,
+    durationMin: parseFloat(durationMin) || 60,
+    burnKcal,
+    sweatHrs: Math.round(sweatHrs * 100) / 100,
+    calories,
+    protein,
+    carbs,
+    fats,
+    fiber,
+    sugar,
+    waterLiters: hydroLiters,
+    hydroLiters,
+    sodiumMg,
+    potassiumMg: 4700,
+    magnesiumMg: 420,
+    calciumMg: 1000,
+    ironMg: 15,
+    zincMg: 15,
+    omega3Mg: 1500,
+    vitaminB12Mcg: 5.0,
+    vitaminCMg: 150,
+    vitaminD3Iu: 3000,
+    creatineG: 5.0
+  };
+}
+
 function normalizeToISTDateStr(val) {
   if (!val) return "";
   const s = String(val).trim();
@@ -316,17 +390,11 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // Handle food updates / deletes from the web interface
+  // Handle food updates / deletes / day mode from the web interface
   if (req.method === "POST") {
     try {
       const body = req.body || {};
       const action = body.action || "update";
-      const target = (body.target || "").trim();
-      const patch = body.patch || {};
-
-      if (!target) {
-        return res.status(400).json({ error: "Target item name is required" });
-      }
 
       // Compute IST Date and Time
       const istOffsetMs = 5.5 * 60 * 60 * 1000;
@@ -341,6 +409,46 @@ export default async function handler(req, res) {
       hours = hours % 12;
       hours = hours ? hours : 12;
       const timeStr = `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+
+      // Handle Day Mode (Base + Delta Engine)
+      if (action === "set_mode") {
+        const mode = (body.mode || "run").toLowerCase();
+        const dist = parseFloat(body.distance) || 0;
+        const dur = parseFloat(body.duration) || 0;
+        const rawMsg = `[DAY_MODE: mode=${mode}, dist=${dist}, dur=${dur}]`;
+
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sheet: "nutrition",
+            timestamp: new Date().toISOString(),
+            date: todayStr,
+            time: timeStr,
+            itemName: "Day Mode Setup",
+            brand: "",
+            quantity: 0,
+            servingUnit: "",
+            calories: 0,
+            protein: 0,
+            carbs: 0,
+            fats: 0,
+            fiber: 0,
+            sugar: 0,
+            rawMessage: rawMsg
+          })
+        });
+
+        const targets = calculateDayTargets({ mode, distanceKm: dist, durationMin: dur });
+        return res.status(200).json({ success: true, mode, distance: dist, duration: dur, targets });
+      }
+
+      const target = (body.target || "").trim();
+      const patch = body.patch || {};
+
+      if (!target) {
+        return res.status(400).json({ error: "Target item name is required" });
+      }
 
       let rawMsg = "";
       if (action === "delete") {
@@ -419,6 +527,7 @@ export default async function handler(req, res) {
     // 4. Clean & normalize food logs using robust parsing & pantry matching
     const parsedLogs = [];
     const dailyActivityMap = {}; // dateStr -> { steps: 0, caloriesBurned: 0, sleepHours: 0 }
+    const dailyModeMap = {}; // dateStr -> { mode, distance, duration }
 
     if (Array.isArray(rawLogs)) {
       for (const r of rawLogs) {
@@ -438,6 +547,19 @@ export default async function handler(req, res) {
           if (!isNaN(s) && s > 0) dailyActivityMap[rowDate].steps = s;
           if (!isNaN(b) && b > 0) dailyActivityMap[rowDate].caloriesBurned = b;
           if (!isNaN(sl) && sl > 0) dailyActivityMap[rowDate].sleepHours = sl;
+          continue;
+        }
+
+        // 4.2 Parse Day Mode (Base + Delta Training Target Engine)
+        const modeMatch = rawMsg.match(/\[DAY_MODE:\s*mode=([^,\s]*),\s*dist=([^,\s]*),\s*dur=([^\]\s]*)\]/i);
+        if (modeMatch) {
+          const rawTimestamp = r["Timestamp"] || r.timestamp || r["Date"] || r.date || r[" "] || Object.values(r)[0] || "";
+          const rowDate = normalizeToISTDateStr(rawTimestamp);
+          dailyModeMap[rowDate] = {
+            mode: modeMatch[1],
+            distance: parseFloat(modeMatch[2]) || 0,
+            duration: parseFloat(modeMatch[3]) || 0
+          };
           continue;
         }
 
@@ -751,9 +873,19 @@ export default async function handler(req, res) {
       endStr: weekRange.endStr
     };
 
+    const todayMode = dailyModeMap[todayStr] || { mode: "run", distance: 10, duration: 60 };
+    const dynamicTargets = calculateDayTargets({
+      mode: todayMode.mode,
+      distanceKm: todayMode.distance,
+      durationMin: todayMode.duration,
+      weightKg: 69
+    });
+
     return res.status(200).json({
       todayStr,
-      targets: DAILY_TARGETS,
+      todayMode,
+      targets: dynamicTargets,
+      baseTargets: DAILY_TARGETS,
       weeklyTargets: WEEKLY_TARGETS,
       todayTotals,
       todayActivity,

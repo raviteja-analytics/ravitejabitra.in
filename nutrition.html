@@ -1322,22 +1322,59 @@
       </div>
     </div>
 
-    <!-- View Switcher, Live Hydration Bar & Today's Date -->
+    <!-- View Switcher, Day Mode Selector, Live Hydration Bar & Today's Date -->
     <div class="view-switcher-row" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 24px;">
-      <!-- Left: Compact View Dropdown (Today's Fuel vs History) -->
-      <div class="view-dropdown-wrapper" id="viewDropdownWrap">
-        <button class="view-pill-btn active" id="btnViewDropdown" onclick="toggleViewDropdown(event)" style="display: inline-flex; align-items: center; gap: 8px;">
-          <span id="currentViewIcon">⚡</span>
-          <span id="currentViewLabel">Today's Fuel</span>
-          <span style="font-size: 0.68rem; opacity: 0.6; margin-left: 2px;">▼</span>
-        </button>
-        <div class="view-dropdown-menu" id="viewDropdownMenu">
-          <div class="view-dropdown-item active" id="optFuelLive" onclick="selectViewTab('live')">
-            <span>⚡</span> Today's Fuel (Daily Dashboard)
+      <!-- Left: Compact View Dropdown & Day Mode Selector (Base + Delta Engine) -->
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <!-- View Dropdown (Today's Fuel vs History) -->
+        <div class="view-dropdown-wrapper" id="viewDropdownWrap">
+          <button class="view-pill-btn active" id="btnViewDropdown" onclick="toggleViewDropdown(event)" style="display: inline-flex; align-items: center; gap: 8px;">
+            <span id="currentViewIcon">⚡</span>
+            <span id="currentViewLabel">Today's Fuel</span>
+            <span style="font-size: 0.68rem; opacity: 0.6; margin-left: 2px;">▼</span>
+          </button>
+          <div class="view-dropdown-menu" id="viewDropdownMenu">
+            <div class="view-dropdown-item active" id="optFuelLive" onclick="selectViewTab('live')">
+              <span>⚡</span> Today's Fuel (Daily Dashboard)
+            </div>
+            <div class="view-dropdown-item" id="optFuelHistory" onclick="selectViewTab('history')">
+              <span>📊</span> Macro History & Trends
+            </div>
           </div>
-          <div class="view-dropdown-item" id="optFuelHistory" onclick="selectViewTab('history')">
-            <span>📊</span> Macro History & Trends
+        </div>
+
+        <!-- Training Day Mode Dropdown -->
+        <div class="view-dropdown-wrapper" id="dayModeDropdownWrap">
+          <button class="view-pill-btn" id="btnDayModeDropdown" onclick="toggleDayModeDropdown(event)" style="display: inline-flex; align-items: center; gap: 8px; border-color: rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.08);" title="Change training day mode to auto-scale calorie & macro targets">
+            <span id="currentDayModeIcon">🏃</span>
+            <span id="currentDayModeLabel" style="font-weight: 700;">Run (10 km)</span>
+            <span style="font-size: 0.68rem; opacity: 0.6; margin-left: 2px;">▼</span>
+          </button>
+          <div class="view-dropdown-menu" id="dayModeDropdownMenu" style="min-width: 245px;">
+            <div class="view-dropdown-item" id="optModeRest" onclick="selectDayMode('rest')">
+              <span>🧘</span> Rest / Fast (6–11 PM)
+            </div>
+            <div class="view-dropdown-item" id="optModeUpper" onclick="selectDayMode('strength_upper')">
+              <span>🏋️</span> Strength – Upper
+            </div>
+            <div class="view-dropdown-item" id="optModeLegs" onclick="selectDayMode('strength_legs')">
+              <span>🦵</span> Strength – Legs / Heavy
+            </div>
+            <div class="view-dropdown-item active" id="optModeRun" onclick="selectDayMode('run')">
+              <span>🏃</span> Run (Distance + Duration)
+            </div>
           </div>
+        </div>
+
+        <!-- Run Mode Distance & Duration Inputs -->
+        <div id="runInputsContainer" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 9999px; padding: 4px 10px; font-size: 0.78rem; font-family: var(--font-mono);">
+          <span style="color: #94a3b8; font-size: 0.72rem;">Dist:</span>
+          <input type="number" id="runDistInput" value="10" min="1" max="100" step="0.5" style="width: 46px; background: rgba(0,0,0,0.5); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; color: #38bdf8; text-align: center; font-weight: 700; padding: 2px 4px; font-size: 0.8rem;" oninput="onRunParamChange()" />
+          <span style="color: #64748b; font-size: 0.7rem;">km</span>
+          <span style="color: rgba(255,255,255,0.2);">|</span>
+          <span style="color: #94a3b8; font-size: 0.72rem;">Time:</span>
+          <input type="number" id="runDurInput" value="60" min="5" max="600" step="5" style="width: 48px; background: rgba(0,0,0,0.5); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; color: #38bdf8; text-align: center; font-weight: 700; padding: 2px 4px; font-size: 0.8rem;" oninput="onRunParamChange()" />
+          <span style="color: #64748b; font-size: 0.7rem;">min</span>
         </div>
       </div>
 
@@ -1558,7 +1595,7 @@
           </div>
           <div class="sport-kpi-val" id="valSodium">0 <span style="font-size: 0.95rem; color: var(--muted); font-weight: 600;">mg</span></div>
           <div class="sport-kpi-sub">
-            <span>Target: 2,500 - 3,500 mg</span>
+            <span id="valSodiumTarget">Target: 3,400 mg</span>
             <span id="subSodium">Base / Run Spike</span>
           </div>
           <div class="sport-progress-bar-bg">
@@ -2145,15 +2182,293 @@
       circle.style.strokeDashoffset = offset;
     }
 
+    // ── BASE + DELTA TRAINING TARGET ENGINE (69 KG RUNNER) ────────
+    const DAY_MODES = {
+      rest: {
+        id: 'rest',
+        label: "Rest / Fast (6–11 PM)",
+        shortLabel: "Rest / Fast",
+        icon: "🧘"
+      },
+      strength_upper: {
+        id: 'strength_upper',
+        label: "Strength – Upper",
+        shortLabel: "Strength – Upper",
+        icon: "🏋️"
+      },
+      strength_legs: {
+        id: 'strength_legs',
+        label: "Strength – Legs / Heavy",
+        shortLabel: "Strength – Legs",
+        icon: "🦵"
+      },
+      run: {
+        id: 'run',
+        label: "Run",
+        shortLabel: "Run",
+        icon: "🏃"
+      }
+    };
+
+    window._currentDayMode = {
+      mode: 'run',
+      distance: 10,
+      duration: 60
+    };
+
+    function calculateDayTargets({ mode = 'run', distanceKm = 10, durationMin = 60, weightKg = 69 }) {
+      let burnKcal = 0;
+      let sweatHrs = 0;
+      let protein = 150;
+      let fats = 65;
+      let fiber = 35;
+      let sugar = 35;
+
+      if (mode === 'rest') {
+        burnKcal = 0;
+        sweatHrs = 0;
+        protein = 135;
+        fats = 60;
+        fiber = 28;
+        sugar = 30;
+      } else if (mode === 'strength_upper') {
+        burnKcal = 250;
+        sweatHrs = 0.75;
+        protein = 150;
+        fats = 65;
+        fiber = 35;
+        sugar = 35;
+      } else if (mode === 'strength_legs') {
+        burnKcal = 380;
+        sweatHrs = 1.0;
+        protein = 150;
+        fats = 65;
+        fiber = 35;
+        sugar = 35;
+      } else if (mode === 'run') {
+        const dist = parseFloat(distanceKm) > 0 ? parseFloat(distanceKm) : 10;
+        const dur = parseFloat(durationMin) > 0 ? parseFloat(durationMin) : (dist * 6);
+        burnKcal = Math.round(dist * weightKg * 1.0);
+        sweatHrs = dur / 60;
+        protein = 150;
+        fats = 65;
+        fiber = 35;
+        sugar = Math.min(90, Math.round(35 + (sweatHrs * 25)));
+      }
+
+      const calories = 2000 + burnKcal;
+      const carbs = Math.round((calories - (protein * 4) - (fats * 9)) / 4);
+      const hydroLiters = Math.round((3.2 + (sweatHrs * 0.8)) * 10) / 10;
+      const sodiumMg = Math.round(2500 + (sweatHrs * 900));
+
+      return {
+        mode,
+        distanceKm: parseFloat(distanceKm) || 10,
+        durationMin: parseFloat(durationMin) || 60,
+        burnKcal,
+        sweatHrs: Math.round(sweatHrs * 100) / 100,
+        calories,
+        protein,
+        carbs,
+        fats,
+        fiber,
+        sugar,
+        waterLiters: hydroLiters,
+        hydroLiters,
+        sodiumMg,
+        // Static bottom row:
+        potassiumMg: 4700,
+        magnesiumMg: 420,
+        calciumMg: 1000,
+        ironMg: 15,
+        zincMg: 15,
+        omega3Mg: 1500,
+        vitaminB12Mcg: 5.0,
+        vitaminCMg: 150,
+        vitaminD3Iu: 3000,
+        creatineG: 5.0
+      };
+    }
+    window.calculateDayTargets = calculateDayTargets;
+
+    function applyDayTargets(targets) {
+      if (!targets) return;
+      window._activeDynamicTargets = targets;
+      if (window._latestNutritionData) {
+        window._latestNutritionData.targets = targets;
+      }
+
+      // 1. Update Daily Hero Rings
+      if (typeof renderDailyHeroMacros === 'function' && window._latestNutritionData) {
+        renderDailyHeroMacros(window._latestNutritionData);
+      }
+
+      // 2. Update Hydration Bar linked to Hydro
+      const micros = (window._latestNutritionData && window._latestNutritionData.todayMicros) || {};
+      const waterLiters = micros.waterLiters || 0;
+      const waterTarget = targets.hydroLiters || targets.waterLiters || 4.0;
+      const waterPct = Math.min(100, Math.round((waterLiters / waterTarget) * 100));
+      if (document.getElementById('hydroLitersVal')) document.getElementById('hydroLitersVal').innerText = `${waterLiters.toFixed(1)}L`;
+      if (document.getElementById('hydroTargetVal')) document.getElementById('hydroTargetVal').innerText = `/ ${waterTarget.toFixed(1)}L`;
+      if (document.getElementById('hydroPctVal')) document.getElementById('hydroPctVal').innerText = `(${waterPct}%)`;
+      if (document.getElementById('hydroBarFill')) document.getElementById('hydroBarFill').style.width = `${waterPct}%`;
+
+      // 3. Update Sodium Target
+      const naVal = micros.sodiumMg || 0;
+      const naTarget = targets.sodiumMg || 3400;
+      const naPct = Math.min(100, Math.round((naVal / naTarget) * 100));
+      if (document.getElementById('valSodiumTarget')) {
+        document.getElementById('valSodiumTarget').innerText = `Target: ${naTarget.toLocaleString()} mg`;
+      }
+      if (document.getElementById('pctSodium')) {
+        document.getElementById('pctSodium').innerText = `${naPct}%`;
+      }
+      if (document.getElementById('barSodium')) {
+        document.getElementById('barSodium').style.width = `${naPct}%`;
+      }
+
+      // 4. Update Nutrient Breakdown view if active
+      if (window._currentTab === 'breakdown' && window._currentBreakdownNutrient && typeof renderBreakdownView === 'function') {
+        renderBreakdownView(window._currentBreakdownNutrient);
+      }
+    }
+    window.applyDayTargets = applyDayTargets;
+
+    function toggleDayModeDropdown(e) {
+      if (e) e.stopPropagation();
+      const menu = document.getElementById('dayModeDropdownMenu');
+      if (menu) menu.classList.toggle('show');
+    }
+    window.toggleDayModeDropdown = toggleDayModeDropdown;
+
+    function selectDayMode(mode, distance, duration, skipBackendSync = false) {
+      const modeConfig = DAY_MODES[mode] || DAY_MODES.run;
+      const distInput = document.getElementById('runDistInput');
+      const durInput = document.getElementById('runDurInput');
+
+      let dist = distance !== undefined ? parseFloat(distance) : (distInput ? parseFloat(distInput.value) || 10 : 10);
+      let dur = duration !== undefined ? parseFloat(duration) : (durInput ? parseFloat(durInput.value) || 60 : 60);
+
+      if (distInput && distance !== undefined) distInput.value = dist;
+      if (durInput && duration !== undefined) durInput.value = dur;
+
+      window._currentDayMode = { mode, distance: dist, duration: dur };
+
+      // Update UI button label and active items in dropdown
+      const iconEl = document.getElementById('currentDayModeIcon');
+      const labelEl = document.getElementById('currentDayModeLabel');
+      if (iconEl) iconEl.innerText = modeConfig.icon;
+      if (labelEl) {
+        if (mode === 'run') {
+          labelEl.innerText = `Run (${dist} km)`;
+        } else {
+          labelEl.innerText = modeConfig.shortLabel;
+        }
+      }
+
+      // Highlight active dropdown item
+      ['optModeRest', 'optModeUpper', 'optModeLegs', 'optModeRun'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('active');
+      });
+      const activeItemMap = {
+        rest: 'optModeRest',
+        strength_upper: 'optModeUpper',
+        strength_legs: 'optModeLegs',
+        run: 'optModeRun'
+      };
+      const activeEl = document.getElementById(activeItemMap[mode]);
+      if (activeEl) activeEl.classList.add('active');
+
+      // Toggle run distance/duration inputs visibility
+      const runInputs = document.getElementById('runInputsContainer');
+      if (runInputs) {
+        runInputs.style.display = (mode === 'run') ? 'inline-flex' : 'none';
+      }
+
+      // Close dropdown
+      const menu = document.getElementById('dayModeDropdownMenu');
+      if (menu) menu.classList.remove('show');
+
+      // Calculate dynamic targets
+      const targets = calculateDayTargets({
+        mode,
+        distanceKm: dist,
+        durationMin: dur,
+        weightKg: 69
+      });
+
+      applyDayTargets(targets);
+
+      // Persist to localStorage
+      const todayDate = (window._latestNutritionData && window._latestNutritionData.todayStr) || (new Date().toISOString().split('T')[0]);
+      try {
+        localStorage.setItem('fuel_day_mode_' + todayDate, JSON.stringify(window._currentDayMode));
+      } catch (e) {}
+
+      // Sync to Google Sheets backend if not skipped
+      if (!skipBackendSync) {
+        syncDayModeToBackend(mode, dist, dur);
+      }
+    }
+    window.selectDayMode = selectDayMode;
+
+    let _runInputDebounce = null;
+    function onRunParamChange() {
+      const distInput = document.getElementById('runDistInput');
+      const durInput = document.getElementById('runDurInput');
+      const dist = distInput ? parseFloat(distInput.value) || 10 : 10;
+      const dur = durInput ? parseFloat(durInput.value) || (dist * 6) : 60;
+
+      window._currentDayMode = { mode: 'run', distance: dist, duration: dur };
+
+      const labelEl = document.getElementById('currentDayModeLabel');
+      if (labelEl) labelEl.innerText = `Run (${dist} km)`;
+
+      const targets = calculateDayTargets({
+        mode: 'run',
+        distanceKm: dist,
+        durationMin: dur,
+        weightKg: 69
+      });
+
+      applyDayTargets(targets);
+
+      const todayDate = (window._latestNutritionData && window._latestNutritionData.todayStr) || (new Date().toISOString().split('T')[0]);
+      try {
+        localStorage.setItem('fuel_day_mode_' + todayDate, JSON.stringify(window._currentDayMode));
+      } catch (e) {}
+
+      clearTimeout(_runInputDebounce);
+      _runInputDebounce = setTimeout(() => {
+        syncDayModeToBackend('run', dist, dur);
+      }, 1200);
+    }
+    window.onRunParamChange = onRunParamChange;
+
+    function syncDayModeToBackend(mode, distance, duration) {
+      fetch('/api/nutrition-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'set_mode',
+          mode,
+          distance,
+          duration
+        })
+      }).catch(err => console.warn("Failed to sync day mode to backend:", err));
+    }
+    window.syncDayModeToBackend = syncDayModeToBackend;
+
     function renderDailyHeroMacros(data) {
       if (!data) return;
-      const targets = data.targets || { protein: 150, carbs: 380, fats: 70, fiber: 38, sugar: 35, calories: 2800 };
+      const targets = window._activeDynamicTargets || data.targets || { protein: 150, carbs: 380, fats: 65, fiber: 35, sugar: 35, calories: 2690 };
       const totals = data.todayTotals || { protein: 0, carbs: 0, fats: 0, fiber: 0, sugar: 0, calories: 0 };
 
       const pPct = Math.round((totals.protein / targets.protein) * 100);
       const cPct = Math.round((totals.carbs / targets.carbs) * 100);
       const fPct = Math.round((totals.fats / targets.fats) * 100);
-      const fibPct = Math.round((totals.fiber / (targets.fiber || 38)) * 100);
+      const fibPct = Math.round((totals.fiber / (targets.fiber || 35)) * 100);
       const sPct = Math.round((totals.sugar / (targets.sugar || 35)) * 100);
       const calPct = Math.round((totals.calories / targets.calories) * 100);
 
@@ -2174,7 +2489,7 @@
       if (document.getElementById('valFats')) document.getElementById('valFats').innerText = `${totals.fats} / ${targets.fats}g`;
 
       if (document.getElementById('pctFiber')) document.getElementById('pctFiber').innerText = `${fibPct}%`;
-      if (document.getElementById('valFiber')) document.getElementById('valFiber').innerText = `${totals.fiber} / ${targets.fiber || 38}g`;
+      if (document.getElementById('valFiber')) document.getElementById('valFiber').innerText = `${totals.fiber} / ${targets.fiber || 35}g`;
 
       if (document.getElementById('pctSugar')) document.getElementById('pctSugar').innerText = `${sPct}%`;
       if (document.getElementById('valSugar')) document.getElementById('valSugar').innerText = `${totals.sugar} / ${targets.sugar || 35}g`;
@@ -2217,7 +2532,22 @@
         window._latestNutritionData = data;
         updateTodayDateDisplay(data.todayStr);
 
-        const targets = data.targets || { protein: 150, carbs: 380, fats: 70, fiber: 38, sugar: 35, calories: 2800 };
+        // Initialize Day Mode (Base + Delta Engine) from local persistence or backend log
+        const todayDateKey = data.todayStr || (new Date().toISOString().split('T')[0]);
+        let savedMode = null;
+        try {
+          const rawLocal = localStorage.getItem('fuel_day_mode_' + todayDateKey);
+          if (rawLocal) savedMode = JSON.parse(rawLocal);
+        } catch(e) {}
+
+        if (!savedMode && data.todayMode) {
+          savedMode = data.todayMode;
+        }
+
+        const activeMode = savedMode || window._currentDayMode || { mode: 'run', distance: 10, duration: 60 };
+        selectDayMode(activeMode.mode, activeMode.distance, activeMode.duration, true);
+
+        const targets = window._activeDynamicTargets || data.targets || { protein: 150, carbs: 380, fats: 65, fiber: 35, sugar: 35, calories: 2690 };
         const totals = data.todayTotals || { protein: 0, carbs: 0, fats: 0, fiber: 0, sugar: 0, calories: 0 };
         const micros = data.todayMicros || {
           sodiumMg: 0, potassiumMg: 0, magnesiumMg: 0, calciumMg: 0,
@@ -2227,42 +2557,12 @@
         const logs = data.todayLogs || [];
         const pantry = data.pantry || [];
 
-        // 1. Update Macro Rings
-        const pPct = Math.round((totals.protein / targets.protein) * 100);
-        const cPct = Math.round((totals.carbs / targets.carbs) * 100);
-        const fPct = Math.round((totals.fats / targets.fats) * 100);
-        const fibPct = Math.round((totals.fiber / (targets.fiber || 38)) * 100);
-        const sPct = Math.round((totals.sugar / (targets.sugar || 35)) * 100);
-        const calPct = Math.round((totals.calories / targets.calories) * 100);
-
-        setRingProgress('ringProtein', pPct);
-        setRingProgress('ringCarbs', cPct);
-        setRingProgress('ringFats', fPct);
-        setRingProgress('ringFiber', fibPct);
-        setRingProgress('ringSugar', sPct);
-        setRingProgress('ringCalories', calPct);
-
-        document.getElementById('pctProtein').innerText = `${pPct}%`;
-        document.getElementById('valProtein').innerText = `${totals.protein} / ${targets.protein}g`;
-
-        document.getElementById('pctCarbs').innerText = `${cPct}%`;
-        document.getElementById('valCarbs').innerText = `${totals.carbs} / ${targets.carbs}g`;
-
-        document.getElementById('pctFats').innerText = `${fPct}%`;
-        document.getElementById('valFats').innerText = `${totals.fats} / ${targets.fats}g`;
-
-        document.getElementById('pctFiber').innerText = `${fibPct}%`;
-        document.getElementById('valFiber').innerText = `${totals.fiber} / ${targets.fiber || 38}g`;
-
-        document.getElementById('pctSugar').innerText = `${sPct}%`;
-        document.getElementById('valSugar').innerText = `${totals.sugar} / ${targets.sugar || 35}g`;
-
-        document.getElementById('pctCalories').innerText = `${calPct}%`;
-        document.getElementById('valCalories').innerText = `${totals.calories.toLocaleString()} / ${targets.calories.toLocaleString()} kcal`;
+        // 1. Render Daily Hero Rings via renderDailyHeroMacros
+        renderDailyHeroMacros(data);
 
         // 1.1 Update Hydration Bar linked to Hydro
         const waterLiters = (micros && micros.waterLiters) || 0;
-        const waterTarget = (targets && targets.waterLiters) || 4.0;
+        const waterTarget = (targets && (targets.hydroLiters || targets.waterLiters)) || 4.0;
         const waterPct = Math.min(100, Math.round((waterLiters / waterTarget) * 100));
         if (document.getElementById('hydroLitersVal')) document.getElementById('hydroLitersVal').innerText = `${waterLiters.toFixed(1)}L`;
         if (document.getElementById('hydroTargetVal')) document.getElementById('hydroTargetVal').innerText = `/ ${waterTarget.toFixed(1)}L`;
@@ -2314,9 +2614,11 @@
         }
 
         // 1.5. Update Electrolytes & Trace Minerals
-        // Sodium (Target: 3500 mg)
-        const naPct = Math.min(100, Math.round((micros.sodiumMg / (targets.sodiumMg || 3500)) * 100));
+        // Sodium (Dynamic Target)
+        const naTarget = targets.sodiumMg || 3400;
+        const naPct = Math.min(100, Math.round((micros.sodiumMg / naTarget) * 100));
         document.getElementById('valSodium').innerHTML = `${micros.sodiumMg.toLocaleString()} <span style="font-size: 0.95rem; color: var(--muted); font-weight: 600;">mg</span>`;
+        if (document.getElementById('valSodiumTarget')) document.getElementById('valSodiumTarget').innerText = `Target: ${naTarget.toLocaleString()} mg`;
         document.getElementById('pctSodium').innerText = `${naPct}%`;
         document.getElementById('barSodium').style.width = `${naPct}%`;
 
@@ -2493,6 +2795,10 @@
       const wrap = document.getElementById('viewDropdownWrap');
       if (wrap && !wrap.contains(e.target)) {
         document.getElementById('viewDropdownMenu')?.classList.remove('show');
+      }
+      const modeWrap = document.getElementById('dayModeDropdownWrap');
+      if (modeWrap && !modeWrap.contains(e.target)) {
+        document.getElementById('dayModeDropdownMenu')?.classList.remove('show');
       }
     });
 
@@ -2847,7 +3153,7 @@
 
       const data = window._latestNutritionData || {};
       const logs = data.todayLogs || [];
-      const targets = data.targets || {};
+      const targets = window._activeDynamicTargets || data.targets || {};
       const targetVal = targets[cfg.targetKey] || (nutrientKey === 'steps' ? 10000 : (nutrientKey === 'caloriesBurned' ? 500 : (nutrientKey === 'sleep' ? 8.0 : 0)));
 
       let items = [];

@@ -69,6 +69,70 @@ function normalizeToISTDateStr(val) {
   return s.split('T')[0];
 }
 
+// Base + Delta Dynamic Targets Engine (69 kg Runner)
+function calculateDayTargets({ mode = 'run', distanceKm = 10, durationMin = 60, weightKg = 69 }) {
+  let burnKcal = 0;
+  let sweatHrs = 0;
+  let protein = 150;
+  let fats = 65;
+  let fiber = 35;
+  let sugar = 35;
+
+  if (mode === 'rest') {
+    burnKcal = 0;
+    sweatHrs = 0;
+    protein = 135;
+    fats = 60;
+    fiber = 28;
+    sugar = 30;
+  } else if (mode === 'strength_upper') {
+    burnKcal = 250;
+    sweatHrs = 0.75;
+    protein = 150;
+    fats = 65;
+    fiber = 35;
+    sugar = 35;
+  } else if (mode === 'strength_legs') {
+    burnKcal = 380;
+    sweatHrs = 1.0;
+    protein = 150;
+    fats = 65;
+    fiber = 35;
+    sugar = 35;
+  } else if (mode === 'run') {
+    const dist = parseFloat(distanceKm) > 0 ? parseFloat(distanceKm) : 10;
+    const dur = parseFloat(durationMin) > 0 ? parseFloat(durationMin) : (dist * 6);
+    burnKcal = Math.round(dist * weightKg * 1.0);
+    sweatHrs = dur / 60;
+    protein = 150;
+    fats = 65;
+    fiber = 35;
+    sugar = Math.min(90, Math.round(35 + (sweatHrs * 25)));
+  }
+
+  const calories = 2000 + burnKcal;
+  const carbs = Math.round((calories - (protein * 4) - (fats * 9)) / 4);
+  const hydroLiters = Math.round((3.2 + (sweatHrs * 0.8)) * 10) / 10;
+  const sodiumMg = Math.round(2500 + (sweatHrs * 900));
+
+  return {
+    mode,
+    distanceKm: parseFloat(distanceKm) || 10,
+    durationMin: parseFloat(durationMin) || 60,
+    burnKcal,
+    sweatHrs: Math.round(sweatHrs * 100) / 100,
+    calories,
+    protein,
+    carbs,
+    fats,
+    fiber,
+    sugar,
+    waterLiters: hydroLiters,
+    hydroLiters,
+    sodiumMg
+  };
+}
+
 // In-Memory cache for pending food choices (to stay strictly within Telegram's 64-byte callback_data limit)
 const _pendingFoods = new Map();
 
@@ -873,6 +937,78 @@ export default async function handler(req, res) {
       const colonIdx = data.indexOf(":");
       const action = colonIdx !== -1 ? data.slice(0, colonIdx) : data;
 
+      if (action === "set_mode") {
+        const modeParam = data.slice(colonIdx + 1);
+        let targetMode = "rest";
+        let dist = 0;
+        let dur = 0;
+        let modeLabel = "Rest / Fast (6–11 PM)";
+
+        if (modeParam === "rest") {
+          targetMode = "rest";
+          dist = 0;
+          dur = 0;
+          modeLabel = "Rest / Fast (6–11 PM)";
+        } else if (modeParam === "strength_upper") {
+          targetMode = "strength_upper";
+          dist = 0;
+          dur = 0;
+          modeLabel = "Strength – Upper";
+        } else if (modeParam === "strength_legs") {
+          targetMode = "strength_legs";
+          dist = 0;
+          dur = 0;
+          modeLabel = "Strength – Legs / Heavy";
+        } else if (modeParam === "run_10_60") {
+          targetMode = "run";
+          dist = 10;
+          dur = 60;
+          modeLabel = "Run (10 km, 60 min)";
+        } else if (modeParam === "run_15_135") {
+          targetMode = "run";
+          dist = 15;
+          dur = 135;
+          modeLabel = "Run (15 km, 135 min)";
+        }
+
+        await answerTelegramCallbackQuery(cbId, `Setting day mode to ${modeLabel}...`);
+
+        const t = calculateDayTargets({ mode: targetMode, distanceKm: dist, durationMin: dur, weightKg: 69 });
+        const rawMsg = `[DAY_MODE: mode=${targetMode}, dist=${dist}, dur=${dur}]`;
+
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sheet: "nutrition",
+            timestamp: new Date().toISOString(),
+            date: dateStr,
+            time: timeStr,
+            itemName: `Day Mode: ${modeLabel}`,
+            brand: "",
+            quantity: 0,
+            servingUnit: "",
+            calories: 0,
+            protein: 0,
+            carbs: 0,
+            fats: 0,
+            fiber: 0,
+            sugar: 0,
+            rawMessage: rawMsg
+          })
+        });
+
+        const reply = `🎯 <b>Training Day Mode Set: ${modeLabel}</b>\n\n` +
+          `• 🔥 <b>Calories:</b> <b>${t.calories.toLocaleString()} kcal</b>\n` +
+          `• 🥩 <b>Protein:</b> <b>${t.protein}g</b> • 🍞 <b>Carbs:</b> <b>${t.carbs}g</b> • 🥑 <b>Fats:</b> <b>${t.fats}g</b>\n` +
+          `• 💧 <b>Hydration:</b> <b>${t.hydroLiters}L</b> • 🧂 <b>Sodium:</b> <b>${t.sodiumMg.toLocaleString()} mg</b>\n` +
+          `• 🌾 <b>Fiber:</b> <b>${t.fiber}g</b> • 🍬 <b>Sugar Cap:</b> <b>${t.sugar}g</b>\n\n` +
+          `👉 Live dashboard updated: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
+
+        await editTelegramMessageText(chatId, messageId, reply);
+        return res.status(200).send("OK");
+      }
+
       if (action === "log") {
         const item = resolvePendingFood(data.slice(colonIdx + 1));
         if (!item) {
@@ -1389,6 +1525,7 @@ export default async function handler(req, res) {
       `  <code>sleep 7hrs\ncalories burned 300\nsteps 7000</code>\n\n` +
       `<b>Quick Shortcuts:</b>\n` +
       `• <code>/today</code> - Today's running fuel, activity & meals (with 🗑️ delete buttons)\n` +
+      `• <code>/mode</code> - Switch training day mode (Rest, Strength Upper, Legs, Run)\n` +
       `• <code>/delete &lt;item&gt;</code> - Delete a specific meal (e.g. <code>/delete oats</code>)\n` +
       `• <code>/undo</code> - Undo last logged meal\n` +
       `• <code>/pantry</code> - View all registered pantry items\n\n` +
@@ -1558,6 +1695,113 @@ export default async function handler(req, res) {
       `🗑️ <b>Removed:</b> <i>"${targetItem}"</i> from today's fuel!\n\nYour live dashboard has recalculated: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`,
       messageId
     );
+    return res.status(200).send("OK");
+  }
+
+  // ── /mode COMMAND (TRAINING LOAD DAY MODE SELECTOR) ──
+  const isModeCmd = /^\/(mode|daymode|target|targets)\b/i.test(text);
+  if (isModeCmd) {
+    const param = text.replace(/^\/(mode|daymode|target|targets)\s*/i, '').trim();
+
+    if (!param) {
+      // Show interactive mode selection buttons
+      const modeMenu = {
+        inline_keyboard: [
+          [
+            { text: "🧘 Rest / Fast (6–11 PM)", callback_data: "set_mode:rest" },
+            { text: "🏋️ Strength – Upper", callback_data: "set_mode:strength_upper" }
+          ],
+          [
+            { text: "🦵 Strength – Legs / Heavy", callback_data: "set_mode:strength_legs" },
+            { text: "🏃 10K Run (60 min)", callback_data: "set_mode:run_10_60" }
+          ],
+          [
+            { text: "🏃 Long Run (15K, 135 min)", callback_data: "set_mode:run_15_135" }
+          ]
+        ]
+      };
+
+      const msg = `🎯 <b>Select Training Day Mode</b>\n\n` +
+        `Scale your daily targets (Calories, Carbs, Hydro, Sodium, Sugar, Fiber) to match today's scheduled training load.\n\n` +
+        `• <b>🧘 Rest / Fast:</b> 2,000 kcal | 135g P | 230g C | 3.2L Hydro\n` +
+        `• <b>🏋️ Upper Body:</b> 2,250 kcal | 150g P | 266g C | 3.8L Hydro\n` +
+        `• <b>🦵 Legs / Heavy:</b> 2,380 kcal | 150g P | 299g C | 4.0L Hydro\n` +
+        `• <b>🏃 10K Run (60m):</b> 2,690 kcal | 150g P | 376g C | 4.0L Hydro\n` +
+        `• <b>🏃 15K Long Run (135m):</b> 3,035 kcal | 150g P | 463g C | 5.0L Hydro\n\n` +
+        `💡 <i>Or text directly:</i> <code>/mode run 12km 75m</code> <i>or</i> <code>/mode legs</code>`;
+
+      await sendTelegramMessage(chatId, msg, messageId, modeMenu);
+      return res.status(200).send("OK");
+    }
+
+    // Direct mode text e.g. "/mode rest", "/mode legs", "/mode run 10 60"
+    let targetMode = "run";
+    let dist = 10;
+    let dur = 60;
+    let modeLabel = "Run (10 km, 60 min)";
+
+    const lowerParam = param.toLowerCase();
+    if (lowerParam.includes("rest") || lowerParam.includes("fast")) {
+      targetMode = "rest";
+      dist = 0;
+      dur = 0;
+      modeLabel = "Rest / Fast (6–11 PM)";
+    } else if (lowerParam.includes("upper")) {
+      targetMode = "strength_upper";
+      dist = 0;
+      dur = 0;
+      modeLabel = "Strength – Upper";
+    } else if (lowerParam.includes("leg") || lowerParam.includes("heavy")) {
+      targetMode = "strength_legs";
+      dist = 0;
+      dur = 0;
+      modeLabel = "Strength – Legs / Heavy";
+    } else if (lowerParam.includes("run")) {
+      targetMode = "run";
+      const nums = param.match(/[\d.]+/g);
+      if (nums && nums.length >= 2) {
+        dist = parseFloat(nums[0]) || 10;
+        dur = parseFloat(nums[1]) || (dist * 6);
+      } else if (nums && nums.length === 1) {
+        dist = parseFloat(nums[0]) || 10;
+        dur = dist * 6;
+      }
+      modeLabel = `Run (${dist} km, ${dur} min)`;
+    }
+
+    const t = calculateDayTargets({ mode: targetMode, distanceKm: dist, durationMin: dur, weightKg: 69 });
+    const rawMsg = `[DAY_MODE: mode=${targetMode}, dist=${dist}, dur=${dur}]`;
+
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sheet: "nutrition",
+        timestamp: new Date().toISOString(),
+        date: dateStr,
+        time: timeStr,
+        itemName: `Day Mode: ${modeLabel}`,
+        brand: "",
+        quantity: 0,
+        servingUnit: "",
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fats: 0,
+        fiber: 0,
+        sugar: 0,
+        rawMessage: rawMsg
+      })
+    });
+
+    const reply = `🎯 <b>Training Day Mode Set: ${modeLabel}</b>\n\n` +
+      `• 🔥 <b>Calories:</b> <b>${t.calories.toLocaleString()} kcal</b>\n` +
+      `• 🥩 <b>Protein:</b> <b>${t.protein}g</b> • 🍞 <b>Carbs:</b> <b>${t.carbs}g</b> • 🥑 <b>Fats:</b> <b>${t.fats}g</b>\n` +
+      `• 💧 <b>Hydration:</b> <b>${t.hydroLiters}L</b> • 🧂 <b>Sodium:</b> <b>${t.sodiumMg.toLocaleString()} mg</b>\n` +
+      `• 🌾 <b>Fiber:</b> <b>${t.fiber}g</b> • 🍬 <b>Sugar Cap:</b> <b>${t.sugar}g</b>\n\n` +
+      `👉 Live dashboard updated: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
+
+    await sendTelegramMessage(chatId, reply, messageId);
     return res.status(200).send("OK");
   }
 
