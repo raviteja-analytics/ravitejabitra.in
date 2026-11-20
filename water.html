@@ -8,30 +8,30 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=Space+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="access-gate.css">
   <script src="access-gate.js"></script>
 
   <style>
     :root {
-      --bg: #070b16;
-      --bg-card: rgba(16, 24, 46, 0.78);
-      --border-card: rgba(56, 189, 248, 0.18);
-      --border-card-hover: rgba(56, 189, 248, 0.45);
-      --text: #f8fafc;
+      --bg: #040711;
+      --bg-card: rgba(10, 16, 32, 0.86);
+      --border-card: rgba(0, 210, 255, 0.22);
+      --border-card-hover: rgba(0, 210, 255, 0.65);
+      --text: #ffffff;
       --muted: #94a3b8;
-      --accent: #38bdf8;
-      --accent-glow: rgba(56, 189, 248, 0.35);
-      --pink: #f472b6;
-      --pink-glow: rgba(244, 114, 182, 0.3);
+      --accent: #00d2ff;
+      --accent-glow: rgba(0, 210, 255, 0.4);
+      --pink: #ff007f;
+      --pink-glow: rgba(255, 0, 127, 0.35);
       --purple: #a855f7;
-      --green: #34d399;
-      --water-top: #38bdf8;
+      --green: #00ff9d;
+      --water-top: #00f0ff;
       --water-mid: #0284c7;
-      --water-deep: #0f4c81;
+      --water-deep: #072a4d;
       --font-mono: 'JetBrains Mono', monospace;
-      --font-display: 'Fraunces', serif;
+      --font-display: 'Outfit', 'Space Grotesk', -apple-system, sans-serif;
       --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
@@ -40,9 +40,9 @@
     body {
       background: var(--bg);
       background-image: 
-        radial-gradient(circle at 15% 20%, rgba(56, 189, 248, 0.08) 0%, transparent 45%),
-        radial-gradient(circle at 85% 75%, rgba(168, 85, 247, 0.07) 0%, transparent 50%),
-        radial-gradient(circle at 50% 50%, rgba(2, 132, 199, 0.04) 0%, transparent 60%);
+        radial-gradient(circle at 15% 20%, rgba(0, 210, 255, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 85% 75%, rgba(168, 85, 247, 0.09) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(2, 132, 199, 0.06) 0%, transparent 60%);
       color: var(--text);
       font-family: var(--font-sans);
       min-height: 100vh;
@@ -178,29 +178,33 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(168, 85, 247, 0.12));
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
+      background: linear-gradient(135deg, rgba(0, 210, 255, 0.18), rgba(168, 85, 247, 0.18));
+      border: 1px solid rgba(0, 210, 255, 0.45);
+      padding: 5px 14px;
+      border-radius: 9999px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--accent);
       margin-bottom: 8px;
+      box-shadow: 0 0 16px rgba(0, 210, 255, 0.2);
     }
     .page-title {
-      font-size: 2.35rem;
+      font-size: 2.6rem;
       font-weight: 900;
       letter-spacing: -0.03em;
       font-family: var(--font-display);
-      background: linear-gradient(135deg, #ffffff 40%, #bae6fd 80%, #7dd3fc 100%);
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #ffffff 20%, #00d2ff 65%, #a855f7 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 2px 14px rgba(0, 210, 255, 0.3));
     }
     .page-subtitle {
       color: var(--muted);
-      font-size: 0.92rem;
+      font-size: 0.94rem;
+      font-weight: 600;
       margin-top: 4px;
     }
 

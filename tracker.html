@@ -6,31 +6,39 @@
 <title>Dynamic Budget & Supplements Tracker | Ravi Teja Bitra</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=Space+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="access-gate.css">
 <script src="access-gate.js"></script>
 
 <style>
   :root {
-    --bg: #0f172a; 
-    --card: #1e293b; 
-    --text: #f8fafc; 
+    --bg: #040711; 
+    --card: rgba(10, 16, 32, 0.86); 
+    --text: #ffffff; 
     --muted: #94a3b8;
-    --accent: #38bdf8; 
-    --green: #10b981; 
-    --red: #ef4444; 
-    --border: #334155;
+    --accent: #00f0ff; 
+    --green: #00ff9d; 
+    --red: #ff2a5f; 
+    --border: rgba(0, 240, 255, 0.22);
+    --border-hover: rgba(0, 240, 255, 0.65);
+    --font-display: 'Outfit', 'Space Grotesk', -apple-system, sans-serif;
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
   }
   
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { 
     background: var(--bg); 
+    background-image: 
+      radial-gradient(circle at 10% 15%, rgba(0, 240, 255, 0.12) 0%, transparent 45%),
+      radial-gradient(circle at 90% 80%, rgba(255, 184, 0, 0.09) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(0, 255, 157, 0.06) 0%, transparent 60%);
     color: var(--text); 
     padding: 0 0 60px 0; 
     line-height: 1.5; 
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--font-sans);
+    min-height: 100vh;
   }
   
   /* Harmonized Header Nav matching tracker theme and exact alignment */
@@ -122,11 +130,18 @@
 
   .card { 
     background: var(--card); 
-    border: 1px solid rgba(255, 255, 255, 0.08); 
-    border-radius: 14px; 
-    padding: 22px 24px; 
-    margin-bottom: 22px; 
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.25); 
+    border: 1px solid var(--border); 
+    border-radius: 20px; 
+    padding: 24px 26px; 
+    margin-bottom: 24px; 
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.7), 0 0 25px rgba(0, 240, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.08); 
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .card:hover {
+    border-color: var(--border-hover);
+    box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.8), 0 0 35px rgba(0, 240, 255, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.15);
   }
 
   .stat-card {
@@ -134,25 +149,31 @@
     flex-direction: column;
     justify-content: space-between;
     min-height: 146px;
-    background: linear-gradient(145deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.85) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    transition: transform 0.2s, box-shadow 0.2s;
+    background: linear-gradient(145deg, rgba(16, 24, 46, 0.95) 0%, rgba(10, 16, 32, 0.9) 100%);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 22px 20px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 12px 28px -5px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.35);
+    transform: translateY(-5px);
+    border-color: var(--border-hover);
+    box-shadow: 0 18px 40px -5px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 240, 255, 0.3);
   }
 
   .badge-pill {
-    font-size: 0.72rem;
-    font-weight: 700;
+    font-size: 0.74rem;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.12em;
     color: var(--accent);
-    background: rgba(56, 189, 248, 0.1);
-    border: 1px solid rgba(56, 189, 248, 0.25);
-    padding: 2px 8px;
+    background: rgba(0, 240, 255, 0.15);
+    border: 1px solid rgba(0, 240, 255, 0.4);
+    padding: 3px 10px;
     border-radius: 9999px;
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
   }
   
   .flex-between { 

@@ -11,28 +11,29 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=Space+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="access-gate.css">
   <script src="access-gate.js"></script>
 
   <style>
     :root {
-      --bg: #070b16;
-      --bg-card: rgba(16, 24, 46, 0.78);
-      --border-card: rgba(56, 189, 248, 0.16);
-      --border-card-hover: rgba(56, 189, 248, 0.4);
-      --text: #f8fafc;
+      --bg: #040711;
+      --bg-card: rgba(10, 16, 32, 0.86);
+      --border-card: rgba(0, 240, 255, 0.22);
+      --border-card-hover: rgba(0, 240, 255, 0.65);
+      --text: #ffffff;
       --muted: #94a3b8;
-      --accent: #38bdf8;
-      --protein-color: #38bdf8;
-      --carbs-color: #fbbf24;
-      --fats-color: #fb7185;
-      --calories-color: #34d399;
-      --sugar-color: #f472b6;
-      --fiber-color: #a78bfa;
+      --accent: #00f0ff;
+      --accent-glow: rgba(0, 240, 255, 0.35);
+      --protein-color: #00f0ff;
+      --carbs-color: #ffb800;
+      --fats-color: #ff2a5f;
+      --calories-color: #00ff9d;
+      --sugar-color: #ff007f;
+      --fiber-color: #a855f7;
       --font-mono: 'JetBrains Mono', monospace;
-      --font-display: 'Fraunces', serif;
+      --font-display: 'Outfit', 'Space Grotesk', -apple-system, sans-serif;
       --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
@@ -41,9 +42,9 @@
     body {
       background: var(--bg);
       background-image: 
-        radial-gradient(circle at 10% 15%, rgba(56, 189, 248, 0.08) 0%, transparent 45%),
-        radial-gradient(circle at 90% 80%, rgba(251, 191, 36, 0.06) 0%, transparent 50%),
-        radial-gradient(circle at 50% 50%, rgba(52, 211, 153, 0.04) 0%, transparent 60%);
+        radial-gradient(circle at 10% 15%, rgba(0, 240, 255, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 90% 80%, rgba(255, 184, 0, 0.09) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(0, 255, 157, 0.06) 0%, transparent 60%);
       color: var(--text);
       font-family: var(--font-sans);
       min-height: 100vh;
@@ -179,52 +180,58 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(251, 191, 36, 0.12));
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.18), rgba(255, 184, 0, 0.18));
+      border: 1px solid rgba(0, 240, 255, 0.45);
+      padding: 5px 14px;
+      border-radius: 9999px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--accent);
       margin-bottom: 8px;
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.2);
     }
     .page-title {
-      font-size: 2.35rem;
+      font-size: 2.6rem;
       font-weight: 900;
       letter-spacing: -0.03em;
       font-family: var(--font-display);
-      background: linear-gradient(135deg, #ffffff 40%, #bae6fd 80%, #fed7aa 100%);
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #ffffff 20%, #00f0ff 65%, #ffb800 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 2px 14px rgba(0, 240, 255, 0.3));
     }
     .page-subtitle {
       color: var(--muted);
-      font-size: 0.92rem;
+      font-size: 0.94rem;
+      font-weight: 600;
       margin-top: 4px;
     }
 
     /* Controls */
     .ctrl-pill-btn {
-      background: rgba(16, 24, 46, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(16, 24, 46, 0.88);
+      border: 1px solid rgba(0, 240, 255, 0.25);
       color: var(--text);
-      font-size: 0.78rem;
-      font-weight: 600;
-      padding: 7px 14px;
-      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 12px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      transition: all 0.2s ease;
-      backdrop-filter: blur(8px);
+      gap: 7px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     }
     .ctrl-pill-btn:hover {
       border-color: var(--accent);
-      background: rgba(56, 189, 248, 0.12);
-      transform: translateY(-1px);
+      background: rgba(0, 240, 255, 0.16);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 240, 255, 0.3);
     }
 
     /* Dashboard Layout */
@@ -245,17 +252,22 @@
       border: 1px solid var(--border-card);
       border-radius: 24px;
       padding: 28px;
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       box-shadow: 
-        0 20px 40px -15px rgba(0, 0, 0, 0.5),
-        0 0 25px rgba(56, 189, 248, 0.05);
+        0 20px 40px -15px rgba(0, 0, 0, 0.7),
+        0 0 30px rgba(0, 240, 255, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
       position: relative;
       margin-bottom: 24px;
-      transition: border-color 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .fuel-card:hover {
       border-color: var(--border-card-hover);
+      box-shadow: 
+        0 24px 50px -15px rgba(0, 0, 0, 0.8),
+        0 0 35px rgba(0, 240, 255, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
     }
 
     /* ── MACRO HERO RINGS ────────────────────────────────────────── */
@@ -277,37 +289,39 @@
     }
 
     .macro-ring-card {
-      background: rgba(15, 23, 42, 0.65);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 18px;
-      padding: 18px 14px;
+      background: rgba(10, 16, 32, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 20px 14px;
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
       position: relative;
       overflow: hidden;
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .macro-ring-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.6), 0 0 20px var(--card-glow, rgba(56, 189, 248, 0.2));
-      border-color: var(--card-border, rgba(56, 189, 248, 0.4));
+      transform: translateY(-6px);
+      box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.8), 0 0 30px var(--card-glow, rgba(0, 240, 255, 0.35));
+      border-color: var(--card-border, rgba(0, 240, 255, 0.65));
     }
     .macro-ring-card::after {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0; height: 2px;
-      background: var(--card-accent, #38bdf8);
-      opacity: 0.8;
+      top: 0; left: 0; right: 0; height: 3px;
+      background: var(--card-accent, #00f0ff);
+      box-shadow: 0 0 12px var(--card-accent, #00f0ff);
+      opacity: 0.95;
     }
-    .card-protein { --card-accent: #38bdf8; --card-border: rgba(56, 189, 248, 0.4); --card-glow: rgba(56, 189, 248, 0.25); }
-    .card-carbs { --card-accent: #fbbf24; --card-border: rgba(251, 191, 36, 0.4); --card-glow: rgba(251, 191, 36, 0.25); }
-    .card-fats { --card-accent: #fb7185; --card-border: rgba(251, 113, 133, 0.4); --card-glow: rgba(251, 113, 133, 0.25); }
-    .card-fiber { --card-accent: #a78bfa; --card-border: rgba(167, 139, 250, 0.4); --card-glow: rgba(167, 139, 250, 0.25); }
-    .card-sugar { --card-accent: #f472b6; --card-border: rgba(244, 114, 182, 0.4); --card-glow: rgba(244, 114, 182, 0.25); }
-    .card-calories { --card-accent: #34d399; --card-border: rgba(52, 211, 153, 0.4); --card-glow: rgba(52, 211, 153, 0.25); }
+    .card-protein { --card-accent: #00f0ff; --card-border: rgba(0, 240, 255, 0.6); --card-glow: rgba(0, 240, 255, 0.35); }
+    .card-carbs { --card-accent: #ffb800; --card-border: rgba(255, 184, 0, 0.6); --card-glow: rgba(255, 184, 0, 0.35); }
+    .card-fats { --card-accent: #ff2a5f; --card-border: rgba(255, 42, 95, 0.6); --card-glow: rgba(255, 42, 95, 0.35); }
+    .card-fiber { --card-accent: #a855f7; --card-border: rgba(168, 85, 247, 0.6); --card-glow: rgba(168, 85, 247, 0.35); }
+    .card-sugar { --card-accent: #ff007f; --card-border: rgba(255, 0, 127, 0.6); --card-glow: rgba(255, 0, 127, 0.35); }
+    .card-calories { --card-accent: #00ff9d; --card-border: rgba(0, 255, 157, 0.6); --card-glow: rgba(0, 255, 157, 0.35); }
 
     .pulse-ring-wrapper {
       position: relative;
@@ -3098,9 +3112,9 @@
     };
 
     const PIE_COLORS = [
-      '#38bdf8', '#10b981', '#fbbf24', '#f43f5e', '#a855f7',
-      '#ec4899', '#f97316', '#06b6d4', '#6366f1', '#84cc16',
-      '#eab308', '#14b8a6', '#d946ef', '#2dd4bf', '#fb923c'
+      '#00f0ff', '#00ff9d', '#ffb800', '#ff2a5f', '#b026ff',
+      '#ff007f', '#ff6b00', '#00e5ff', '#7000ff', '#76ff03',
+      '#ffd600', '#00b0ff', '#f50057', '#1de9b6', '#ff9100'
     ];
 
     function extractNutrientValue(vitalsStr, pattern, multiplier = 1) {
