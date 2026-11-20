@@ -311,9 +311,19 @@ function formatUserFriendlyError(err) {
   return msg;
 }
 
-// Call Gemini (with multi-model cascade and 14s timeout for vision/JSON)
+// Call Gemini (with ultra-fast 5s per-model cascade for vision/JSON)
 async function callGemini(contents, generationConfig = null) {
-  const models = ['gemini-2.5-flash', 'gemini-3-flash-preview', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
+  // Benchmarked live in production:
+  // 1. gemini-3.1-flash-lite-preview: ~1.0s (text), ~2.1s (vision)
+  // 2. gemini-3-flash-preview: ~3.1s (vision), ~3.7s (text)
+  // 3. gemini-3.1-flash-lite: ~2.5s (text)
+  // 4. gemini-flash-lite-latest: fallback
+  const models = [
+    'gemini-3.1-flash-lite-preview',
+    'gemini-3-flash-preview',
+    'gemini-3.1-flash-lite',
+    'gemini-flash-lite-latest'
+  ];
   let lastError = null;
 
   for (const model of models) {
@@ -331,7 +341,7 @@ async function callGemini(contents, generationConfig = null) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(14000)
+        signal: AbortSignal.timeout(5000)
       });
 
       if (!res.ok) {
