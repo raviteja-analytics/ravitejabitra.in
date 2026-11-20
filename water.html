@@ -8,21 +8,33 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=Space+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="access-gate.css">
   <script src="access-gate.js"></script>
 
   <style>
     :root {
-      --bg: #040711;
-      --bg-card: rgba(10, 16, 32, 0.86);
-      --border-card: rgba(0, 210, 255, 0.22);
-      --border-card-hover: rgba(0, 210, 255, 0.65);
+      --bg-pure: #000000;
+      --bg: #000000;
+      --bg-metal-dark: #0a0a0a;
+      --bg-metal-light: #151515;
+      --bg-card: linear-gradient(135deg, #151515 0%, #0a0a0a 100%);
+      --border-card: rgba(255, 255, 255, 0.08);
+      --border-card-hover: rgba(204, 0, 0, 0.55);
+
+      /* The Bold Wear Signature Crimson & Silver */
+      --crimson-dark: #7a0000;
+      --crimson-core: #cc0000;
+      --crimson-light: #ff1a1a;
+      --silver-dark: #555555;
+      --silver-core: #888888;
+      --silver-light: #cccccc;
+
       --text: #ffffff;
-      --muted: #94a3b8;
-      --accent: #00d2ff;
-      --accent-glow: rgba(0, 210, 255, 0.4);
+      --muted: #888888;
+      --accent: #cc0000;
+      --accent-glow: rgba(204, 0, 0, 0.45);
       --pink: #ff007f;
       --pink-glow: rgba(255, 0, 127, 0.35);
       --purple: #a855f7;
@@ -31,26 +43,74 @@
       --water-mid: #0284c7;
       --water-deep: #072a4d;
       --font-mono: 'JetBrains Mono', monospace;
-      --font-display: 'Outfit', 'Space Grotesk', -apple-system, sans-serif;
-      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-display: 'Montserrat', -apple-system, sans-serif;
+      --font-sans: 'Montserrat', -apple-system, sans-serif;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
     body {
-      background: var(--bg);
+      background: #000000;
       background-image: 
-        radial-gradient(circle at 15% 20%, rgba(0, 210, 255, 0.12) 0%, transparent 45%),
-        radial-gradient(circle at 85% 75%, rgba(168, 85, 247, 0.09) 0%, transparent 50%),
-        radial-gradient(circle at 50% 50%, rgba(2, 132, 199, 0.06) 0%, transparent 60%);
-      color: var(--text);
+        radial-gradient(circle at 50% 15%, rgba(204, 0, 0, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 15% 70%, rgba(0, 210, 255, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 85% 75%, rgba(122, 0, 0, 0.06) 0%, transparent 50%);
+      color: #ffffff;
       font-family: var(--font-sans);
       min-height: 100vh;
       overflow-x: hidden;
       padding-bottom: 90px;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* Ambient Floating Anime Star Particles */
+    /* Metallic Gradients for Typography */
+    .text-metallic-red {
+      background: linear-gradient(180deg, var(--crimson-light) 0%, var(--crimson-core) 40%, var(--crimson-dark) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      text-shadow: 0 4px 10px rgba(204, 0, 0, 0.35);
+    }
+
+    .text-metallic-grey {
+      background: linear-gradient(180deg, var(--silver-light) 0%, var(--silver-core) 50%, var(--silver-dark) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
+
+    /* Laser Rule Accents */
+    .laser-rule-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      width: 100%;
+      margin: 8px 0 14px;
+    }
+    .laser-line-left {
+      height: 2px;
+      width: 60px;
+      background: linear-gradient(90deg, transparent, #cc0000);
+      box-shadow: 0 0 10px rgba(204, 0, 0, 0.5);
+    }
+    .laser-line-right {
+      height: 2px;
+      flex: 1;
+      max-width: 240px;
+      background: linear-gradient(90deg, #cc0000, transparent);
+      box-shadow: 0 0 10px rgba(204, 0, 0, 0.5);
+    }
+    .laser-tag {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--silver-core);
+    }
+
+    /* Ambient Floating Red Laser Embers */
     .bg-particles {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -60,9 +120,10 @@
     }
     .star-dot {
       position: absolute;
-      background: #38bdf8;
+      background: #cc0000;
       border-radius: 50%;
-      opacity: 0.25;
+      opacity: 0.35;
+      box-shadow: 0 0 8px rgba(204, 0, 0, 0.6);
       animation: floatStar 8s ease-in-out infinite;
     }
     @keyframes floatStar {
@@ -72,10 +133,10 @@
 
     /* Header Nav */
     header {
-      background: rgba(7, 11, 22, 0.88) !important;
-      backdrop-filter: blur(18px) !important;
-      -webkit-backdrop-filter: blur(18px) !important;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+      background: rgba(10, 10, 10, 0.92) !important;
+      backdrop-filter: blur(20px) !important;
+      -webkit-backdrop-filter: blur(20px) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
       position: fixed !important;
       top: 0; left: 0; width: 100%; z-index: 100;
     }
@@ -91,14 +152,18 @@
     }
 
     .logo {
-      font-family: var(--font-display);
-      font-size: 1.4rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--text) !important;
+      font-family: var(--font-display) !important;
+      font-size: 1.35rem;
+      font-weight: 900;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--silver-light) !important;
       text-decoration: none;
     }
-    .logo span { color: var(--accent) !important; }
+    .logo span { 
+      color: var(--crimson-light) !important;
+      text-shadow: 0 0 12px rgba(204, 0, 0, 0.6);
+    }
 
     .nav-links {
       display: flex !important;
@@ -109,11 +174,11 @@
       list-style: none !important;
     }
     .nav-links a {
-      font-size: 0.74rem !important;
-      font-weight: 700 !important;
+      font-size: 0.72rem !important;
+      font-weight: 800 !important;
       text-transform: uppercase !important;
-      letter-spacing: 0.12em !important;
-      color: var(--muted) !important;
+      letter-spacing: 0.2em !important;
+      color: var(--silver-core) !important;
       padding: 6px 0 !important;
       position: relative !important;
       transition: color 0.2s ease !important;
@@ -121,14 +186,15 @@
     }
     .nav-links a:hover,
     .nav-links a.active {
-      color: var(--text) !important;
+      color: #ffffff !important;
     }
     .nav-links a.active::after {
       content: '';
       position: absolute;
       bottom: 0; left: 0;
       width: 100%; height: 2px;
-      background: linear-gradient(90deg, #38bdf8, #a855f7) !important;
+      background: linear-gradient(90deg, #ff1a1a, #cc0000) !important;
+      box-shadow: 0 0 8px rgba(204, 0, 0, 0.7);
       border-radius: 2px;
     }
 
@@ -147,21 +213,24 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--muted);
-      background: rgba(255, 255, 255, 0.04);
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--silver-core);
+      background: #0a0a0a;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 5px 12px;
+      padding: 6px 14px;
       border-radius: 8px;
       margin-bottom: 16px;
       text-decoration: none;
       transition: all 0.2s ease;
     }
     .back-pill:hover {
-      color: var(--text);
-      border-color: var(--accent);
-      background: rgba(56, 189, 248, 0.1);
+      color: #ffffff;
+      border-color: #cc0000;
+      background: rgba(204, 0, 0, 0.12);
+      box-shadow: 0 0 12px rgba(204, 0, 0, 0.35);
       transform: translateX(-2px);
     }
 
@@ -178,34 +247,32 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: linear-gradient(135deg, rgba(0, 210, 255, 0.18), rgba(168, 85, 247, 0.18));
-      border: 1px solid rgba(0, 210, 255, 0.45);
-      padding: 5px 14px;
+      background: rgba(204, 0, 0, 0.12);
+      border: 1px solid #cc0000;
+      padding: 6px 16px;
       border-radius: 9999px;
-      font-size: 0.74rem;
-      font-weight: 800;
-      letter-spacing: 0.12em;
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: 0.25em;
       text-transform: uppercase;
-      color: var(--accent);
+      color: #ff1a1a;
       margin-bottom: 8px;
-      box-shadow: 0 0 16px rgba(0, 210, 255, 0.2);
+      box-shadow: 0 0 16px rgba(204, 0, 0, 0.3);
     }
     .page-title {
-      font-size: 2.6rem;
+      font-size: 2.8rem;
       font-weight: 900;
-      letter-spacing: -0.03em;
+      letter-spacing: 0.12em;
       font-family: var(--font-display);
       text-transform: uppercase;
-      background: linear-gradient(135deg, #ffffff 20%, #00d2ff 65%, #a855f7 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 2px 14px rgba(0, 210, 255, 0.3));
+      line-height: 1.1;
     }
     .page-subtitle {
-      color: var(--muted);
-      font-size: 0.94rem;
+      color: var(--silver-core);
+      font-size: 0.88rem;
       font-weight: 600;
-      margin-top: 4px;
+      letter-spacing: 0.06em;
+      margin-top: 6px;
     }
 
     /* Top Control Bar */
@@ -216,30 +283,67 @@
       flex-wrap: wrap;
     }
     .ctrl-pill-btn {
-      background: rgba(16, 24, 46, 0.85);
+      background: #0a0a0a;
       border: 1px solid rgba(255, 255, 255, 0.12);
-      color: var(--text);
+      color: #ffffff;
+      font-family: 'Montserrat', sans-serif;
       font-size: 0.78rem;
-      font-weight: 600;
-      padding: 7px 14px;
-      border-radius: 10px;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 9px 18px;
+      border-radius: 12px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
     }
     .ctrl-pill-btn:hover {
-      border-color: var(--accent);
-      background: rgba(56, 189, 248, 0.12);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.2);
+      border-color: #cc0000;
+      background: rgba(204, 0, 0, 0.15);
+      box-shadow: 0 0 16px rgba(204, 0, 0, 0.4);
+      transform: translateY(-2px);
     }
     .ctrl-pill-btn.active-sound {
-      border-color: #34d399;
-      color: #34d399;
-      background: rgba(52, 211, 153, 0.1);
+      border-color: #ff1a1a;
+      color: #ff1a1a;
+      background: rgba(204, 0, 0, 0.15);
+    }
+
+    /* Dark Brushed Metal Glass Cards */
+    .glass-card {
+      background: linear-gradient(135deg, #151515 0%, #0a0a0a 100%) !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 
+        0 20px 50px rgba(0, 0, 0, 0.95),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      position: relative;
+      margin-bottom: 24px;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .glass-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 100%, rgba(204, 0, 0, 0.12) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+    .glass-card:hover::after {
+      opacity: 1;
+    }
+    .glass-card:hover {
+      border-color: rgba(204, 0, 0, 0.5) !important;
+      box-shadow: 
+        0 24px 60px rgba(0, 0, 0, 0.98),
+        0 0 30px rgba(204, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
     }
 
     /* Dashboard Layout */
@@ -254,23 +358,37 @@
       }
     }
 
-    /* Glass Cards */
+    /* Dark Brushed Metal Cards */
     .anime-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-card);
+      background: linear-gradient(135deg, #151515 0%, #0a0a0a 100%) !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
       border-radius: 24px;
       padding: 30px;
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
       box-shadow: 
-        0 20px 40px -15px rgba(0, 0, 0, 0.5),
-        0 0 25px rgba(56, 189, 248, 0.05);
+        0 20px 50px rgba(0, 0, 0, 0.95),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
       position: relative;
       overflow: hidden;
-      transition: border-color 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .anime-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 100%, rgba(204, 0, 0, 0.12) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+    .anime-card:hover::after {
+      opacity: 1;
     }
     .anime-card:hover {
-      border-color: var(--border-card-hover);
+      border-color: rgba(204, 0, 0, 0.5) !important;
+      box-shadow: 
+        0 24px 60px rgba(0, 0, 0, 0.98),
+        0 0 30px rgba(204, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
     }
 
     /* ── STAGE 1: THE EPIC ANIME BOWL ──────────────────────────── */
@@ -1088,10 +1206,17 @@
     <!-- Title & Top Controls -->
     <div class="page-title-row">
       <div>
-        <div class="anime-badge">水分補給 • HYDRATION ENGINE</div>
-        <h1 class="page-title">The Anime Hydro Bowl 🌊</h1>
+        <div class="anime-badge">FORGED FOR THE FEARLESS • 4L HYDRO ENGINE</div>
+        <h1 class="page-title">
+          <span class="text-metallic-grey">THE BOLD</span> <span class="text-metallic-red">HYDRO 4L</span>
+        </h1>
+        <div class="laser-rule-row">
+          <div class="laser-line-left"></div>
+          <span class="laser-tag">PRECISION 4,000 ML HYDRATION ENGINE</span>
+          <div class="laser-line-right"></div>
+        </div>
         <p class="page-subtitle">
-          Real-time 4,000 ml water sanctuary. Text <code>@raviteja_water_bot</code> on Telegram to pour fresh water live!
+          Real-time 4,000 ml water sanctuary synced with <code>@raviteja_water_bot</code> on Telegram.
         </p>
       </div>
 

@@ -32,10 +32,17 @@
     overlay.innerHTML = `
       <div class="access-lock-card">
         <div class="access-lock-icon-wrap">🔒</div>
-        <div class="access-lock-badge">RESTRICTED ENGINE ACCESS</div>
-        <h2 class="access-lock-title">Closed Testing Phase</h2>
+        <div class="access-lock-badge">RESTRICTED VAULT</div>
+        <h2 class="access-lock-title">
+          <span class="text-metallic-grey">THE</span> <span class="text-metallic-red">BOLD</span> <span class="text-metallic-grey">VAULT</span>
+        </h2>
+        <div class="laser-rule-row">
+          <div class="laser-line-left"></div>
+          <span class="laser-tag">FORGED FOR THE FEARLESS</span>
+          <div class="laser-line-right"></div>
+        </div>
         <p class="access-lock-subtitle">
-          This sports science & performance engine is currently private. Please enter your access PIN or password to unlock.
+          Closed Testing Phase • Enter your access PIN or Password to unlock.
         </p>
         
         <form id="accessLockForm" onsubmit="window._submitAccessKey(event)">
@@ -44,7 +51,7 @@
               type="password" 
               id="accessKeyInput" 
               class="access-input-field" 
-              placeholder="Enter PIN or Password" 
+              placeholder="ENTER PIN OR PASSWORD" 
               autocomplete="current-password" 
               required
             />
@@ -54,7 +61,7 @@
           </div>
           
           <button type="submit" id="btnUnlockAccess" class="btn-unlock-access">
-            <span>⚡ Unlock Engine</span>
+            <span>⚡ UNLOCK VAULT</span>
           </button>
           
           <div id="accessLockError" class="access-lock-error"></div>

@@ -11,48 +11,111 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=Space+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="access-gate.css">
   <script src="access-gate.js"></script>
 
   <style>
     :root {
-      --bg: #040711;
-      --bg-card: rgba(10, 16, 32, 0.86);
-      --border-card: rgba(0, 240, 255, 0.22);
-      --border-card-hover: rgba(0, 240, 255, 0.65);
+      --bg-pure: #000000;
+      --bg: #000000;
+      --bg-metal-dark: #0a0a0a;
+      --bg-metal-light: #151515;
+      --bg-card: linear-gradient(135deg, #151515 0%, #0a0a0a 100%);
+      --border-card: rgba(255, 255, 255, 0.08);
+      --border-card-hover: rgba(204, 0, 0, 0.55);
+
+      /* The Bold Wear Signature Crimson & Silver */
+      --crimson-dark: #7a0000;
+      --crimson-core: #cc0000;
+      --crimson-light: #ff1a1a;
+      --silver-dark: #555555;
+      --silver-core: #888888;
+      --silver-light: #cccccc;
+
       --text: #ffffff;
-      --muted: #94a3b8;
-      --accent: #00f0ff;
-      --accent-glow: rgba(0, 240, 255, 0.35);
-      --protein-color: #00f0ff;
-      --carbs-color: #ffb800;
-      --fats-color: #ff2a5f;
-      --calories-color: #00ff9d;
-      --sugar-color: #ff007f;
-      --fiber-color: #a855f7;
+      --muted: #888888;
+      --accent: #cc0000;
+      --accent-glow: rgba(204, 0, 0, 0.45);
+
+      /* Macro Palette Harmonized with Bold Industrial Tone */
+      --protein-color: #ff1a1a; /* Pure Crimson */
+      --carbs-color: #f59e0b;   /* Burnished Amber Gold */
+      --fats-color: #e11d48;    /* Deep Crimson Ruby */
+      --calories-color: #10b981;/* Titanium Mint */
+      --sugar-color: #f43f5e;   /* Crimson Rose */
+      --fiber-color: #a855f7;   /* Metallic Amethyst */
+
       --font-mono: 'JetBrains Mono', monospace;
-      --font-display: 'Outfit', 'Space Grotesk', -apple-system, sans-serif;
-      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-display: 'Montserrat', -apple-system, sans-serif;
+      --font-sans: 'Montserrat', -apple-system, sans-serif;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
     body {
-      background: var(--bg);
+      background: #000000;
       background-image: 
-        radial-gradient(circle at 10% 15%, rgba(0, 240, 255, 0.12) 0%, transparent 45%),
-        radial-gradient(circle at 90% 80%, rgba(255, 184, 0, 0.09) 0%, transparent 50%),
-        radial-gradient(circle at 50% 50%, rgba(0, 255, 157, 0.06) 0%, transparent 60%);
-      color: var(--text);
+        radial-gradient(circle at 50% 15%, rgba(204, 0, 0, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 10% 70%, rgba(122, 0, 0, 0.06) 0%, transparent 50%),
+        radial-gradient(circle at 90% 80%, rgba(255, 26, 26, 0.04) 0%, transparent 50%);
+      color: #ffffff;
       font-family: var(--font-sans);
       min-height: 100vh;
       overflow-x: hidden;
       padding-bottom: 90px;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* Ambient Floating Stars */
+    /* Metallic Gradients for Typography */
+    .text-metallic-red {
+      background: linear-gradient(180deg, var(--crimson-light) 0%, var(--crimson-core) 40%, var(--crimson-dark) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      text-shadow: 0 4px 10px rgba(204, 0, 0, 0.35);
+    }
+
+    .text-metallic-grey {
+      background: linear-gradient(180deg, var(--silver-light) 0%, var(--silver-core) 50%, var(--silver-dark) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
+
+    /* Laser Rule Accents */
+    .laser-rule-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      width: 100%;
+      margin: 8px 0 14px;
+    }
+    .laser-line-left {
+      height: 2px;
+      width: 60px;
+      background: linear-gradient(90deg, transparent, #cc0000);
+      box-shadow: 0 0 10px rgba(204, 0, 0, 0.5);
+    }
+    .laser-line-right {
+      height: 2px;
+      flex: 1;
+      max-width: 240px;
+      background: linear-gradient(90deg, #cc0000, transparent);
+      box-shadow: 0 0 10px rgba(204, 0, 0, 0.5);
+    }
+    .laser-tag {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--silver-core);
+    }
+
+    /* Ambient Floating Red Laser Embers */
     .bg-particles {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -62,9 +125,10 @@
     }
     .star-dot {
       position: absolute;
-      background: #38bdf8;
+      background: #cc0000;
       border-radius: 50%;
-      opacity: 0.25;
+      opacity: 0.35;
+      box-shadow: 0 0 8px rgba(204, 0, 0, 0.6);
       animation: floatStar 8s ease-in-out infinite;
     }
     @keyframes floatStar {
@@ -74,10 +138,10 @@
 
     /* Header Nav */
     header {
-      background: rgba(7, 11, 22, 0.88) !important;
-      backdrop-filter: blur(18px) !important;
-      -webkit-backdrop-filter: blur(18px) !important;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+      background: rgba(10, 10, 10, 0.92) !important;
+      backdrop-filter: blur(20px) !important;
+      -webkit-backdrop-filter: blur(20px) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
       position: fixed !important;
       top: 0; left: 0; width: 100%; z-index: 100;
     }
@@ -93,14 +157,18 @@
     }
 
     .logo {
-      font-family: var(--font-display);
-      font-size: 1.4rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--text) !important;
+      font-family: var(--font-display) !important;
+      font-size: 1.35rem;
+      font-weight: 900;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--silver-light) !important;
       text-decoration: none;
     }
-    .logo span { color: var(--accent) !important; }
+    .logo span { 
+      color: var(--crimson-light) !important;
+      text-shadow: 0 0 12px rgba(204, 0, 0, 0.6);
+    }
 
     .nav-links {
       display: flex !important;
@@ -111,11 +179,11 @@
       list-style: none !important;
     }
     .nav-links a {
-      font-size: 0.74rem !important;
-      font-weight: 700 !important;
+      font-size: 0.72rem !important;
+      font-weight: 800 !important;
       text-transform: uppercase !important;
-      letter-spacing: 0.12em !important;
-      color: var(--muted) !important;
+      letter-spacing: 0.2em !important;
+      color: var(--silver-core) !important;
       padding: 6px 0 !important;
       position: relative !important;
       transition: color 0.2s ease !important;
@@ -123,14 +191,15 @@
     }
     .nav-links a:hover,
     .nav-links a.active {
-      color: var(--text) !important;
+      color: #ffffff !important;
     }
     .nav-links a.active::after {
       content: '';
       position: absolute;
       bottom: 0; left: 0;
       width: 100%; height: 2px;
-      background: linear-gradient(90deg, #38bdf8, #fbbf24) !important;
+      background: linear-gradient(90deg, #ff1a1a, #cc0000) !important;
+      box-shadow: 0 0 8px rgba(204, 0, 0, 0.7);
       border-radius: 2px;
     }
 
@@ -149,21 +218,24 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--muted);
-      background: rgba(255, 255, 255, 0.04);
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--silver-core);
+      background: #0a0a0a;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 5px 12px;
+      padding: 6px 14px;
       border-radius: 8px;
       margin-bottom: 16px;
       text-decoration: none;
       transition: all 0.2s ease;
     }
     .back-pill:hover {
-      color: var(--text);
-      border-color: var(--accent);
-      background: rgba(56, 189, 248, 0.1);
+      color: #ffffff;
+      border-color: #cc0000;
+      background: rgba(204, 0, 0, 0.12);
+      box-shadow: 0 0 12px rgba(204, 0, 0, 0.35);
       transform: translateX(-2px);
     }
 
@@ -180,58 +252,58 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: linear-gradient(135deg, rgba(0, 240, 255, 0.18), rgba(255, 184, 0, 0.18));
-      border: 1px solid rgba(0, 240, 255, 0.45);
-      padding: 5px 14px;
+      background: rgba(204, 0, 0, 0.12);
+      border: 1px solid #cc0000;
+      padding: 6px 16px;
       border-radius: 9999px;
-      font-size: 0.74rem;
-      font-weight: 800;
-      letter-spacing: 0.12em;
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: 0.25em;
       text-transform: uppercase;
-      color: var(--accent);
+      color: #ff1a1a;
       margin-bottom: 8px;
-      box-shadow: 0 0 16px rgba(0, 240, 255, 0.2);
+      box-shadow: 0 0 16px rgba(204, 0, 0, 0.3);
     }
     .page-title {
-      font-size: 2.6rem;
+      font-size: 2.8rem;
       font-weight: 900;
-      letter-spacing: -0.03em;
+      letter-spacing: 0.12em;
       font-family: var(--font-display);
       text-transform: uppercase;
-      background: linear-gradient(135deg, #ffffff 20%, #00f0ff 65%, #ffb800 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 2px 14px rgba(0, 240, 255, 0.3));
+      line-height: 1.1;
     }
     .page-subtitle {
-      color: var(--muted);
-      font-size: 0.94rem;
+      color: var(--silver-core);
+      font-size: 0.88rem;
       font-weight: 600;
-      margin-top: 4px;
+      letter-spacing: 0.06em;
+      margin-top: 6px;
     }
 
     /* Controls */
     .ctrl-pill-btn {
-      background: rgba(16, 24, 46, 0.88);
-      border: 1px solid rgba(0, 240, 255, 0.25);
-      color: var(--text);
-      font-size: 0.8rem;
-      font-weight: 700;
-      padding: 8px 16px;
+      background: #0a0a0a;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 9px 18px;
       border-radius: 12px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 7px;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
     }
     .ctrl-pill-btn:hover {
-      border-color: var(--accent);
-      background: rgba(0, 240, 255, 0.16);
+      border-color: #cc0000;
+      background: rgba(204, 0, 0, 0.15);
+      box-shadow: 0 0 16px rgba(204, 0, 0, 0.4);
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 240, 255, 0.3);
     }
 
     /* Dashboard Layout */
@@ -246,28 +318,38 @@
       }
     }
 
-    /* Glass Cards */
+    /* Dark Brushed Metal Cards */
     .fuel-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-card);
+      background: linear-gradient(135deg, #151515 0%, #0a0a0a 100%) !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
       border-radius: 24px;
       padding: 28px;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
       box-shadow: 
-        0 20px 40px -15px rgba(0, 0, 0, 0.7),
-        0 0 30px rgba(0, 240, 255, 0.08),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        0 20px 50px rgba(0, 0, 0, 0.95),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
       position: relative;
       margin-bottom: 24px;
+      overflow: hidden;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
+    .fuel-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 100%, rgba(204, 0, 0, 0.12) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+    .fuel-card:hover::after {
+      opacity: 1;
+    }
     .fuel-card:hover {
-      border-color: var(--border-card-hover);
+      border-color: rgba(204, 0, 0, 0.5) !important;
       box-shadow: 
-        0 24px 50px -15px rgba(0, 0, 0, 0.8),
-        0 0 35px rgba(0, 240, 255, 0.18),
-        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        0 24px 60px rgba(0, 0, 0, 0.98),
+        0 0 30px rgba(204, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
     }
 
     /* ── MACRO HERO RINGS ────────────────────────────────────────── */
@@ -289,8 +371,8 @@
     }
 
     .macro-ring-card {
-      background: rgba(10, 16, 32, 0.82);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: linear-gradient(135deg, #151515 0%, #0a0a0a 100%) !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
       border-radius: 20px;
       padding: 20px 14px;
       display: flex;
@@ -299,29 +381,40 @@
       text-align: center;
       position: relative;
       overflow: hidden;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 25px -5px rgba(0, 0, 0, 0.8) !important;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .macro-ring-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 100%, rgba(204, 0, 0, 0.12) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+    .macro-ring-card:hover::before {
+      opacity: 1;
     }
     .macro-ring-card:hover {
       transform: translateY(-6px);
-      box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.8), 0 0 30px var(--card-glow, rgba(0, 240, 255, 0.35));
-      border-color: var(--card-border, rgba(0, 240, 255, 0.65));
+      box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.9), 0 0 25px var(--card-glow, rgba(204, 0, 0, 0.4)) !important;
+      border-color: var(--card-border, rgba(204, 0, 0, 0.7)) !important;
     }
     .macro-ring-card::after {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0; height: 3px;
-      background: var(--card-accent, #00f0ff);
-      box-shadow: 0 0 12px var(--card-accent, #00f0ff);
+      background: var(--card-accent, #cc0000);
+      box-shadow: 0 0 12px var(--card-accent, #cc0000);
       opacity: 0.95;
     }
-    .card-protein { --card-accent: #00f0ff; --card-border: rgba(0, 240, 255, 0.6); --card-glow: rgba(0, 240, 255, 0.35); }
-    .card-carbs { --card-accent: #ffb800; --card-border: rgba(255, 184, 0, 0.6); --card-glow: rgba(255, 184, 0, 0.35); }
-    .card-fats { --card-accent: #ff2a5f; --card-border: rgba(255, 42, 95, 0.6); --card-glow: rgba(255, 42, 95, 0.35); }
-    .card-fiber { --card-accent: #a855f7; --card-border: rgba(168, 85, 247, 0.6); --card-glow: rgba(168, 85, 247, 0.35); }
-    .card-sugar { --card-accent: #ff007f; --card-border: rgba(255, 0, 127, 0.6); --card-glow: rgba(255, 0, 127, 0.35); }
-    .card-calories { --card-accent: #00ff9d; --card-border: rgba(0, 255, 157, 0.6); --card-glow: rgba(0, 255, 157, 0.35); }
+    .card-protein { --card-accent: #ff1a1a; --card-border: rgba(255, 26, 26, 0.7); --card-glow: rgba(255, 26, 26, 0.4); }
+    .card-carbs { --card-accent: #f59e0b; --card-border: rgba(245, 158, 11, 0.7); --card-glow: rgba(245, 158, 11, 0.4); }
+    .card-fats { --card-accent: #e11d48; --card-border: rgba(225, 29, 72, 0.7); --card-glow: rgba(225, 29, 72, 0.4); }
+    .card-fiber { --card-accent: #a855f7; --card-border: rgba(168, 85, 247, 0.7); --card-glow: rgba(168, 85, 247, 0.4); }
+    .card-sugar { --card-accent: #f43f5e; --card-border: rgba(244, 63, 94, 0.7); --card-glow: rgba(244, 63, 94, 0.4); }
+    .card-calories { --card-accent: #10b981; --card-border: rgba(16, 185, 129, 0.7); --card-glow: rgba(16, 185, 129, 0.4); }
 
     .pulse-ring-wrapper {
       position: relative;
@@ -562,31 +655,33 @@
       margin-bottom: 24px;
     }
     .view-pill-btn {
-      background: rgba(16, 24, 46, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      color: var(--muted);
-      font-size: 0.84rem;
-      font-weight: 700;
-      padding: 10px 20px;
+      background: #0a0a0a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--silver-core);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 10px 18px;
       border-radius: 12px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 8px;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      backdrop-filter: blur(8px);
     }
     .view-pill-btn:hover {
-      color: var(--text);
-      border-color: var(--accent);
-      background: rgba(56, 189, 248, 0.1);
+      color: #ffffff;
+      border-color: #cc0000;
+      background: rgba(204, 0, 0, 0.12);
       transform: translateY(-1px);
     }
     .view-pill-btn.active {
       color: #ffffff;
-      background: linear-gradient(135deg, rgba(2, 132, 199, 0.9), rgba(251, 191, 36, 0.9));
-      border-color: #fbbf24;
-      box-shadow: 0 4px 18px rgba(251, 191, 36, 0.35);
+      background: linear-gradient(180deg, #ff1a1a 0%, #cc0000 50%, #7a0000 100%);
+      border-color: #ff1a1a;
+      box-shadow: 0 4px 18px rgba(204, 0, 0, 0.5);
     }
 
     .hist-kpi-grid {
@@ -1352,10 +1447,17 @@
     <!-- Title & Controls -->
     <div class="page-title-row">
       <div>
-        <div class="fuel-badge">栄養エンジン • BRAND-ACCURATE NUTRITION</div>
-        <h1 class="page-title">Fuel & Macro Engine ⚡</h1>
+        <div class="fuel-badge">FORGED FOR THE FEARLESS • THE BOLD ENGINE</div>
+        <h1 class="page-title">
+          <span class="text-metallic-grey">THE BOLD</span> <span class="text-metallic-red">FUEL</span>
+        </h1>
+        <div class="laser-rule-row">
+          <div class="laser-line-left"></div>
+          <span class="laser-tag">BRAND-ACCURATE SPORTS NUTRITION ENGINE</span>
+          <div class="laser-line-right"></div>
+        </div>
         <p class="page-subtitle">
-          Real-time brand-specific nutrition tracker. Snap label photos or text logs to <code>@raviteja_fuel_bot</code> on Telegram!
+          Real-time biomonitoring & nutrition engine synced with <code>@raviteja_fuel_bot</code> on Telegram.
         </p>
       </div>
 
