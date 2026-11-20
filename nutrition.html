@@ -1014,11 +1014,38 @@
       grid-template-columns: 1fr 1.35fr;
       gap: 24px;
       margin-bottom: 28px;
+      transition: all 0.3s ease;
+    }
+    .bd-main-grid.dual-chart-mode {
+      grid-template-columns: 1fr 1fr;
+    }
+    .bd-main-grid.dual-chart-mode .bd-leaderboard-card {
+      grid-column: 1 / -1;
     }
     @media (max-width: 900px) {
-      .bd-main-grid {
+      .bd-main-grid,
+      .bd-main-grid.dual-chart-mode {
         grid-template-columns: 1fr;
       }
+      .bd-main-grid.dual-chart-mode .bd-leaderboard-card {
+        grid-column: auto;
+      }
+    }
+    .bd-bio-slice-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .bd-bio-slice-item:hover, .bd-bio-slice-item.highlighted {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(56, 189, 248, 0.35);
+      transform: translateX(3px);
     }
 
     .bd-selector-pills-row {
@@ -1965,10 +1992,10 @@
       <!-- Quick Nutrient Selector Pills Row -->
       <div class="bd-selector-pills-row" id="bdPillsRow"></div>
 
-      <!-- Main Breakdown Container: 2-column layout (Left: Pie Chart, Right: Leaderboard) -->
-      <div class="bd-main-grid">
-        <!-- Left: Pie Chart Hero Card -->
-        <div class="fuel-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative;">
+      <!-- Main Breakdown Container: 2-column or dual-chart layout -->
+      <div class="bd-main-grid" id="bdMainGrid">
+        <!-- Left: Pie Chart Hero Card (Food Sources) -->
+        <div class="fuel-card" id="bdSourcesCard" style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center; position: relative;">
           <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <div style="display: flex; align-items: center; gap: 10px; text-align: left;">
               <span id="bdIcon" style="font-size: 1.6rem;">🥩</span>
@@ -1984,7 +2011,7 @@
           </div>
 
           <!-- SVG Donut Chart Area -->
-          <div style="position: relative; width: 300px; height: 300px; margin: 12px auto;">
+          <div style="position: relative; width: 280px; height: 280px; margin: 8px auto;">
             <svg id="bdPieSvg" viewBox="0 0 300 300" style="width: 100%; height: 100%; transform: rotate(-90deg); filter: drop-shadow(0 4px 16px rgba(0,0,0,0.4));">
               <!-- Dynamically populated SVG slices -->
             </svg>
@@ -2001,8 +2028,43 @@
           </div>
         </div>
 
+        <!-- Middle: Biological Quality Classification Donut Card (Activated for Macros) -->
+        <div class="fuel-card" id="bdBioCard" style="display: none; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center; position: relative;">
+          <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px; text-align: left;">
+              <span id="bdBioIcon" style="font-size: 1.6rem;">🧬</span>
+              <div>
+                <h3 id="bdBioTitle" style="font-size: 1.3rem; font-weight: 800; color: #ffffff; margin: 0;">Quality Classification</h3>
+                <span id="bdBioSub" style="font-size: 0.78rem; color: var(--muted);">Nutrient composition breakdown</span>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div id="bdBioTotalVal" style="font-size: 1.45rem; font-weight: 800; font-family: var(--font-mono); color: #34d399;">0 g</div>
+              <span id="bdBioSubTag" style="font-size: 0.74rem; color: var(--muted); font-family: var(--font-mono);">Classification</span>
+            </div>
+          </div>
+
+          <!-- SVG Donut Chart Area -->
+          <div style="position: relative; width: 280px; height: 280px; margin: 8px auto;">
+            <svg id="bdBioPieSvg" viewBox="0 0 300 300" style="width: 100%; height: 100%; transform: rotate(-90deg); filter: drop-shadow(0 4px 16px rgba(0,0,0,0.4));">
+              <!-- Dynamically populated SVG slices -->
+            </svg>
+            <!-- Center Donut Content -->
+            <div id="bdBioCenterLabel" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; width: 140px;">
+              <div id="bdBioCenterIcon" style="font-size: 1.8rem; margin-bottom: 2px;">🧬</div>
+              <div id="bdBioCenterAmount" style="font-size: 1.35rem; font-weight: 800; font-family: var(--font-mono); color: #ffffff; line-height: 1.1;">0g</div>
+              <div id="bdBioCenterSub" style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px;">CLASSIFICATION</div>
+            </div>
+          </div>
+
+          <!-- Slices Legend Container (Clean, no targets) -->
+          <div id="bdBioSlicesLegend" style="width: 100%; display: grid; gap: 8px; margin-top: 10px; text-align: left;">
+            <!-- Dynamically populated slice items -->
+          </div>
+        </div>
+
         <!-- Right: Food Source Contribution Leaderboard -->
-        <div class="fuel-card">
+        <div class="fuel-card bd-leaderboard-card" id="bdLeaderboardCard">
           <div class="section-title-row" style="margin-bottom: 14px;">
             <div class="section-title">
               <span>🏆 Ingredient Contribution Leaderboard</span>
@@ -3142,6 +3204,449 @@
       `).join('');
     }
 
+    // ── BIOLOGICAL QUALITY & AMINO PROFILE CLASSIFICATION ENGINE ────────
+    function calculateBioClassification(logs, nutrientKey) {
+      if (!logs || logs.length === 0) return null;
+
+      // ── 1. PROTEIN (Complete vs Incomplete + Synergy) ────────────────────
+      if (nutrientKey === 'protein') {
+        let completeG = 0;
+        let incompleteG = 0;
+
+        logs.forEach(l => {
+          const p = typeof l.protein === 'number' ? l.protein : (parseFloat(l.protein) || 0);
+          if (p <= 0) return;
+          const text = ((l.itemName || '') + ' ' + (l.brand || '') + ' ' + (l.rawMessage || '')).toLowerCase();
+
+          // Direct complete protein sources
+          const isDirectComplete = /(?:chicken|poultry|turkey|egg|fish|salmon|tuna|prawn|seafood|whey|casein|paneer|curd|yogurt|milk|tofu|soy|edamame|meat|mutton|beef)/i.test(text);
+
+          // Paired meals (e.g. chicken with rice, paneer with roti, tofu with noodles, dal khichdi)
+          const isPairedMeal = /(?:chicken.*(?:rice|roti|bread|grain)|(?:rice|roti|bread|grain).*chicken|paneer.*(?:rice|roti)|tofu.*(?:rice|roti)|dal.*(?:rice|khichdi)|khichdi)/i.test(text);
+
+          if (isDirectComplete || isPairedMeal) {
+            completeG += p;
+          } else {
+            incompleteG += p;
+          }
+        });
+
+        completeG = Math.round(completeG * 10) / 10;
+        incompleteG = Math.round(incompleteG * 10) / 10;
+        const total = Math.round((completeG + incompleteG) * 10) / 10;
+        if (total === 0) return null;
+
+        return {
+          title: 'Protein Quality Classification',
+          subtitle: 'Complete vs Incomplete amino acid profile',
+          icon: '🥩',
+          total,
+          unit: 'g',
+          slices: [
+            {
+              label: 'Complete Protein',
+              desc: 'All 9 essential amino acids & leucine threshold (Chicken, Eggs, Paneer, Tofu, Dairy & paired meals)',
+              amount: completeG,
+              color: '#10b981',
+              pct: Math.round((completeG / total) * 1000) / 10
+            },
+            {
+              label: 'Incomplete Protein',
+              desc: 'Standalone grains, lentils or vegetables eaten without a complete protein anchor',
+              amount: incompleteG,
+              color: '#f59e0b',
+              pct: Math.round((incompleteG / total) * 1000) / 10
+            }
+          ]
+        };
+      }
+
+      // ── 2. FATS (Unsaturated vs Saturated vs Trans) ─────────────────────
+      if (nutrientKey === 'fats') {
+        let unsatG = 0;
+        let satG = 0;
+        let transG = 0;
+
+        logs.forEach(l => {
+          const f = typeof l.fats === 'number' ? l.fats : (parseFloat(l.fats) || 0);
+          if (f <= 0) return;
+          const text = ((l.itemName || '') + ' ' + (l.brand || '') + ' ' + (l.vitals || '') + ' ' + (l.rawMessage || '')).toLowerCase();
+
+          // Check if explicit saturated / trans fats exist in label
+          const satMatch = text.match(/saturated(?:\s*fat)?[:\s]+([\d.]+)\s*g/i);
+          const transMatch = text.match(/trans(?:\s*fat)?[:\s]+([\d.]+)\s*g/i);
+
+          if (satMatch) {
+            const sVal = parseFloat(satMatch[1]);
+            const tVal = transMatch ? parseFloat(transMatch[1]) : 0;
+            satG += sVal;
+            transG += tVal;
+            unsatG += Math.max(0, f - sVal - tVal);
+          } else {
+            // Biological lipid distribution based on culinary food science
+            if (/ghee|butter|cheese/i.test(text)) {
+              satG += f * 0.65;
+              unsatG += f * 0.35;
+            } else if (/paneer|milk|curd|yogurt/i.test(text)) {
+              satG += f * 0.60;
+              unsatG += f * 0.40;
+            } else if (/coconut/i.test(text)) {
+              satG += f * 0.85;
+              unsatG += f * 0.15;
+            } else if (/egg/i.test(text)) {
+              satG += f * 0.30;
+              unsatG += f * 0.70;
+            } else if (/chicken|poultry|fish|salmon|tuna|seafood/i.test(text)) {
+              satG += f * 0.30;
+              unsatG += f * 0.70;
+            } else if (/peanut\s*butter|peanut|almond|walnut|nut|seed|chia|flax|olive\s*oil|mustard\s*oil/i.test(text)) {
+              satG += f * 0.15;
+              unsatG += f * 0.85;
+            } else if (/samosa|puri|pakora|vada|bhajji|fried|pastry|bakery/i.test(text)) {
+              transG += f * 0.08;
+              satG += f * 0.45;
+              unsatG += f * 0.47;
+            } else {
+              satG += f * 0.33;
+              unsatG += f * 0.67;
+            }
+          }
+        });
+
+        unsatG = Math.round(unsatG * 10) / 10;
+        satG = Math.round(satG * 10) / 10;
+        transG = Math.round(transG * 10) / 10;
+        const total = Math.round((unsatG + satG + transG) * 10) / 10;
+        if (total === 0) return null;
+
+        const slices = [
+          {
+            label: 'Unsaturated Fat',
+            desc: 'Healthy MUFA & PUFA (Olive oil, nuts, peanut butter, eggs, fish, avocado)',
+            amount: unsatG,
+            color: '#34d399',
+            pct: Math.round((unsatG / total) * 1000) / 10
+          },
+          {
+            label: 'Saturated Fat',
+            desc: 'Stable dietary lipids from dairy (ghee, paneer, milk), eggs, chicken',
+            amount: satG,
+            color: '#f59e0b',
+            pct: Math.round((satG / total) * 1000) / 10
+          }
+        ];
+
+        if (transG > 0) {
+          slices.push({
+            label: 'Trans Fat',
+            desc: 'Industrial / commercial deep-fried fats & hydrogenated oils',
+            amount: transG,
+            color: '#f43f5e',
+            pct: Math.round((transG / total) * 1000) / 10
+          });
+        }
+
+        return {
+          title: 'Fats Quality Classification',
+          subtitle: 'Unsaturated, saturated and trans lipid distribution',
+          icon: '🥑',
+          total,
+          unit: 'g',
+          slices
+        };
+      }
+
+      // ── 3. CARBOHYDRATES (Complex vs Simple) ───────────────────────────
+      if (nutrientKey === 'carbs') {
+        let complexG = 0;
+        let simpleG = 0;
+
+        logs.forEach(l => {
+          const c = typeof l.carbs === 'number' ? l.carbs : (parseFloat(l.carbs) || 0);
+          if (c <= 0) return;
+          const text = ((l.itemName || '') + ' ' + (l.brand || '') + ' ' + (l.rawMessage || '')).toLowerCase();
+          const sugar = typeof l.sugar === 'number' ? l.sugar : (parseFloat(l.sugar) || 0);
+
+          if (/sugar|glucose|dextrose|maltodextrin|honey|jaggery|gel|energy\s*chew|juice|soda|sweet|dessert|candy|chocolate/i.test(text)) {
+            simpleG += c;
+          } else if (/banana|date|raisin|fruit|apple|mango|orange|grape/i.test(text)) {
+            const sPart = Math.min(c, Math.max(sugar, c * 0.75));
+            simpleG += sPart;
+            complexG += (c - sPart);
+          } else if (/milk|curd|yogurt/i.test(text)) {
+            simpleG += c;
+          } else {
+            const sPart = Math.min(c, sugar);
+            simpleG += sPart;
+            complexG += (c - sPart);
+          }
+        });
+
+        complexG = Math.round(complexG * 10) / 10;
+        simpleG = Math.round(simpleG * 10) / 10;
+        const total = Math.round((complexG + simpleG) * 10) / 10;
+        if (total === 0) return null;
+
+        return {
+          title: 'Carbohydrate Classification',
+          subtitle: 'Complex sustained starches vs fast simple sugars',
+          icon: '🍞',
+          total,
+          unit: 'g',
+          slices: [
+            {
+              label: 'Complex Carbs',
+              desc: 'Slow-digesting starches (Sweet potato, oats, rice, roti, dal, whole grains)',
+              amount: complexG,
+              color: '#fbbf24',
+              pct: Math.round((complexG / total) * 1000) / 10
+            },
+            {
+              label: 'Simple Carbs',
+              desc: 'Rapid-absorbing sugars (Fruit sugars, lactose, honey, intra-run fuel)',
+              amount: simpleG,
+              color: '#38bdf8',
+              pct: Math.round((simpleG / total) * 1000) / 10
+            }
+          ]
+        };
+      }
+
+      // ── 4. FIBER (Soluble vs Insoluble) ────────────────────────────────
+      if (nutrientKey === 'fiber') {
+        let solubleG = 0;
+        let insolubleG = 0;
+
+        logs.forEach(l => {
+          const fib = typeof l.fiber === 'number' ? l.fiber : (parseFloat(l.fiber) || 0);
+          if (fib <= 0) return;
+          const text = ((l.itemName || '') + ' ' + (l.brand || '') + ' ' + (l.rawMessage || '')).toLowerCase();
+
+          if (/oats|oatmeal|apple|orange|citrus|berry|sweet\s*potato|chia|flax|beans|lentil|dal/i.test(text)) {
+            solubleG += fib * 0.45;
+            insolubleG += fib * 0.55;
+          } else if (/psyllium|isabgol/i.test(text)) {
+            solubleG += fib * 0.70;
+            insolubleG += fib * 0.30;
+          } else {
+            solubleG += fib * 0.25;
+            insolubleG += fib * 0.75;
+          }
+        });
+
+        solubleG = Math.round(solubleG * 10) / 10;
+        insolubleG = Math.round(insolubleG * 10) / 10;
+        const total = Math.round((solubleG + insolubleG) * 10) / 10;
+        if (total === 0) return null;
+
+        return {
+          title: 'Fiber Classification',
+          subtitle: 'Soluble metabolic fiber vs insoluble digestive motility fiber',
+          icon: '🌾',
+          total,
+          unit: 'g',
+          slices: [
+            {
+              label: 'Soluble Fiber',
+              desc: 'Forms gel to stabilize glucose & support heart health (Oats, fruits, beans, sweet potato)',
+              amount: solubleG,
+              color: '#06b6d4',
+              pct: Math.round((solubleG / total) * 1000) / 10
+            },
+            {
+              label: 'Insoluble Fiber',
+              desc: 'Provides digestive bulk & gut motility (Whole wheat roti, brown rice, raw vegetables, bran)',
+              amount: insolubleG,
+              color: '#10b981',
+              pct: Math.round((insolubleG / total) * 1000) / 10
+            }
+          ]
+        };
+      }
+
+      // ── 5. SUGAR (Natural vs Added) ────────────────────────────────────
+      if (nutrientKey === 'sugar') {
+        let naturalG = 0;
+        let addedG = 0;
+
+        logs.forEach(l => {
+          const s = typeof l.sugar === 'number' ? l.sugar : (parseFloat(l.sugar) || 0);
+          if (s <= 0) return;
+          const text = ((l.itemName || '') + ' ' + (l.brand || '') + ' ' + (l.rawMessage || '')).toLowerCase();
+
+          const addedMatch = text.match(/added\s*sugar[:\s]+([\d.]+)\s*g/i);
+          if (addedMatch) {
+            const aVal = parseFloat(addedMatch[1]);
+            addedG += aVal;
+            naturalG += Math.max(0, s - aVal);
+          } else if (/sugar|honey|jaggery|syrup|gel|energy\s*chew|candy|chocolate|sweet|dessert|soda|cola/i.test(text)) {
+            addedG += s;
+          } else if (/fruit|banana|apple|orange|mango|date|raisin|milk|curd|yogurt|sweet\s*potato|carrot|beetroot/i.test(text)) {
+            naturalG += s;
+          } else {
+            naturalG += s * 0.85;
+            addedG += s * 0.15;
+          }
+        });
+
+        naturalG = Math.round(naturalG * 10) / 10;
+        addedG = Math.round(addedG * 10) / 10;
+        const total = Math.round((naturalG + addedG) * 10) / 10;
+        if (total === 0) return null;
+
+        return {
+          title: 'Sugar Quality Classification',
+          subtitle: 'Natural whole-food sugars vs added sweeteners',
+          icon: '🍬',
+          total,
+          unit: 'g',
+          slices: [
+            {
+              label: 'Natural Sugars',
+              desc: 'Cellular fructose & lactose from fruits, sweet potatoes, milk, curd & vegetables',
+              amount: naturalG,
+              color: '#ec4899',
+              pct: Math.round((naturalG / total) * 1000) / 10
+            },
+            {
+              label: 'Added Sugars',
+              desc: 'Refined sucrose, table sugars, syrups & intra-run energy supplements',
+              amount: addedG,
+              color: '#8b5cf6',
+              pct: Math.round((addedG / total) * 1000) / 10
+            }
+          ]
+        };
+      }
+
+      return null;
+    }
+
+    // ── RENDER SECONDARY BIOLOGICAL DONUT PIE CHART ────────────────────
+    function renderBioClassificationPie(bioData) {
+      const bioCard = document.getElementById('bdBioCard');
+      if (!bioCard) return;
+
+      if (!bioData || !bioData.slices || bioData.slices.length === 0 || bioData.total === 0) {
+        bioCard.style.display = 'none';
+        const gridEl = document.getElementById('bdMainGrid');
+        if (gridEl) gridEl.classList.remove('dual-chart-mode');
+        return;
+      }
+
+      bioCard.style.display = 'flex';
+      const gridEl = document.getElementById('bdMainGrid');
+      if (gridEl) gridEl.classList.add('dual-chart-mode');
+
+      window._bioSlices = bioData.slices;
+      window._currentBioUnit = bioData.unit;
+      window._currentBioIcon = bioData.icon || '🧬';
+
+      // Header fields
+      document.getElementById('bdBioIcon').innerText = bioData.icon || '🧬';
+      document.getElementById('bdBioTitle').innerText = bioData.title;
+      document.getElementById('bdBioSub').innerText = bioData.subtitle;
+      document.getElementById('bdBioTotalVal').innerHTML = `${bioData.total.toLocaleString()} <span style="font-size: 0.95rem; color: var(--muted);">${bioData.unit}</span>`;
+
+      // Reset center label
+      const resetBioCenter = () => {
+        document.getElementById('bdBioCenterIcon').innerText = bioData.icon || '🧬';
+        document.getElementById('bdBioCenterAmount').innerText = `${bioData.total.toLocaleString()} ${bioData.unit}`;
+        document.getElementById('bdBioCenterSub').innerText = 'TOTAL CLASSIFIED';
+      };
+      resetBioCenter();
+
+      // SVG Donut
+      const svg = document.getElementById('bdBioPieSvg');
+      svg.innerHTML = '';
+
+      const activeSlices = bioData.slices.filter(s => s.amount > 0);
+      const rOuter = 130;
+      const rInner = 74;
+      const cx = 150;
+      const cy = 150;
+
+      if (activeSlices.length === 1) {
+        const s = activeSlices[0];
+        const p1 = describeArc(cx, cy, rOuter, rInner, 0, 180);
+        const p2 = describeArc(cx, cy, rOuter, rInner, 180, 360);
+        svg.innerHTML = `
+          <path d="${p1}" fill="${s.color}" class="pie-slice" id="pie_bio_slice_0" data-idx="0"></path>
+          <path d="${p2}" fill="${s.color}" class="pie-slice" id="pie_bio_slice_0_b" data-idx="0"></path>
+        `;
+      } else {
+        let currentAngle = 0;
+        svg.innerHTML = bioData.slices.map((s, idx) => {
+          if (s.amount <= 0) return '';
+          const sliceAngle = (s.amount / bioData.total) * 360;
+          const startAngle = currentAngle;
+          const endAngle = currentAngle + sliceAngle;
+          currentAngle = endAngle;
+
+          const d = describeArc(cx, cy, rOuter, rInner, startAngle, endAngle);
+          return `<path d="${d}" fill="${s.color}" class="pie-slice" id="pie_bio_slice_${idx}" data-idx="${idx}"></path>`;
+        }).join('');
+      }
+
+      // Hover interactions
+      bioData.slices.forEach((s, idx) => {
+        const sliceEl = document.getElementById(`pie_bio_slice_${idx}`);
+        const sliceElB = document.getElementById(`pie_bio_slice_${idx}_b`);
+        const rowEl = document.getElementById(`bd_bio_row_${idx}`);
+
+        const highlight = (active) => {
+          if (active) {
+            document.getElementById('bdBioCenterIcon').innerText = s.icon || bioData.icon || '🧬';
+            document.getElementById('bdBioCenterAmount').innerText = `${s.amount.toLocaleString()} ${bioData.unit}`;
+            document.getElementById('bdBioCenterSub').innerText = `${s.pct}% • ${s.label.toUpperCase()}`;
+            if (sliceEl) sliceEl.classList.add('highlighted');
+            if (sliceElB) sliceElB.classList.add('highlighted');
+            if (rowEl) rowEl.classList.add('highlighted');
+          } else {
+            resetBioCenter();
+            if (sliceEl) sliceEl.classList.remove('highlighted');
+            if (sliceElB) sliceElB.classList.remove('highlighted');
+            if (rowEl) rowEl.classList.remove('highlighted');
+          }
+        };
+
+        if (sliceEl) {
+          sliceEl.addEventListener('mouseenter', () => highlight(true));
+          sliceEl.addEventListener('mouseleave', () => highlight(false));
+          sliceEl.addEventListener('click', () => highlight(true));
+        }
+        if (sliceElB) {
+          sliceElB.addEventListener('mouseenter', () => highlight(true));
+          sliceElB.addEventListener('mouseleave', () => highlight(false));
+          sliceElB.addEventListener('click', () => highlight(true));
+        }
+      });
+
+      // Render Slices Legend Cards (Clean, NO TARGETS!)
+      const legendContainer = document.getElementById('bdBioSlicesLegend');
+      if (legendContainer) {
+        legendContainer.innerHTML = bioData.slices.map((s, idx) => `
+          <div class="bd-bio-slice-item" id="bd_bio_row_${idx}" onmouseenter="highlightBioItem(${idx}, true)" onmouseleave="highlightBioItem(${idx}, false)">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="display: inline-block; width: 12px; height: 12px; border-radius: 4px; background: ${s.color}; box-shadow: 0 0 8px ${s.color}; flex-shrink: 0;"></span>
+              <div>
+                <div style="font-weight: 800; font-size: 0.9rem; color: #ffffff;">${escapeHtml(s.label)}</div>
+                <div style="font-size: 0.73rem; color: var(--muted); margin-top: 2px; line-height: 1.25;">${escapeHtml(s.desc)}</div>
+              </div>
+            </div>
+            <div style="text-align: right; margin-left: 12px; flex-shrink: 0;">
+              <div style="font-weight: 800; font-family: var(--font-mono); font-size: 1.05rem; color: #ffffff;">
+                ${s.amount.toLocaleString()} <span style="font-size: 0.76rem; color: var(--muted);">${bioData.unit}</span>
+              </div>
+              <div style="font-size: 0.78rem; font-weight: 700; font-family: var(--font-mono); color: ${s.color};">
+                ${s.pct}%
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
     function renderBreakdownView(nutrientKey) {
       const cfg = NUTRIENT_CONFIGS[nutrientKey] || NUTRIENT_CONFIGS.protein;
       renderBreakdownPills(nutrientKey);
@@ -3271,10 +3776,14 @@
         });
       }
 
+      // Check if macro supports biological quality classification
+      const isMacroWithBio = ['protein', 'fats', 'carbs', 'fiber', 'sugar'].includes(nutrientKey);
+      const bioData = isMacroWithBio ? calculateBioClassification(logs, nutrientKey) : null;
+
       // Update titles
       document.getElementById('bdIcon').innerText = cfg.icon;
-      document.getElementById('bdTitle').innerText = `${cfg.name} Breakdown`;
-      document.getElementById('bdSub').innerText = customSubtitle || `Real-time food and supplement sources for ${cfg.name} today`;
+      document.getElementById('bdTitle').innerText = (isMacroWithBio && bioData) ? `${cfg.name} Sources` : `${cfg.name} Breakdown`;
+      document.getElementById('bdSub').innerText = customSubtitle || ((isMacroWithBio && bioData) ? `Food & meal contributions to ${cfg.name.toLowerCase()} today` : `Real-time food and supplement sources for ${cfg.name} today`);
       document.getElementById('bdTotalVal').innerHTML = `${totalAmount.toLocaleString()} <span style="font-size: 0.95rem; color: var(--muted);">${cfg.unit}</span>`;
       
       const pctTarget = targetVal > 0 ? Math.round((totalAmount / targetVal) * 100) : 0;
@@ -3286,15 +3795,30 @@
       const resetCenterLabel = () => {
         document.getElementById('bdCenterIcon').innerText = cfg.icon;
         document.getElementById('bdCenterAmount').innerText = `${totalAmount.toLocaleString()} ${cfg.unit}`;
-        document.getElementById('bdCenterSub').innerText = 'TOTAL TODAY';
+        document.getElementById('bdCenterSub').innerText = isMacroWithBio ? 'SOURCES TOTAL' : 'TOTAL TODAY';
       };
       resetCenterLabel();
+
+      // Render Bio Quality Pie Chart if available
+      if (isMacroWithBio && bioData && totalAmount > 0) {
+        renderBioClassificationPie(bioData);
+      } else {
+        const bioEl = document.getElementById('bdBioCard');
+        if (bioEl) bioEl.style.display = 'none';
+        const gridEl = document.getElementById('bdMainGrid');
+        if (gridEl) gridEl.classList.remove('dual-chart-mode');
+      }
 
       // Render SVG Donut
       const svg = document.getElementById('bdPieSvg');
       svg.innerHTML = '';
 
       if (totalAmount === 0 || items.length === 0) {
+        const bioEl = document.getElementById('bdBioCard');
+        if (bioEl) bioEl.style.display = 'none';
+        const gridEl = document.getElementById('bdMainGrid');
+        if (gridEl) gridEl.classList.remove('dual-chart-mode');
+
         // Empty placeholder ring
         svg.innerHTML = `
           <circle cx="150" cy="150" r="100" fill="none" stroke="rgba(255, 255, 255, 0.1)" stroke-width="20" stroke-dasharray="6,6"></circle>
@@ -3817,6 +4341,9 @@
     window.renderFoodTimeline = renderFoodTimeline;
     window.saveFoodAdjustment = saveFoodAdjustment;
     window.deleteCurrentFoodEntry = deleteCurrentFoodEntry;
+    window.highlightBioItem = highlightBioItem;
+    window.calculateBioClassification = calculateBioClassification;
+    window.renderBioClassificationPie = renderBioClassificationPie;
 
     function highlightNutrientItem(idx, active) {
       const sliceEl = document.getElementById(`pie_slice_${idx}`);
@@ -3827,6 +4354,32 @@
         if (sliceElB) sliceElB.classList.add('highlighted');
         if (rowEl) rowEl.classList.add('highlighted');
       } else {
+        if (sliceEl) sliceEl.classList.remove('highlighted');
+        if (sliceElB) sliceElB.classList.remove('highlighted');
+        if (rowEl) rowEl.classList.remove('highlighted');
+      }
+    }
+
+    function highlightBioItem(idx, active) {
+      const sliceEl = document.getElementById(`pie_bio_slice_${idx}`);
+      const sliceElB = document.getElementById(`pie_bio_slice_${idx}_b`);
+      const rowEl = document.getElementById(`bd_bio_row_${idx}`);
+      const s = window._bioSlices && window._bioSlices[idx];
+      if (!s) return;
+
+      if (active) {
+        document.getElementById('bdBioCenterIcon').innerText = s.icon || window._currentBioIcon || '🧬';
+        document.getElementById('bdBioCenterAmount').innerText = `${s.amount.toLocaleString()} ${window._currentBioUnit || 'g'}`;
+        document.getElementById('bdBioCenterSub').innerText = `${s.pct}% • ${s.label.toUpperCase()}`;
+        if (sliceEl) sliceEl.classList.add('highlighted');
+        if (sliceElB) sliceElB.classList.add('highlighted');
+        if (rowEl) rowEl.classList.add('highlighted');
+      } else {
+        const bioDataSlices = window._bioSlices || [];
+        const total = bioDataSlices.reduce((sum, item) => sum + item.amount, 0);
+        document.getElementById('bdBioCenterIcon').innerText = window._currentBioIcon || '🧬';
+        document.getElementById('bdBioCenterAmount').innerText = `${Math.round(total * 10) / 10} ${window._currentBioUnit || 'g'}`;
+        document.getElementById('bdBioCenterSub').innerText = 'TOTAL CLASSIFIED';
         if (sliceEl) sliceEl.classList.remove('highlighted');
         if (sliceElB) sliceElB.classList.remove('highlighted');
         if (rowEl) rowEl.classList.remove('highlighted');
