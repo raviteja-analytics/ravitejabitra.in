@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import VitalityRings from '../components/VitalityRings';
 import MacroPod from '../components/MacroPod';
-import { RefreshCw, Zap, Plus, CheckCircle2, Footprints, Flame, Moon, Info, HeartPulse } from 'lucide-react';
+import NutrientBreakdownModal from '../components/NutrientBreakdownModal';
+import { RefreshCw, Zap, Plus, CheckCircle2, Footprints, Flame, Moon, Info, HeartPulse, PieChart, ArrowUpRight } from 'lucide-react';
 
 export default function FuelPage() {
   const [loading, setLoading] = useState(true);
   const [dayMode, setDayMode] = useState('strength_upper');
+  const [activeBreakdownKey, setActiveBreakdownKey] = useState(null);
   const [data, setData] = useState({
     todayStr: '',
     calories: { current: 0, target: 2250 },
@@ -36,7 +38,8 @@ export default function FuelPage() {
     bioFats: { unsaturated: 0, saturated: 0, unsatPct: 100, satPct: 0 },
     bioFiber: { soluble: 0, insoluble: 0, solublePct: 40, insolublePct: 60 },
     bioSugar: { natural: 0, added: 0, naturalPct: 100, addedPct: 0 },
-    timeline: []
+    timeline: [],
+    rawLogs: []
   });
 
   const dayModes = [
@@ -133,7 +136,7 @@ export default function FuelPage() {
     });
     const totalF = satF + unsatF || 1;
 
-    // 4. Fiber (Soluble vs Insoluble estimate based on whole grains/oats/fruits)
+    // 4. Fiber
     let totalFib = logs.reduce((sum, l) => sum + (parseFloat(l.fiber) || 0), 0);
     let solubleFib = Math.round(totalFib * 0.4 * 10) / 10;
     let insolubleFib = Math.round(totalFib * 0.6 * 10) / 10;
@@ -202,9 +205,13 @@ export default function FuelPage() {
 
         const mappedTimeline = logs.map((log, idx) => ({
           id: log.rawTimestamp || idx,
+          rawTimestamp: log.rawTimestamp || idx,
           time: log.time || '',
           name: (log.quantity && log.servingUnit ? `${log.quantity} ${log.servingUnit} ` : '') + (log.itemName || log.rawMessage || 'Meal'),
+          itemName: log.itemName || '',
+          rawMessage: log.rawMessage || '',
           brand: log.brand || '',
+          quantity: log.quantity || 1,
           calories: Math.round(log.calories || 0),
           protein: Math.round((log.protein || 0) * 10) / 10,
           carbs: Math.round((log.carbs || 0) * 10) / 10,
@@ -264,7 +271,8 @@ export default function FuelPage() {
           bioFats: bio.fats,
           bioFiber: bio.fiber,
           bioSugar: bio.sugar,
-          timeline: mappedTimeline
+          timeline: mappedTimeline,
+          rawLogs: logs
         });
       }
     } catch (err) {
@@ -282,7 +290,7 @@ export default function FuelPage() {
   const foodConsumed = data.calories.current || 0;
   const activeBurn = data.activity.caloriesBurned || 0;
   const remainingToTarget = Math.max(0, tdeeTarget - foodConsumed);
-  const netEnergyBalance = foodConsumed - tdeeTarget; // Deficit (< 0) or Surplus (> 0) against daily TDEE maintenance
+  const netEnergyBalance = foodConsumed - tdeeTarget;
   const isDeficit = netEnergyBalance < 0;
 
   return (
@@ -323,8 +331,12 @@ export default function FuelPage() {
       <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#1c1c1e] border border-black/[0.06] dark:border-white/[0.08] shadow-sm space-y-6">
         
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-          {/* Left: Concentric Vitality Rings */}
-          <div className="flex items-center gap-6 sm:gap-8">
+          {/* Left: Concentric Vitality Rings (Clickable to open Energy Pie Chart) */}
+          <div
+            onClick={() => setActiveBreakdownKey('calories')}
+            className="flex items-center gap-6 sm:gap-8 cursor-pointer group p-2 rounded-2xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+            title="Click to view Energy/Calorie breakdown pie chart"
+          >
             <VitalityRings
               calories={data.calories}
               protein={data.protein}
@@ -332,41 +344,48 @@ export default function FuelPage() {
               size={144}
             />
             <div className="space-y-1">
-              <span className="text-xs font-bold uppercase tracking-wider text-rose-500 block">
-                Food Energy Consumed
+              <span className="text-xs font-bold uppercase tracking-wider text-rose-500 flex items-center gap-1.5">
+                <span>Food Energy Consumed</span>
+                <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition-opacity" />
               </span>
               <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-900 dark:text-white font-mono">
                 {foodConsumed.toLocaleString()} <span className="text-sm font-normal text-neutral-400">/ {tdeeTarget.toLocaleString()} kcal</span>
               </h2>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Mode: <b>{dayModes.find(m => m.id === dayMode)?.label || dayMode}</b>
+                Mode: <b>{dayModes.find(m => m.id === dayMode)?.label || dayMode}</b> • <span className="text-rose-500 underline font-medium">Click for Pie Chart ↗</span>
               </p>
             </div>
           </div>
 
-          {/* Right: Ring Legend */}
+          {/* Right: Ring Legend (Clickable items) */}
           <div className="grid grid-cols-3 md:grid-cols-1 gap-4 w-full md:w-auto text-left">
-            <div className="flex items-center gap-3">
+            <div
+              onClick={() => setActiveBreakdownKey('calories')}
+              className="flex items-center gap-3 cursor-pointer p-2 rounded-xl hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors"
+            >
               <span className="w-3.5 h-3.5 rounded-full bg-[#fa114f] flex-shrink-0" />
               <div>
-                <span className="text-[11px] text-neutral-400 uppercase font-mono block">Energy Intake</span>
+                <span className="text-[11px] text-neutral-400 uppercase font-mono block">Energy Intake ↗</span>
                 <span className="text-xs font-bold font-mono text-neutral-900 dark:text-white">
                   {foodConsumed} kcal ({Math.round((foodConsumed / (tdeeTarget || 1)) * 100)}%)
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div
+              onClick={() => setActiveBreakdownKey('protein')}
+              className="flex items-center gap-3 cursor-pointer p-2 rounded-xl hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors"
+            >
               <span className="w-3.5 h-3.5 rounded-full bg-[#34c759] flex-shrink-0" />
               <div>
-                <span className="text-[11px] text-neutral-400 uppercase font-mono block">Protein</span>
+                <span className="text-[11px] text-neutral-400 uppercase font-mono block">Protein ↗</span>
                 <span className="text-xs font-bold font-mono text-neutral-900 dark:text-white">
                   {data.protein.current}g / {data.protein.target}g ({Math.round((data.protein.current / (data.protein.target || 1)) * 100)}%)
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 p-2">
               <span className="w-3.5 h-3.5 rounded-full bg-[#007aff] flex-shrink-0" />
               <div>
                 <span className="text-[11px] text-neutral-400 uppercase font-mono block">Water (4L)</span>
@@ -389,8 +408,14 @@ export default function FuelPage() {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {/* 1. Food Consumed */}
-            <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
-              <span className="text-[10px] font-mono uppercase text-neutral-400 block">Food Intake Consumed</span>
+            <div
+              onClick={() => setActiveBreakdownKey('calories')}
+              className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 cursor-pointer hover:border-rose-500/40 transition-all"
+            >
+              <span className="text-[10px] font-mono uppercase text-neutral-400 block flex justify-between items-center">
+                <span>Food Consumed</span>
+                <span className="text-rose-500 font-bold">↗ Pie</span>
+              </span>
               <span className="text-lg font-black font-mono text-neutral-900 dark:text-white block mt-0.5">
                 {foodConsumed.toLocaleString()} <span className="text-xs font-normal">kcal</span>
               </span>
@@ -458,14 +483,17 @@ export default function FuelPage() {
         })}
       </div>
 
-      {/* ── 3. FULL 5 CORE MACRONUTRIENT PODS ───────────────────────── */}
+      {/* ── 3. FULL 5 CORE MACRONUTRIENT PODS (CLICKABLE FOR PIE CHARTS) ─── */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-base font-bold tracking-tight text-neutral-900 dark:text-white">
-            Target Macronutrients & Fiber/Sugar Thresholds
+          <h3 className="text-base font-bold tracking-tight text-neutral-900 dark:text-white flex items-center gap-2">
+            <span>Target Macronutrients & Thresholds</span>
+            <span className="text-xs font-mono font-bold text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-full">
+              Tap any card for Pie Chart
+            </span>
           </h3>
-          <span className="text-xs text-neutral-400">
-            Tap cards for biological quality breakdown
+          <span className="text-xs text-neutral-400 hidden sm:inline">
+            Interactive food source & quality donut charts
           </span>
         </div>
 
@@ -479,6 +507,7 @@ export default function FuelPage() {
             target={data.protein.target}
             unit="g"
             color="#fa114f"
+            onOpenPie={() => setActiveBreakdownKey('protein')}
             breakdown={[
               {
                 label: 'Complete Protein',
@@ -506,6 +535,7 @@ export default function FuelPage() {
             target={data.carbs.target}
             unit="g"
             color="#f59e0b"
+            onOpenPie={() => setActiveBreakdownKey('carbs')}
             breakdown={[
               {
                 label: 'Complex Starches',
@@ -533,6 +563,7 @@ export default function FuelPage() {
             target={data.fats.target}
             unit="g"
             color="#007aff"
+            onOpenPie={() => setActiveBreakdownKey('fats')}
             breakdown={[
               {
                 label: 'Unsaturated Healthy Fats',
@@ -560,20 +591,21 @@ export default function FuelPage() {
             target={data.fiber.target}
             unit="g"
             color="#10b981"
+            onOpenPie={() => setActiveBreakdownKey('fiber')}
             breakdown={[
               {
                 label: 'Soluble Prebiotic Fiber',
                 value: data.bioFiber.soluble,
                 pct: data.bioFiber.solublePct,
                 color: '#10b981',
-                description: 'Beta-glucan from oats and fruit pectins that feed beneficial gut flora and stabilize glucose.'
+                description: 'Beta-glucan & fruit pectins forming a gel to stabilize blood glucose and feed microbiome.'
               },
               {
                 label: 'Insoluble Roughage',
                 value: data.bioFiber.insoluble,
                 pct: data.bioFiber.insolublePct,
                 color: '#059669',
-                description: 'Cellulose from whole grains, vegetable walls, and seeds supporting digestive transit.'
+                description: 'Cellulose bulk from grains and vegetables supporting smooth digestive transit.'
               }
             ]}
           />
@@ -587,6 +619,7 @@ export default function FuelPage() {
             target={data.sugar.target}
             unit="g"
             color="#ec4899"
+            onOpenPie={() => setActiveBreakdownKey('sugar')}
             breakdown={[
               {
                 label: 'Natural Whole Food Sugars',
@@ -614,7 +647,7 @@ export default function FuelPage() {
             <span className="text-xs font-bold uppercase tracking-wider text-amber-500 block">Recovery Telemetry</span>
             <h4 className="text-base font-bold text-neutral-900 dark:text-white">Daily Activity, Calorie Burn & Sleep</h4>
           </div>
-          <span className="text-xs text-neutral-400 font-mono">Logged via Telegram / Apple Health</span>
+          <span className="text-xs text-neutral-400 font-mono">Logged via Telegram</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -707,43 +740,58 @@ export default function FuelPage() {
         </div>
       </div>
 
-      {/* ── 5. CELLULAR MINERALS, VITALS & CREATINE ─────────────────── */}
+      {/* ── 5. CELLULAR MINERALS, VITALS & CREATINE (CLICKABLE) ─────── */}
       <div className="p-6 rounded-3xl bg-white dark:bg-[#1c1c1e] border border-black/[0.06] dark:border-white/[0.08] shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-500 block">Cellular Vitals</span>
             <h4 className="text-base font-bold text-neutral-900 dark:text-white">Key Electrolytes, Minerals & Creatine</h4>
           </div>
-          <span className="text-xs text-neutral-400">Absorbed from daily nutrition & athletic supplements</span>
+          <span className="text-xs text-neutral-400">Click any tile to inspect nutrient sources</span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
-          <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center">
-            <span className="text-[11px] text-neutral-400 uppercase font-mono block">Sodium (Na⁺)</span>
+          <div
+            onClick={() => setActiveBreakdownKey('sodium')}
+            className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center cursor-pointer hover:border-emerald-500/40 transition-all group"
+          >
+            <span className="text-[11px] text-neutral-400 uppercase font-mono block group-hover:text-emerald-500 transition-colors">Sodium (Na⁺) ↗</span>
             <span className="text-base font-extrabold font-mono text-emerald-500">{data.micros.sodium} mg</span>
             <span className="text-[10px] text-neutral-400 block mt-0.5">Target: 3,500</span>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center">
-            <span className="text-[11px] text-neutral-400 uppercase font-mono block">Potassium (K⁺)</span>
+          <div
+            onClick={() => setActiveBreakdownKey('potassium')}
+            className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center cursor-pointer hover:border-emerald-500/40 transition-all group"
+          >
+            <span className="text-[11px] text-neutral-400 uppercase font-mono block group-hover:text-emerald-500 transition-colors">Potassium (K⁺) ↗</span>
             <span className="text-base font-extrabold font-mono text-emerald-500">{data.micros.potassium} mg</span>
             <span className="text-[10px] text-neutral-400 block mt-0.5">Target: 4,700</span>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center">
-            <span className="text-[11px] text-neutral-400 uppercase font-mono block">Magnesium</span>
+          <div
+            onClick={() => setActiveBreakdownKey('magnesium')}
+            className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center cursor-pointer hover:border-emerald-500/40 transition-all group"
+          >
+            <span className="text-[11px] text-neutral-400 uppercase font-mono block group-hover:text-emerald-500 transition-colors">Magnesium ↗</span>
             <span className="text-base font-extrabold font-mono text-emerald-500">{data.micros.magnesium} mg</span>
             <span className="text-[10px] text-neutral-400 block mt-0.5">Target: 420</span>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center">
-            <span className="text-[11px] text-neutral-400 uppercase font-mono block">Omega-3</span>
+          <div
+            onClick={() => setActiveBreakdownKey('omega3')}
+            className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center cursor-pointer hover:border-emerald-500/40 transition-all group"
+          >
+            <span className="text-[11px] text-neutral-400 uppercase font-mono block group-hover:text-emerald-500 transition-colors">Omega-3 ↗</span>
             <span className="text-base font-extrabold font-mono text-emerald-500">{data.micros.omega3} mg</span>
             <span className="text-[10px] text-neutral-400 block mt-0.5">Target: 1,500</span>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center col-span-2 sm:col-span-1">
-            <span className="text-[11px] text-neutral-400 uppercase font-mono block">Creatine</span>
+          <div
+            onClick={() => setActiveBreakdownKey('creatine')}
+            className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center col-span-2 sm:col-span-1 cursor-pointer hover:border-purple-500/40 transition-all group"
+          >
+            <span className="text-[11px] text-neutral-400 uppercase font-mono block group-hover:text-purple-500 transition-colors">Creatine ↗</span>
             <span className="text-base font-extrabold font-mono text-purple-500">{data.micros.creatine} g</span>
             <span className="text-[10px] text-neutral-400 block mt-0.5">Target: 5.0 g</span>
           </div>
@@ -795,6 +843,32 @@ export default function FuelPage() {
           </div>
         )}
       </div>
+
+      {/* ── 7. INTERACTIVE NUTRIENT BREAKDOWN & PIE CHART MODAL ──────── */}
+      <AnimatePresence>
+        {activeBreakdownKey && (
+          <NutrientBreakdownModal
+            isOpen={Boolean(activeBreakdownKey)}
+            onClose={() => setActiveBreakdownKey(null)}
+            nutrientKey={activeBreakdownKey}
+            nutrientData={data}
+            allLogs={data.rawLogs.length > 0 ? data.rawLogs : data.timeline}
+            targets={{
+              calories: tdeeTarget,
+              protein: data.protein.target,
+              carbs: data.carbs.target,
+              fats: data.fats.target,
+              fiber: data.fiber.target,
+              sugar: data.sugar.target,
+              sodium: 3500,
+              potassium: 4700,
+              magnesium: 420,
+              omega3: 1500,
+              creatine: 5.0
+            }}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
