@@ -5,36 +5,136 @@ import MacroPod from '../components/MacroPod';
 import { RefreshCw, Zap, Plus, CheckCircle2 } from 'lucide-react';
 
 export default function FuelPage() {
-  const [loading, setLoading] = useState(false);
-  const [dayMode, setDayMode] = useState('run');
+  const [loading, setLoading] = useState(true);
+  const [dayMode, setDayMode] = useState('strength_upper');
   const [data, setData] = useState({
-    calories: { current: 2140, target: 2800 },
-    protein: { current: 123, target: 150 },
-    carbs: { current: 258, target: 380 },
-    fats: { current: 52, target: 65 },
-    water: { current: 3.1, target: 4.0 },
-    sugar: { current: 24, target: 35 },
-    fiber: { current: 28, target: 35 },
+    todayStr: '',
+    calories: { current: 0, target: 2250 },
+    protein: { current: 0, target: 150 },
+    carbs: { current: 0, target: 266 },
+    fats: { current: 0, target: 65 },
+    water: { current: 0, target: 4.0 },
+    sugar: { current: 0, target: 35 },
+    fiber: { current: 0, target: 35 },
     micros: {
-      sodium: 2850,
-      potassium: 3920,
-      magnesium: 410,
-      omega3: 1600
+      sodium: 0,
+      potassium: 0,
+      magnesium: 0,
+      omega3: 0
     },
-    timeline: [
-      { id: 1, time: '08:30 AM', name: 'Eggs, Avocado Toast & Filter Coffee', calories: 420, protein: 28, carbs: 32, fats: 18 },
-      { id: 2, time: '01:15 PM', name: 'Chicken Breast (200g), Rice & Dal', calories: 680, protein: 62, carbs: 74, fats: 14 },
-      { id: 3, time: '05:00 PM', name: 'Whey Isolate Shake & Banana', calories: 280, protein: 30, carbs: 34, fats: 2 },
-      { id: 4, time: '08:45 PM', name: 'Grilled Paneer & Mixed Salad', calories: 480, protein: 23, carbs: 18, fats: 18 }
-    ]
+    bioProtein: { complete: 0, incomplete: 0, completePct: 100, incompletePct: 0 },
+    bioCarbs: { complex: 0, simple: 0, complexPct: 100, simplePct: 0 },
+    bioFats: { unsaturated: 0, saturated: 0, unsatPct: 100, satPct: 0 },
+    timeline: []
   });
 
   const dayModes = [
     { id: 'rest', label: 'Rest / Fast', icon: '🧘', calories: 1650, protein: 125, carbs: 175, fats: 50 },
     { id: 'run', label: 'Run (10 km)', icon: '🏃', calories: 2690, protein: 150, carbs: 380, fats: 65 },
-    { id: 'strength_upper', label: 'Strength Upper', icon: '🏋️', calories: 2250, protein: 150, carbs: 275, fats: 65 },
+    { id: 'strength_upper', label: 'Strength Upper', icon: '🏋️', calories: 2250, protein: 150, carbs: 266, fats: 65 },
     { id: 'strength_legs', label: 'Strength Legs', icon: '🦵', calories: 2380, protein: 150, carbs: 310, fats: 65 }
   ];
+
+  const calculateBioBreakdown = (logs) => {
+    if (!logs || !logs.length) {
+      return {
+        protein: { complete: 0, incomplete: 0, completePct: 100, incompletePct: 0 },
+        carbs: { complex: 0, simple: 0, complexPct: 100, simplePct: 0 },
+        fats: { unsaturated: 0, saturated: 0, unsatPct: 100, satPct: 0 }
+      };
+    }
+
+    // 1. Protein
+    let completeP = 0;
+    let incompleteP = 0;
+    logs.forEach(l => {
+      const p = parseFloat(l.protein) || 0;
+      if (p <= 0) return;
+      const text = ((l.itemName || '') + ' ' + (l.brand || '') + ' ' + (l.rawMessage || '')).toLowerCase();
+      const isComplete = /(?:chicken|poultry|turkey|egg|fish|salmon|tuna|prawn|seafood|whey|casein|paneer|curd|yogurt|milk|tofu|soy|edamame|meat|mutton|beef)/i.test(text);
+      const isPairedMeal = /(?:chicken.*(?:rice|roti|bread|grain)|(?:rice|roti|bread|grain).*chicken|paneer.*(?:rice|roti)|tofu.*(?:rice|roti)|dal.*(?:rice|khichdi)|khichdi)/i.test(text);
+      if (isComplete || isPairedMeal) {
+        completeP += p;
+      } else {
+        incompleteP += p;
+      }
+    });
+    const totalP = completeP + incompleteP || 1;
+
+    // 2. Carbs
+    let complexC = 0;
+    let simpleC = 0;
+    logs.forEach(l => {
+      const c = parseFloat(l.carbs) || 0;
+      if (c <= 0) return;
+      const text = ((l.itemName || '') + ' ' + (l.brand || '') + ' ' + (l.rawMessage || '')).toLowerCase();
+      const sugar = parseFloat(l.sugar) || 0;
+      if (/sugar|glucose|dextrose|honey|jaggery|gel|juice|soda|sweet|dessert|candy|chocolate/i.test(text)) {
+        simpleC += c;
+      } else if (/banana|date|raisin|fruit|apple|mango|orange|grape/i.test(text)) {
+        const sPart = Math.min(c, Math.max(sugar, c * 0.75));
+        simpleC += sPart;
+        complexC += Math.max(0, c - sPart);
+      } else {
+        const sPart = Math.min(c, sugar);
+        simpleC += sPart;
+        complexC += Math.max(0, c - sPart);
+      }
+    });
+    const totalC = complexC + simpleC || 1;
+
+    // 3. Fats
+    let satF = 0;
+    let unsatF = 0;
+    logs.forEach(l => {
+      const f = parseFloat(l.fats) || 0;
+      if (f <= 0) return;
+      const text = ((l.itemName || '') + ' ' + (l.brand || '') + ' ' + (l.vitals || '') + ' ' + (l.rawMessage || '')).toLowerCase();
+      const satMatch = text.match(/saturated(?:\s*fat)?[:\s]+([\d.]+)\s*g/i);
+      if (satMatch) {
+        const sVal = parseFloat(satMatch[1]) || 0;
+        satF += sVal;
+        unsatF += Math.max(0, f - sVal);
+      } else if (/ghee|butter|cheese/i.test(text)) {
+        satF += f * 0.65;
+        unsatF += f * 0.35;
+      } else if (/paneer|milk|curd|yogurt/i.test(text)) {
+        satF += f * 0.60;
+        unsatF += f * 0.40;
+      } else if (/egg|chicken|fish/i.test(text)) {
+        satF += f * 0.30;
+        unsatF += f * 0.70;
+      } else if (/peanut|almond|walnut|nut|seed|olive|mustard/i.test(text)) {
+        satF += f * 0.15;
+        unsatF += f * 0.85;
+      } else {
+        satF += f * 0.33;
+        unsatF += f * 0.67;
+      }
+    });
+    const totalF = satF + unsatF || 1;
+
+    return {
+      protein: {
+        complete: Math.round(completeP * 10) / 10,
+        incomplete: Math.round(incompleteP * 10) / 10,
+        completePct: Math.round((completeP / totalP) * 100),
+        incompletePct: Math.round((incompleteP / totalP) * 100)
+      },
+      carbs: {
+        complex: Math.round(complexC * 10) / 10,
+        simple: Math.round(simpleC * 10) / 10,
+        complexPct: Math.round((complexC / totalC) * 100),
+        simplePct: Math.round((simpleC / totalC) * 100)
+      },
+      fats: {
+        unsaturated: Math.round(unsatF * 10) / 10,
+        saturated: Math.round(satF * 10) / 10,
+        unsatPct: Math.round((unsatF / totalF) * 100),
+        satPct: Math.round((satF / totalF) * 100)
+      }
+    };
+  };
 
   const handleDayModeChange = (mode) => {
     setDayMode(mode.id);
@@ -50,22 +150,78 @@ export default function FuelPage() {
   const fetchLiveFeed = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/telegram-fuel?action=get_today_nutrition');
+      const res = await fetch('/api/nutrition-data');
       if (res.ok) {
         const json = await res.json();
-        if (json.todayTotals) {
-          setData(prev => ({
-            ...prev,
-            calories: { current: json.todayTotals.calories || prev.calories.current, target: json.targets?.calories || prev.calories.target },
-            protein: { current: json.todayTotals.protein || prev.protein.current, target: json.targets?.protein || prev.protein.target },
-            carbs: { current: json.todayTotals.carbs || prev.carbs.current, target: json.targets?.carbs || prev.carbs.target },
-            fats: { current: json.todayTotals.fats || prev.fats.current, target: json.targets?.fats || prev.fats.target },
-            water: { current: (json.todayMicros?.waterLiters) || prev.water.current, target: 4.0 },
-            timeline: json.foodTimeline || prev.timeline
-          }));
+        const totals = json.todayTotals || {};
+        const targets = json.targets || {};
+        const micros = json.todayMicros || {};
+        const logs = json.todayLogs || [];
+        const bio = calculateBioBreakdown(logs);
+
+        if (json.todayMode && json.todayMode.mode) {
+          setDayMode(json.todayMode.mode);
         }
+
+        const mappedTimeline = logs.map((log, idx) => ({
+          id: log.rawTimestamp || idx,
+          time: log.time || '',
+          name: (log.quantity && log.servingUnit ? `${log.quantity} ${log.servingUnit} ` : '') + (log.itemName || log.rawMessage || 'Meal'),
+          brand: log.brand || '',
+          calories: Math.round(log.calories || 0),
+          protein: Math.round((log.protein || 0) * 10) / 10,
+          carbs: Math.round((log.carbs || 0) * 10) / 10,
+          fats: Math.round((log.fats || 0) * 10) / 10,
+          fiber: Math.round((log.fiber || 0) * 10) / 10,
+          sugar: Math.round((log.sugar || 0) * 10) / 10,
+          vitals: log.vitals || ''
+        }));
+
+        setData({
+          todayStr: json.todayStr || new Date().toISOString().split('T')[0],
+          calories: {
+            current: Math.round(totals.calories || 0),
+            target: targets.calories || 2250
+          },
+          protein: {
+            current: Math.round((totals.protein || 0) * 10) / 10,
+            target: targets.protein || 150
+          },
+          carbs: {
+            current: Math.round((totals.carbs || 0) * 10) / 10,
+            target: targets.carbs || 266
+          },
+          fats: {
+            current: Math.round((totals.fats || 0) * 10) / 10,
+            target: targets.fats || 65
+          },
+          water: {
+            current: Math.round(((micros.waterLiters || 1.85)) * 10) / 10,
+            target: targets.waterLiters || targets.hydroLiters || 4.0
+          },
+          sugar: {
+            current: Math.round((totals.sugar || 0) * 10) / 10,
+            target: targets.sugar || 35
+          },
+          fiber: {
+            current: Math.round((totals.fiber || 0) * 10) / 10,
+            target: targets.fiber || 35
+          },
+          micros: {
+            sodium: Math.round(micros.sodiumMg || 0),
+            potassium: Math.round(micros.potassiumMg || 0),
+            magnesium: Math.round(micros.magnesiumMg || 0),
+            omega3: Math.round(micros.omega3Mg || 0)
+          },
+          bioProtein: bio.protein,
+          bioCarbs: bio.carbs,
+          bioFats: bio.fats,
+          timeline: mappedTimeline
+        });
       }
-    } catch (_) {}
+    } catch (err) {
+      console.error("Failed to fetch live nutrition data:", err);
+    }
     setLoading(false);
   };
 
@@ -124,7 +280,7 @@ export default function FuelPage() {
               {data.calories.current.toLocaleString()} <span className="text-sm font-normal text-neutral-400">/ {data.calories.target.toLocaleString()} kcal</span>
             </h2>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Active mode: <b>{dayModes.find(m => m.id === dayMode)?.label}</b>
+              Active mode: <b>{dayModes.find(m => m.id === dayMode)?.label || dayMode}</b>
             </p>
           </div>
         </div>
@@ -136,7 +292,7 @@ export default function FuelPage() {
             <div>
               <span className="text-[11px] text-neutral-400 uppercase font-mono block">Energy</span>
               <span className="text-xs font-bold font-mono text-neutral-900 dark:text-white">
-                {data.calories.current} kcal ({Math.round((data.calories.current / data.calories.target) * 100)}%)
+                {data.calories.current} kcal ({data.calories.target ? Math.round((data.calories.current / data.calories.target) * 100) : 0}%)
               </span>
             </div>
           </div>
@@ -146,7 +302,7 @@ export default function FuelPage() {
             <div>
               <span className="text-[11px] text-neutral-400 uppercase font-mono block">Protein</span>
               <span className="text-xs font-bold font-mono text-neutral-900 dark:text-white">
-                {data.protein.current}g / {data.protein.target}g ({Math.round((data.protein.current / data.protein.target) * 100)}%)
+                {data.protein.current}g / {data.protein.target}g ({data.protein.target ? Math.round((data.protein.current / data.protein.target) * 100) : 0}%)
               </span>
             </div>
           </div>
@@ -156,7 +312,7 @@ export default function FuelPage() {
             <div>
               <span className="text-[11px] text-neutral-400 uppercase font-mono block">Water (4L)</span>
               <span className="text-xs font-bold font-mono text-neutral-900 dark:text-white">
-                {data.water.current} / {data.water.target} L ({Math.round((data.water.current / data.water.target) * 100)}%)
+                {data.water.current} / {data.water.target} L ({data.water.target ? Math.round((data.water.current / data.water.target) * 100) : 0}%)
               </span>
             </div>
           </div>
@@ -207,8 +363,20 @@ export default function FuelPage() {
             unit="g"
             color="#fa114f"
             breakdown={[
-              { label: 'Complete Protein', value: Math.round(data.protein.current * 0.75), pct: 75, color: '#fa114f', description: 'Chicken, Whey, Eggs, Paneer (all 9 essential amino acids).' },
-              { label: 'Incomplete Protein', value: Math.round(data.protein.current * 0.25), pct: 25, color: '#f59e0b', description: 'Dal, Rice, Roti, Oats (plant amino acid pool).' }
+              {
+                label: 'Complete Protein',
+                value: data.bioProtein.complete,
+                pct: data.bioProtein.completePct,
+                color: '#fa114f',
+                description: 'Chicken, Whey, Eggs, Paneer, Milk (all 9 essential amino acids).'
+              },
+              {
+                label: 'Incomplete Protein',
+                value: data.bioProtein.incomplete,
+                pct: data.bioProtein.incompletePct,
+                color: '#f59e0b',
+                description: 'Oats, Dates, Rice, Dal (plant amino acid pool).'
+              }
             ]}
           />
 
@@ -222,23 +390,47 @@ export default function FuelPage() {
             unit="g"
             color="#f59e0b"
             breakdown={[
-              { label: 'Complex Starches', value: Math.round(data.carbs.current * 0.79), pct: 79, color: '#f59e0b', description: 'Sweet potatoes, Oats, Brown rice (slow-burning glycogen).' },
-              { label: 'Natural Sugars', value: Math.round(data.carbs.current * 0.21), pct: 21, color: '#ec4899', description: 'Whole fruits, berries, banana recovery sugars.' }
+              {
+                label: 'Complex Starches',
+                value: data.bioCarbs.complex,
+                pct: data.bioCarbs.complexPct,
+                color: '#f59e0b',
+                description: 'Oats, Rice, Sweet Potatoes (sustained cellular glycogen).'
+              },
+              {
+                label: 'Natural / Rapid Sugars',
+                value: data.bioCarbs.simple,
+                pct: data.bioCarbs.simplePct,
+                color: '#ec4899',
+                description: 'Whole bananas, dates, fruits for quick muscle glycogen replenishment.'
+              }
             ]}
           />
 
-          {/* WATER & HEALTHY FATS */}
+          {/* HEALTHY FATS */}
           <MacroPod
-            name="Water (4.0L)"
-            subtitle="Hydration Sanctuary"
-            icon="💧"
-            current={data.water.current}
-            target={data.water.target}
-            unit="L"
+            name="Dietary Fats"
+            subtitle="Hormone & Joint Health"
+            icon="🥑"
+            current={data.fats.current}
+            target={data.fats.target}
+            unit="g"
             color="#007aff"
             breakdown={[
-              { label: 'Unsaturated Healthy Fats', value: Math.round(data.fats.current * 0.69), pct: 69, color: '#007aff', description: 'Omega-3, Nuts, Olive oil for joint lubrication and hormone balance.' },
-              { label: 'Saturated Fats', value: Math.round(data.fats.current * 0.31), pct: 31, color: '#a855f7', description: 'Ghee, dairy fats. Trans fats: 0g.' }
+              {
+                label: 'Unsaturated Healthy Fats',
+                value: data.bioFats.unsaturated,
+                pct: data.bioFats.unsatPct,
+                color: '#007aff',
+                description: 'Fish oil, Omega-3, Nuts, Mustard/Olive oil for joint lubrication and heart vitality.'
+              },
+              {
+                label: 'Saturated Dietary Fats',
+                value: data.bioFats.saturated,
+                pct: data.bioFats.satPct,
+                color: '#a855f7',
+                description: 'Milk, dairy lipids, and whole food fats. Trans fats: 0g.'
+              }
             ]}
           />
         </div>
@@ -249,7 +441,7 @@ export default function FuelPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-500 block">Cellular Vitals</span>
-            <h4 className="text-base font-bold text-neutral-900 dark:text-white">Key Electrolytes & Minerals</h4>
+            <h4 className="text-base font-bold text-neutral-900 dark:text-white">Key Electrolytes & Minerals Absorbed Today</h4>
           </div>
           <span className="text-xs text-neutral-400">Absorbed from daily nutrition & supplements</span>
         </div>
@@ -283,34 +475,48 @@ export default function FuelPage() {
 
       {/* ── 5. FOOD TIMELINE ───────────────────────────────────────── */}
       <div className="p-6 rounded-3xl bg-white dark:bg-[#1c1c1e] border border-black/[0.06] dark:border-white/[0.08] shadow-sm">
-        <h3 className="text-base font-bold tracking-tight text-neutral-900 dark:text-white mb-4">
-          Today's Food Timeline (Logged via Telegram)
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base font-bold tracking-tight text-neutral-900 dark:text-white">
+            Today's Food Timeline (Logged via Telegram)
+          </h3>
+          <span className="text-xs font-mono text-neutral-400">
+            {data.timeline.length} {data.timeline.length === 1 ? 'entry' : 'entries'} today
+          </span>
+        </div>
 
-        <div className="space-y-3">
-          {data.timeline.map((meal) => (
-            <div
-              key={meal.id}
-              className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
-            >
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                <div>
-                  <h5 className="text-sm font-bold text-neutral-900 dark:text-white">{meal.name}</h5>
-                  <span className="text-xs text-neutral-400 font-mono">{meal.time}</span>
+        {data.timeline.length === 0 ? (
+          <div className="p-8 text-center text-neutral-400 text-sm">
+            No meals logged yet today. Send a photo or description to <code>@raviteja_fuel_bot</code> on Telegram!
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {data.timeline.map((meal) => (
+              <div
+                key={meal.id}
+                className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+              >
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                  <div>
+                    <h5 className="text-sm font-bold text-neutral-900 dark:text-white">{meal.name}</h5>
+                    <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono">
+                      {meal.time && <span>{meal.time}</span>}
+                      {meal.vitals && <span className="truncate max-w-xs opacity-75">• {meal.vitals}</span>}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 text-xs font-mono flex-shrink-0">
+                  <span className="font-bold text-neutral-900 dark:text-white">{meal.calories} kcal</span>
+                  <span className="text-neutral-300 dark:text-neutral-700">|</span>
+                  <span className="text-rose-500 font-bold">{meal.protein}g P</span>
+                  <span className="text-amber-500 font-bold">{meal.carbs}g C</span>
+                  <span className="text-purple-500 font-bold">{meal.fats}g F</span>
                 </div>
               </div>
-
-              <div className="flex items-center gap-3 text-xs font-mono">
-                <span className="font-bold text-neutral-900 dark:text-white">{meal.calories} kcal</span>
-                <span className="text-neutral-300 dark:text-neutral-700">|</span>
-                <span className="text-rose-500 font-bold">{meal.protein}g P</span>
-                <span className="text-amber-500 font-bold">{meal.carbs}g C</span>
-                <span className="text-purple-500 font-bold">{meal.fats}g F</span>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </motion.div>
   );
