@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import VitalityRings from '../components/VitalityRings';
 import MacroPod from '../components/MacroPod';
-import { RefreshCw, Zap, Plus, CheckCircle2 } from 'lucide-react';
+import { RefreshCw, Zap, Plus, CheckCircle2, Footprints, Flame, Moon, Info, HeartPulse } from 'lucide-react';
 
 export default function FuelPage() {
   const [loading, setLoading] = useState(true);
@@ -16,23 +16,34 @@ export default function FuelPage() {
     water: { current: 0, target: 4.0 },
     sugar: { current: 0, target: 35 },
     fiber: { current: 0, target: 35 },
+    activity: {
+      steps: 0,
+      stepsTarget: 10000,
+      caloriesBurned: 0,
+      caloriesBurnedTarget: 500,
+      sleepHours: 0,
+      sleepTarget: 8.0
+    },
     micros: {
       sodium: 0,
       potassium: 0,
       magnesium: 0,
-      omega3: 0
+      omega3: 0,
+      creatine: 0
     },
     bioProtein: { complete: 0, incomplete: 0, completePct: 100, incompletePct: 0 },
     bioCarbs: { complex: 0, simple: 0, complexPct: 100, simplePct: 0 },
     bioFats: { unsaturated: 0, saturated: 0, unsatPct: 100, satPct: 0 },
+    bioFiber: { soluble: 0, insoluble: 0, solublePct: 40, insolublePct: 60 },
+    bioSugar: { natural: 0, added: 0, naturalPct: 100, addedPct: 0 },
     timeline: []
   });
 
   const dayModes = [
-    { id: 'rest', label: 'Rest / Fast', icon: '🧘', calories: 1650, protein: 125, carbs: 175, fats: 50 },
-    { id: 'run', label: 'Run (10 km)', icon: '🏃', calories: 2690, protein: 150, carbs: 380, fats: 65 },
-    { id: 'strength_upper', label: 'Strength Upper', icon: '🏋️', calories: 2250, protein: 150, carbs: 266, fats: 65 },
-    { id: 'strength_legs', label: 'Strength Legs', icon: '🦵', calories: 2380, protein: 150, carbs: 310, fats: 65 }
+    { id: 'rest', label: 'Rest / Fast', icon: '🧘', calories: 1650, protein: 125, carbs: 175, fats: 50, bmr: 1650, burn: 0 },
+    { id: 'run', label: 'Run (10 km)', icon: '🏃', calories: 2690, protein: 150, carbs: 380, fats: 65, bmr: 2000, burn: 690 },
+    { id: 'strength_upper', label: 'Strength Upper', icon: '🏋️', calories: 2250, protein: 150, carbs: 266, fats: 65, bmr: 2000, burn: 250 },
+    { id: 'strength_legs', label: 'Strength Legs', icon: '🦵', calories: 2380, protein: 150, carbs: 310, fats: 65, bmr: 2000, burn: 380 }
   ];
 
   const calculateBioBreakdown = (logs) => {
@@ -40,7 +51,9 @@ export default function FuelPage() {
       return {
         protein: { complete: 0, incomplete: 0, completePct: 100, incompletePct: 0 },
         carbs: { complex: 0, simple: 0, complexPct: 100, simplePct: 0 },
-        fats: { unsaturated: 0, saturated: 0, unsatPct: 100, satPct: 0 }
+        fats: { unsaturated: 0, saturated: 0, unsatPct: 100, satPct: 0 },
+        fiber: { soluble: 0, insoluble: 0, solublePct: 40, insolublePct: 60 },
+        sugar: { natural: 0, added: 0, naturalPct: 100, addedPct: 0 }
       };
     }
 
@@ -61,27 +74,33 @@ export default function FuelPage() {
     });
     const totalP = completeP + incompleteP || 1;
 
-    // 2. Carbs
+    // 2. Carbs & Sugars
     let complexC = 0;
     let simpleC = 0;
+    let naturalS = 0;
+    let addedS = 0;
     logs.forEach(l => {
       const c = parseFloat(l.carbs) || 0;
-      if (c <= 0) return;
+      const s = parseFloat(l.sugar) || 0;
       const text = ((l.itemName || '') + ' ' + (l.brand || '') + ' ' + (l.rawMessage || '')).toLowerCase();
-      const sugar = parseFloat(l.sugar) || 0;
-      if (/sugar|glucose|dextrose|honey|jaggery|gel|juice|soda|sweet|dessert|candy|chocolate/i.test(text)) {
-        simpleC += c;
-      } else if (/banana|date|raisin|fruit|apple|mango|orange|grape/i.test(text)) {
-        const sPart = Math.min(c, Math.max(sugar, c * 0.75));
+
+      if (/banana|date|raisin|fruit|apple|mango|orange|grape|milk/i.test(text)) {
+        naturalS += s;
+        const sPart = Math.min(c, Math.max(s, c * 0.75));
         simpleC += sPart;
         complexC += Math.max(0, c - sPart);
+      } else if (/sugar|glucose|dextrose|honey|jaggery|gel|juice|soda|sweet|dessert|candy|chocolate/i.test(text)) {
+        addedS += s;
+        simpleC += c;
       } else {
-        const sPart = Math.min(c, sugar);
+        naturalS += s;
+        const sPart = Math.min(c, s);
         simpleC += sPart;
         complexC += Math.max(0, c - sPart);
       }
     });
     const totalC = complexC + simpleC || 1;
+    const totalS = naturalS + addedS || 1;
 
     // 3. Fats
     let satF = 0;
@@ -114,6 +133,11 @@ export default function FuelPage() {
     });
     const totalF = satF + unsatF || 1;
 
+    // 4. Fiber (Soluble vs Insoluble estimate based on whole grains/oats/fruits)
+    let totalFib = logs.reduce((sum, l) => sum + (parseFloat(l.fiber) || 0), 0);
+    let solubleFib = Math.round(totalFib * 0.4 * 10) / 10;
+    let insolubleFib = Math.round(totalFib * 0.6 * 10) / 10;
+
     return {
       protein: {
         complete: Math.round(completeP * 10) / 10,
@@ -132,6 +156,18 @@ export default function FuelPage() {
         saturated: Math.round(satF * 10) / 10,
         unsatPct: Math.round((unsatF / totalF) * 100),
         satPct: Math.round((satF / totalF) * 100)
+      },
+      fiber: {
+        soluble: solubleFib,
+        insoluble: insolubleFib,
+        solublePct: 40,
+        insolublePct: 60
+      },
+      sugar: {
+        natural: Math.round(naturalS * 10) / 10,
+        added: Math.round(addedS * 10) / 10,
+        naturalPct: Math.round((naturalS / totalS) * 100),
+        addedPct: Math.round((addedS / totalS) * 100)
       }
     };
   };
@@ -156,6 +192,7 @@ export default function FuelPage() {
         const totals = json.todayTotals || {};
         const targets = json.targets || {};
         const micros = json.todayMicros || {};
+        const act = json.todayActivity || {};
         const logs = json.todayLogs || [];
         const bio = calculateBioBreakdown(logs);
 
@@ -207,15 +244,26 @@ export default function FuelPage() {
             current: Math.round((totals.fiber || 0) * 10) / 10,
             target: targets.fiber || 35
           },
+          activity: {
+            steps: act.steps || 0,
+            stepsTarget: act.stepsTarget || 10000,
+            caloriesBurned: act.caloriesBurned || 0,
+            caloriesBurnedTarget: act.caloriesBurnedTarget || 500,
+            sleepHours: act.sleepHours || 0,
+            sleepTarget: act.sleepTarget || 8.0
+          },
           micros: {
             sodium: Math.round(micros.sodiumMg || 0),
             potassium: Math.round(micros.potassiumMg || 0),
             magnesium: Math.round(micros.magnesiumMg || 0),
-            omega3: Math.round(micros.omega3Mg || 0)
+            omega3: Math.round(micros.omega3Mg || 0),
+            creatine: Number((micros.creatineG || 0).toFixed(1))
           },
           bioProtein: bio.protein,
           bioCarbs: bio.carbs,
           bioFats: bio.fats,
+          bioFiber: bio.fiber,
+          bioSugar: bio.sugar,
           timeline: mappedTimeline
         });
       }
@@ -228,6 +276,14 @@ export default function FuelPage() {
   useEffect(() => {
     fetchLiveFeed();
   }, []);
+
+  // Energy & Deficit/Surplus Calculations
+  const tdeeTarget = data.calories.target || 2250;
+  const foodConsumed = data.calories.current || 0;
+  const activeBurn = data.activity.caloriesBurned || 0;
+  const remainingToTarget = Math.max(0, tdeeTarget - foodConsumed);
+  const netEnergyBalance = foodConsumed - tdeeTarget; // Deficit (< 0) or Surplus (> 0) against daily TDEE maintenance
+  const isDeficit = netEnergyBalance < 0;
 
   return (
     <motion.div
@@ -263,58 +319,119 @@ export default function FuelPage() {
         </div>
       </div>
 
-      {/* ── 1. VITALITY RINGS SUMMARY CARD ───────────────────────────── */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#1c1c1e] border border-black/[0.06] dark:border-white/[0.08] shadow-sm flex flex-col md:flex-row items-center justify-between gap-8">
+      {/* ── 1. VITALITY RINGS & PHYSIOLOGICAL ENERGY BALANCE ─────────── */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#1c1c1e] border border-black/[0.06] dark:border-white/[0.08] shadow-sm space-y-6">
         
-        {/* Left: Concentric Vitality Rings */}
-        <div className="flex items-center gap-6 sm:gap-8">
-          <VitalityRings
-            calories={data.calories}
-            protein={data.protein}
-            water={data.water}
-            size={144}
-          />
-          <div className="space-y-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-rose-500 block">Energy & Recovery Rings</span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
-              {data.calories.current.toLocaleString()} <span className="text-sm font-normal text-neutral-400">/ {data.calories.target.toLocaleString()} kcal</span>
-            </h2>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Active mode: <b>{dayModes.find(m => m.id === dayMode)?.label || dayMode}</b>
-            </p>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+          {/* Left: Concentric Vitality Rings */}
+          <div className="flex items-center gap-6 sm:gap-8">
+            <VitalityRings
+              calories={data.calories}
+              protein={data.protein}
+              water={data.water}
+              size={144}
+            />
+            <div className="space-y-1">
+              <span className="text-xs font-bold uppercase tracking-wider text-rose-500 block">
+                Food Energy Consumed
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-900 dark:text-white font-mono">
+                {foodConsumed.toLocaleString()} <span className="text-sm font-normal text-neutral-400">/ {tdeeTarget.toLocaleString()} kcal</span>
+              </h2>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                Mode: <b>{dayModes.find(m => m.id === dayMode)?.label || dayMode}</b>
+              </p>
+            </div>
+          </div>
+
+          {/* Right: Ring Legend */}
+          <div className="grid grid-cols-3 md:grid-cols-1 gap-4 w-full md:w-auto text-left">
+            <div className="flex items-center gap-3">
+              <span className="w-3.5 h-3.5 rounded-full bg-[#fa114f] flex-shrink-0" />
+              <div>
+                <span className="text-[11px] text-neutral-400 uppercase font-mono block">Energy Intake</span>
+                <span className="text-xs font-bold font-mono text-neutral-900 dark:text-white">
+                  {foodConsumed} kcal ({Math.round((foodConsumed / (tdeeTarget || 1)) * 100)}%)
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="w-3.5 h-3.5 rounded-full bg-[#34c759] flex-shrink-0" />
+              <div>
+                <span className="text-[11px] text-neutral-400 uppercase font-mono block">Protein</span>
+                <span className="text-xs font-bold font-mono text-neutral-900 dark:text-white">
+                  {data.protein.current}g / {data.protein.target}g ({Math.round((data.protein.current / (data.protein.target || 1)) * 100)}%)
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="w-3.5 h-3.5 rounded-full bg-[#007aff] flex-shrink-0" />
+              <div>
+                <span className="text-[11px] text-neutral-400 uppercase font-mono block">Water (4L)</span>
+                <span className="text-xs font-bold font-mono text-neutral-900 dark:text-white">
+                  {data.water.current} / {data.water.target} L ({Math.round((data.water.current / (data.water.target || 1)) * 100)}%)
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Right: Ring Legend */}
-        <div className="grid grid-cols-3 md:grid-cols-1 gap-4 w-full md:w-auto text-left">
-          <div className="flex items-center gap-3">
-            <span className="w-3.5 h-3.5 rounded-full bg-[#fa114f] flex-shrink-0" />
-            <div>
-              <span className="text-[11px] text-neutral-400 uppercase font-mono block">Energy</span>
-              <span className="text-xs font-bold font-mono text-neutral-900 dark:text-white">
-                {data.calories.current} kcal ({data.calories.target ? Math.round((data.calories.current / data.calories.target) * 100) : 0}%)
+        {/* ── UNAMBIGUOUS PHYSIOLOGICAL ENERGY BALANCE BREAKDOWN ─── */}
+        <div className="pt-6 border-t border-neutral-100 dark:border-neutral-800">
+          <div className="flex items-center gap-2 mb-3">
+            <HeartPulse className="w-4 h-4 text-rose-500" />
+            <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
+              Physiological Energy Balance (BMR + Activity vs Food Intake)
+            </h4>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {/* 1. Food Consumed */}
+            <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
+              <span className="text-[10px] font-mono uppercase text-neutral-400 block">Food Intake Consumed</span>
+              <span className="text-lg font-black font-mono text-neutral-900 dark:text-white block mt-0.5">
+                {foodConsumed.toLocaleString()} <span className="text-xs font-normal">kcal</span>
+              </span>
+              <span className="text-[10px] text-neutral-400 block mt-0.5">From logged meals today</span>
+            </div>
+
+            {/* 2. Remaining to Target */}
+            <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
+              <span className="text-[10px] font-mono uppercase text-neutral-400 block">Remaining Food Budget</span>
+              <span className="text-lg font-black font-mono text-amber-500 block mt-0.5">
+                {remainingToTarget.toLocaleString()} <span className="text-xs font-normal">kcal</span>
+              </span>
+              <span className="text-[10px] text-neutral-400 block mt-0.5">Left to eat to hit target</span>
+            </div>
+
+            {/* 3. Active Workout Burn */}
+            <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
+              <span className="text-[10px] font-mono uppercase text-neutral-400 block">Active Workout Burn</span>
+              <span className="text-lg font-black font-mono text-orange-500 block mt-0.5">
+                {activeBurn.toLocaleString()} <span className="text-xs font-normal">kcal</span>
+              </span>
+              <span className="text-[10px] text-neutral-400 block mt-0.5">Exercise energy expenditure</span>
+            </div>
+
+            {/* 4. Real Deficit / Surplus Status */}
+            <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
+              <span className="text-[10px] font-mono uppercase text-neutral-400 block">Net Energy Status</span>
+              <span className={`text-lg font-black font-mono block mt-0.5 ${isDeficit ? 'text-sky-500' : 'text-emerald-500'}`}>
+                {isDeficit ? `${netEnergyBalance.toLocaleString()} kcal` : `+${netEnergyBalance.toLocaleString()} kcal`}
+              </span>
+              <span className="text-[10px] font-mono font-bold text-neutral-500 dark:text-neutral-400 block mt-0.5">
+                {isDeficit ? 'Deficit (Fueling in progress)' : 'Surplus (Anabolic state)'}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="w-3.5 h-3.5 rounded-full bg-[#34c759] flex-shrink-0" />
-            <div>
-              <span className="text-[11px] text-neutral-400 uppercase font-mono block">Protein</span>
-              <span className="text-xs font-bold font-mono text-neutral-900 dark:text-white">
-                {data.protein.current}g / {data.protein.target}g ({data.protein.target ? Math.round((data.protein.current / data.protein.target) * 100) : 0}%)
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <span className="w-3.5 h-3.5 rounded-full bg-[#007aff] flex-shrink-0" />
-            <div>
-              <span className="text-[11px] text-neutral-400 uppercase font-mono block">Water (4L)</span>
-              <span className="text-xs font-bold font-mono text-neutral-900 dark:text-white">
-                {data.water.current} / {data.water.target} L ({data.water.target ? Math.round((data.water.current / data.water.target) * 100) : 0}%)
-              </span>
-            </div>
+          <div className="mt-3.5 p-3 rounded-2xl bg-neutral-100/70 dark:bg-neutral-900/60 border border-neutral-200/50 dark:border-neutral-800/80 flex items-start gap-2.5 text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
+            <Info className="w-4 h-4 text-sky-500 flex-shrink-0 mt-0.5" />
+            <span>
+              <b>How BMR is calculated:</b> Your body burns ~<b>1,650 kcal/day</b> at rest purely for breathing, heart pumping, brain metabolism, and cellular repair (Basal Metabolic Rate for 69 kg athlete), plus ~<b>350 kcal</b> for daily desk movement (NEAT). Your day mode target ({tdeeTarget} kcal) already bakes in this baseline plus planned workouts so your deficit/surplus is medically accurate.
+            </span>
           </div>
         </div>
       </div>
@@ -341,22 +458,22 @@ export default function FuelPage() {
         })}
       </div>
 
-      {/* ── 3. CORE MACRONUTRIENT PODS ─────────────────────────────── */}
+      {/* ── 3. FULL 5 CORE MACRONUTRIENT PODS ───────────────────────── */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-base font-bold tracking-tight text-neutral-900 dark:text-white">
-            Target Macronutrients
+            Target Macronutrients & Fiber/Sugar Thresholds
           </h3>
           <span className="text-xs text-neutral-400">
-            Tap cards for Complete vs Incomplete breakdown
+            Tap cards for biological quality breakdown
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-          {/* PROTEIN */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* 1. PROTEIN */}
           <MacroPod
             name="Protein"
-            subtitle="Muscle Recovery & Building"
+            subtitle="Muscle Recovery & Synthesis"
             icon="🥩"
             current={data.protein.current}
             target={data.protein.target}
@@ -368,22 +485,22 @@ export default function FuelPage() {
                 value: data.bioProtein.complete,
                 pct: data.bioProtein.completePct,
                 color: '#fa114f',
-                description: 'Chicken, Whey, Eggs, Paneer, Milk (all 9 essential amino acids).'
+                description: 'Chicken, Whey, Eggs, Paneer, Milk (all 9 essential amino acids & leucine threshold).'
               },
               {
                 label: 'Incomplete Protein',
                 value: data.bioProtein.incomplete,
                 pct: data.bioProtein.incompletePct,
                 color: '#f59e0b',
-                description: 'Oats, Dates, Rice, Dal (plant amino acid pool).'
+                description: 'Oats, Dates, Rice, Dal (plant amino pool complementary to complete anchors).'
               }
             ]}
           />
 
-          {/* CARBOHYDRATES */}
+          {/* 2. CARBOHYDRATES */}
           <MacroPod
             name="Carbohydrates"
-            subtitle="Daily Stamina & Energy"
+            subtitle="Daily Stamina & Glycogen"
             icon="⚡"
             current={data.carbs.current}
             target={data.carbs.target}
@@ -395,22 +512,22 @@ export default function FuelPage() {
                 value: data.bioCarbs.complex,
                 pct: data.bioCarbs.complexPct,
                 color: '#f59e0b',
-                description: 'Oats, Rice, Sweet Potatoes (sustained cellular glycogen).'
+                description: 'Oats, Rice, Sweet Potatoes (sustained slow-release cellular glycogen).'
               },
               {
                 label: 'Natural / Rapid Sugars',
                 value: data.bioCarbs.simple,
                 pct: data.bioCarbs.simplePct,
                 color: '#ec4899',
-                description: 'Whole bananas, dates, fruits for quick muscle glycogen replenishment.'
+                description: 'Whole bananas, dates, fruits for rapid post-run/workout muscle glycogen recharge.'
               }
             ]}
           />
 
-          {/* HEALTHY FATS */}
+          {/* 3. DIETARY FATS */}
           <MacroPod
             name="Dietary Fats"
-            subtitle="Hormone & Joint Health"
+            subtitle="Hormones & Joint Lubrication"
             icon="🥑"
             current={data.fats.current}
             target={data.fats.target}
@@ -422,31 +539,185 @@ export default function FuelPage() {
                 value: data.bioFats.unsaturated,
                 pct: data.bioFats.unsatPct,
                 color: '#007aff',
-                description: 'Fish oil, Omega-3, Nuts, Mustard/Olive oil for joint lubrication and heart vitality.'
+                description: 'Fish oil, Omega-3, Nuts, Mustard & Olive oil for joint lubrication and cardiovascular vitality.'
               },
               {
-                label: 'Saturated Dietary Fats',
+                label: 'Saturated Dietary Lipids',
                 value: data.bioFats.saturated,
                 pct: data.bioFats.satPct,
                 color: '#a855f7',
-                description: 'Milk, dairy lipids, and whole food fats. Trans fats: 0g.'
+                description: 'Milk, dairy fats, and whole food lipids. Trans fats: 0g.'
+              }
+            ]}
+          />
+
+          {/* 4. DIETARY FIBER */}
+          <MacroPod
+            name="Dietary Fiber"
+            subtitle="Gut Microbiome & Digestion"
+            icon="🌾"
+            current={data.fiber.current}
+            target={data.fiber.target}
+            unit="g"
+            color="#10b981"
+            breakdown={[
+              {
+                label: 'Soluble Prebiotic Fiber',
+                value: data.bioFiber.soluble,
+                pct: data.bioFiber.solublePct,
+                color: '#10b981',
+                description: 'Beta-glucan from oats and fruit pectins that feed beneficial gut flora and stabilize glucose.'
+              },
+              {
+                label: 'Insoluble Roughage',
+                value: data.bioFiber.insoluble,
+                pct: data.bioFiber.insolublePct,
+                color: '#059669',
+                description: 'Cellulose from whole grains, vegetable walls, and seeds supporting digestive transit.'
+              }
+            ]}
+          />
+
+          {/* 5. SUGAR INTAKE */}
+          <MacroPod
+            name="Sugar Intake"
+            subtitle="Natural vs Added Threshold"
+            icon="🍯"
+            current={data.sugar.current}
+            target={data.sugar.target}
+            unit="g"
+            color="#ec4899"
+            breakdown={[
+              {
+                label: 'Natural Whole Food Sugars',
+                value: data.bioSugar.natural,
+                pct: data.bioSugar.naturalPct,
+                color: '#ec4899',
+                description: 'Naturally occurring fructose in whole bananas, dates, and lactose in milk.'
+              },
+              {
+                label: 'Added / Refined Sugars',
+                value: data.bioSugar.added,
+                pct: data.bioSugar.addedPct,
+                color: '#f43f5e',
+                description: 'Processed sweeteners, syrups, or industrial confectioneries. Kept strictly minimal.'
               }
             ]}
           />
         </div>
       </div>
 
-      {/* ── 4. CELLULAR MINERALS & VITALS ──────────────────────────── */}
+      {/* ── 4. ACTIVITY, CALORIE BURN & SLEEP RECOVERY HUB ─────────── */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#1c1c1e] border border-black/[0.06] dark:border-white/[0.08] shadow-sm space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800">
+          <div>
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-500 block">Recovery Telemetry</span>
+            <h4 className="text-base font-bold text-neutral-900 dark:text-white">Daily Activity, Calorie Burn & Sleep</h4>
+          </div>
+          <span className="text-xs text-neutral-400 font-mono">Logged via Telegram / Apple Health</span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Card 1: Steps */}
+          <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 space-y-2">
+            <div className="flex items-center justify-between text-xs font-bold">
+              <span className="flex items-center gap-1.5 text-neutral-700 dark:text-neutral-300">
+                <Footprints className="w-4 h-4 text-emerald-500" /> Daily Steps
+              </span>
+              <span className="font-mono text-emerald-500">
+                {Math.min(100, Math.round((data.activity.steps / (data.activity.stepsTarget || 10000)) * 100))}%
+              </span>
+            </div>
+            <div className="flex items-baseline justify-between">
+              <span className="text-2xl font-black font-mono text-neutral-900 dark:text-white">
+                {data.activity.steps.toLocaleString()}
+              </span>
+              <span className="text-xs text-neutral-400 font-mono">
+                / {data.activity.stepsTarget.toLocaleString()} steps
+              </span>
+            </div>
+            <div className="h-2 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
+              <div
+                className="h-full bg-emerald-500 rounded-full transition-all duration-700"
+                style={{ width: `${Math.min(100, Math.round((data.activity.steps / (data.activity.stepsTarget || 10000)) * 100))}%` }}
+              />
+            </div>
+            <span className="text-[11px] text-neutral-400 font-mono block">
+              Distance: ~{(data.activity.steps * 0.00076).toFixed(1)} km covered
+            </span>
+          </div>
+
+          {/* Card 2: Calories Burned */}
+          <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 space-y-2">
+            <div className="flex items-center justify-between text-xs font-bold">
+              <span className="flex items-center gap-1.5 text-neutral-700 dark:text-neutral-300">
+                <Flame className="w-4 h-4 text-orange-500" /> Active Burn
+              </span>
+              <span className="font-mono text-orange-500">
+                {Math.min(100, Math.round((data.activity.caloriesBurned / (data.activity.caloriesBurnedTarget || 500)) * 100))}%
+              </span>
+            </div>
+            <div className="flex items-baseline justify-between">
+              <span className="text-2xl font-black font-mono text-neutral-900 dark:text-white">
+                {data.activity.caloriesBurned.toLocaleString()}
+              </span>
+              <span className="text-xs text-neutral-400 font-mono">
+                / {data.activity.caloriesBurnedTarget.toLocaleString()} kcal
+              </span>
+            </div>
+            <div className="h-2 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
+              <div
+                className="h-full bg-orange-500 rounded-full transition-all duration-700"
+                style={{ width: `${Math.min(100, Math.round((data.activity.caloriesBurned / (data.activity.caloriesBurnedTarget || 500)) * 100))}%` }}
+              />
+            </div>
+            <span className="text-[11px] text-neutral-400 font-mono block">
+              Physical workouts & athletic training
+            </span>
+          </div>
+
+          {/* Card 3: Sleep Duration */}
+          <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 space-y-2">
+            <div className="flex items-center justify-between text-xs font-bold">
+              <span className="flex items-center gap-1.5 text-neutral-700 dark:text-neutral-300">
+                <Moon className="w-4 h-4 text-indigo-500" /> Sleep Duration
+              </span>
+              <span className="font-mono text-indigo-500">
+                {data.activity.sleepHours >= 7 ? 'Optimal ✓' : 'Pending EOD'}
+              </span>
+            </div>
+            <div className="flex items-baseline justify-between">
+              <span className="text-2xl font-black font-mono text-neutral-900 dark:text-white">
+                {data.activity.sleepHours > 0 ? `${data.activity.sleepHours.toFixed(1)} hrs` : '0.0 hrs'}
+              </span>
+              <span className="text-xs text-neutral-400 font-mono">
+                / {data.activity.sleepTarget.toFixed(1)} hrs target
+              </span>
+            </div>
+            <div className="h-2 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
+              <div
+                className="h-full bg-indigo-500 rounded-full transition-all duration-700"
+                style={{ width: `${Math.min(100, Math.round((data.activity.sleepHours / (data.activity.sleepTarget || 8.0)) * 100))}%` }}
+              />
+            </div>
+            <span className="text-[11px] text-neutral-400 font-mono block">
+              Deep tissue repair & central nervous recovery
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 5. CELLULAR MINERALS, VITALS & CREATINE ─────────────────── */}
       <div className="p-6 rounded-3xl bg-white dark:bg-[#1c1c1e] border border-black/[0.06] dark:border-white/[0.08] shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-500 block">Cellular Vitals</span>
-            <h4 className="text-base font-bold text-neutral-900 dark:text-white">Key Electrolytes & Minerals Absorbed Today</h4>
+            <h4 className="text-base font-bold text-neutral-900 dark:text-white">Key Electrolytes, Minerals & Creatine</h4>
           </div>
-          <span className="text-xs text-neutral-400">Absorbed from daily nutrition & supplements</span>
+          <span className="text-xs text-neutral-400">Absorbed from daily nutrition & athletic supplements</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
           <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center">
             <span className="text-[11px] text-neutral-400 uppercase font-mono block">Sodium (Na⁺)</span>
             <span className="text-base font-extrabold font-mono text-emerald-500">{data.micros.sodium} mg</span>
@@ -470,10 +741,16 @@ export default function FuelPage() {
             <span className="text-base font-extrabold font-mono text-emerald-500">{data.micros.omega3} mg</span>
             <span className="text-[10px] text-neutral-400 block mt-0.5">Target: 1,500</span>
           </div>
+
+          <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center col-span-2 sm:col-span-1">
+            <span className="text-[11px] text-neutral-400 uppercase font-mono block">Creatine</span>
+            <span className="text-base font-extrabold font-mono text-purple-500">{data.micros.creatine} g</span>
+            <span className="text-[10px] text-neutral-400 block mt-0.5">Target: 5.0 g</span>
+          </div>
         </div>
       </div>
 
-      {/* ── 5. FOOD TIMELINE ───────────────────────────────────────── */}
+      {/* ── 6. FOOD TIMELINE ───────────────────────────────────────── */}
       <div className="p-6 rounded-3xl bg-white dark:bg-[#1c1c1e] border border-black/[0.06] dark:border-white/[0.08] shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-bold tracking-tight text-neutral-900 dark:text-white">

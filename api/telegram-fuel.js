@@ -474,11 +474,32 @@ Output ONLY a raw, valid JSON object (without markdown fences, no backticks, no 
 
 // Analyze user food text (Pantry match OR Generic Whole Food USDA lookup)
 async function analyzeFoodInput(userText, pantryItems) {
+  // Pre-filter/prioritize pantry items if a specific brand is mentioned in userText
+  const userTextLower = (userText || '').toLowerCase();
+  let prioritizedPantry = Array.isArray(pantryItems) ? [...pantryItems] : [];
+  if (prioritizedPantry.length > 0) {
+    const exactMatches = prioritizedPantry.filter(item => {
+      const b = (item.brand || '').toLowerCase();
+      const n = (item.itemName || '').toLowerCase();
+      return (b && userTextLower.includes(b)) || (n && userTextLower.includes(n));
+    });
+    if (exactMatches.length > 0) {
+      const others = prioritizedPantry.filter(item => !exactMatches.includes(item));
+      prioritizedPantry = [...exactMatches, ...others];
+    }
+  }
+
   const prompt = `You are an expert sports nutrition & USDA whole food analyst.
-The user has registered the following brand products & supplements in their personal Pantry Catalog:
-${JSON.stringify(pantryItems, null, 2)}
+The user has registered the following brand products & supplements in their personal Pantry Catalog (ordered with highest-priority matches first):
+${JSON.stringify(prioritizedPantry, null, 2)}
 
 The user sent this food / supplement text: "${userText}"
+
+CRITICAL BRAND INTEGRITY & MATCHING RULES:
+1. If the user explicitly mentions a brand name (such as "Country Delight", "Nakpro", "Harpro", "MyFitness", "Amul", "Lion", "Heritage", "Britannia", "Milky Mist", "Fast&Up"):
+   - You MUST match the product under that EXACT brand!
+   - NEVER substitute a product from another brand! (e.g. If the user says "Country Delight protein", you MUST match "Country Delight x HRX Whey Protein Concentrate", and NEVER "Nakpro Impact Whey" or "Harpro").
+2. Only match a generic or different brand if the user did NOT specify a brand name.
 
 CRITICAL QUANTITY & PORTION SCALING ACCURACY:
 1. Parse the user's portion input (e.g. "100g", "50g", "200g", "1 scoop", "2 scoops", "2 boiled eggs", "150g chicken breast", "1 apple").
