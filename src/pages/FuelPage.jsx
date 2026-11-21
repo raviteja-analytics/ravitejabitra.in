@@ -3,12 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import VitalityRings from '../components/VitalityRings';
 import MacroPod from '../components/MacroPod';
 import NutrientBreakdownModal from '../components/NutrientBreakdownModal';
-import { RefreshCw, Zap, Plus, CheckCircle2, Footprints, Flame, Moon, Info, HeartPulse, PieChart, ArrowUpRight } from 'lucide-react';
+import StorySnapshotModal from '../components/StorySnapshotModal';
+import { RefreshCw, Zap, Plus, CheckCircle2, Footprints, Flame, Moon, Info, HeartPulse, PieChart, ArrowUpRight, Camera } from 'lucide-react';
 
 export default function FuelPage() {
   const [loading, setLoading] = useState(true);
   const [dayMode, setDayMode] = useState('strength_upper');
   const [activeBreakdownKey, setActiveBreakdownKey] = useState(null);
+  const [showSnapshot, setShowSnapshot] = useState(false);
   const [data, setData] = useState({
     todayStr: '',
     calories: { current: 0, target: 2250 },
@@ -314,7 +316,17 @@ export default function FuelPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowSnapshot(true)}
+            className="px-4 py-2.5 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-sm transition-all active:scale-95"
+            title="Open Instagram Story Snapshot"
+          >
+            <Camera className="w-3.5 h-3.5" />
+            <span>Snapshot</span>
+          </motion.button>
+
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={fetchLiveFeed}
@@ -322,7 +334,7 @@ export default function FuelPage() {
             className="px-4 py-2.5 rounded-2xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-900 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-800 text-xs font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200 flex items-center gap-2 shadow-sm transition-all"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-rose-500' : ''}`} />
-            <span>{loading ? 'Syncing...' : 'Sync Now'}</span>
+            <span>{loading ? 'Syncing...' : 'Sync'}</span>
           </motion.button>
         </div>
       </div>
@@ -866,6 +878,19 @@ export default function FuelPage() {
               omega3: 1500,
               creatine: 5.0
             }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── 8. INSTAGRAM STORY SNAPSHOT MODAL (9:16) ────────────────── */}
+      <AnimatePresence>
+        {showSnapshot && (
+          <StorySnapshotModal
+            isOpen={showSnapshot}
+            onClose={() => setShowSnapshot(false)}
+            data={data}
+            dayMode={dayMode}
+            dayModes={dayModes}
           />
         )}
       </AnimatePresence>
