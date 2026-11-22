@@ -4,11 +4,14 @@ import VitalityRings from '../components/VitalityRings';
 import MacroPod from '../components/MacroPod';
 import NutrientBreakdownModal from '../components/NutrientBreakdownModal';
 import StorySnapshotModal from '../components/StorySnapshotModal';
-import { RefreshCw, Zap, Plus, CheckCircle2, Footprints, Flame, Moon, Info, HeartPulse, PieChart, ArrowUpRight, Camera } from 'lucide-react';
+import { RefreshCw, Zap, Plus, CheckCircle2, Footprints, Flame, Moon, Info, HeartPulse, PieChart, ArrowUpRight, Camera, Gauge, Sun, CloudSun, Timer, MapPin } from 'lucide-react';
 
 export default function FuelPage() {
   const [loading, setLoading] = useState(true);
   const [dayMode, setDayMode] = useState('strength_upper');
+  const [runDistance, setRunDistance] = useState(10);
+  const [runDuration, setRunDuration] = useState(60);
+  const [runTemp, setRunTemp] = useState('normal'); // 'normal' (<=24°C) | 'hot' (>25°C)
   const [activeBreakdownKey, setActiveBreakdownKey] = useState(null);
   const [showSnapshot, setShowSnapshot] = useState(false);
   const [data, setData] = useState({
@@ -46,10 +49,64 @@ export default function FuelPage() {
 
   const dayModes = [
     { id: 'rest', label: 'Rest / Fast', icon: '🧘', calories: 1650, protein: 125, carbs: 175, fats: 50, bmr: 1650, burn: 0 },
-    { id: 'run', label: 'Run (10 km)', icon: '🏃', calories: 2690, protein: 150, carbs: 380, fats: 65, bmr: 2000, burn: 690 },
+    { id: 'run', label: 'Run (Custom)', icon: '🏃', calories: 2690, protein: 150, carbs: 380, fats: 65, bmr: 2000, burn: 690 },
     { id: 'strength_upper', label: 'Strength Upper', icon: '🏋️', calories: 2250, protein: 150, carbs: 266, fats: 65, bmr: 2000, burn: 250 },
     { id: 'strength_legs', label: 'Strength Legs', icon: '🦵', calories: 2380, protein: 150, carbs: 310, fats: 65, bmr: 2000, burn: 380 }
   ];
+
+  // Base + Delta Sports Science Engine for 69 kg Athlete
+  const calculateSportsScienceTargets = ({ mode, dist = runDistance, dur = runDuration, temp = runTemp, weightKg = 69 }) => {
+    let burnKcal = 0;
+    let sweatHrs = 0;
+    const isFast = mode === 'rest';
+    const protein = isFast ? 125 : 150;
+    const fiber = isFast ? 25 : 35;
+
+    if (mode === 'rest') {
+      burnKcal = 0;
+      sweatHrs = 0;
+    } else if (mode === 'strength_upper') {
+      burnKcal = 250;
+      sweatHrs = 0.75;
+    } else if (mode === 'strength_legs') {
+      burnKcal = 380;
+      sweatHrs = 1.0;
+    } else if (mode === 'run') {
+      const d = parseFloat(dist) > 0 ? parseFloat(dist) : 10;
+      const t = parseFloat(dur) > 0 ? parseFloat(dur) : (d * 6);
+      // Margaria / ACSM Gross Energy Expenditure: d * weight * 1.036
+      burnKcal = Math.round(d * weightKg * 1.0);
+      sweatHrs = t / 60;
+    }
+
+    const isHot = temp === 'hot';
+    const heatSweatMultiplier = isHot ? 1.25 : 1.0; // +25% sweat rate above 25°C
+    const heatSodiumMultiplier = isHot ? 1.30 : 1.0; // +30% sodium excretion in heat
+
+    const calories = (isFast ? 1650 : 2000) + burnKcal;
+    const fats = isFast ? 50 : (mode === 'run' && dist > 10
+      ? Math.min(85, Math.round(65 + (dist - 10) * 1.5))
+      : 65);
+    const carbs = Math.round((calories - (protein * 4) - (fats * 9)) / 4);
+    const waterLiters = Math.min(6.0, Number((3.2 + (sweatHrs * 0.65 * heatSweatMultiplier)).toFixed(1)));
+    const sugar = mode === 'run'
+      ? Math.min(140, Math.round(35 + sweatHrs * 25))
+      : (isFast ? 25 : 35);
+    const sodiumMg = Math.round(2500 + (sweatHrs * 900 * heatSodiumMultiplier));
+
+    return {
+      calories,
+      protein,
+      carbs,
+      fats,
+      fiber,
+      sugar,
+      waterLiters,
+      sodiumMg,
+      burnKcal,
+      sweatHrs: Math.round(sweatHrs * 100) / 100
+    };
+  };
 
   const calculateBioBreakdown = (logs) => {
     if (!logs || !logs.length) {
@@ -177,15 +234,65 @@ export default function FuelPage() {
     };
   };
 
-  const handleDayModeChange = (mode) => {
-    setDayMode(mode.id);
+  const syncModeToBackend = async (modeId, dist, dur) => {
+    try {
+      await fetch('/api/nutrition-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'set_mode',
+          mode: modeId,
+          distance: dist,
+          duration: dur
+        })
+      });
+    } catch (err) {
+      console.warn('Day mode backend sync failed:', err);
+    }
+  };
+
+  const applyTargetsToState = (t) => {
     setData(prev => ({
       ...prev,
-      calories: { ...prev.calories, target: mode.calories },
-      protein: { ...prev.protein, target: mode.protein },
-      carbs: { ...prev.carbs, target: mode.carbs },
-      fats: { ...prev.fats, target: mode.fats }
+      calories: { ...prev.calories, target: t.calories },
+      protein: { ...prev.protein, target: t.protein },
+      carbs: { ...prev.carbs, target: t.carbs },
+      fats: { ...prev.fats, target: t.fats },
+      fiber: { ...prev.fiber, target: t.fiber },
+      sugar: { ...prev.sugar, target: t.sugar },
+      water: { ...prev.water, target: t.waterLiters },
+      micros: {
+        ...prev.micros,
+        sodiumTarget: t.sodiumMg
+      }
     }));
+  };
+
+  const handleDayModeChange = (mode) => {
+    setDayMode(mode.id);
+    if (mode.id === 'run') {
+      const t = calculateSportsScienceTargets({ mode: 'run', dist: runDistance, dur: runDuration, temp: runTemp });
+      applyTargetsToState(t);
+      syncModeToBackend('run', runDistance, runDuration);
+    } else {
+      const t = calculateSportsScienceTargets({ mode: mode.id });
+      applyTargetsToState(t);
+      syncModeToBackend(mode.id, 0, 0);
+    }
+  };
+
+  const handleRunParamChange = (newDist, newDur, newTemp) => {
+    const dist = newDist !== undefined ? newDist : runDistance;
+    const dur = newDur !== undefined ? newDur : runDuration;
+    const temp = newTemp !== undefined ? newTemp : runTemp;
+
+    if (newDist !== undefined) setRunDistance(newDist);
+    if (newDur !== undefined) setRunDuration(newDur);
+    if (newTemp !== undefined) setRunTemp(newTemp);
+
+    const t = calculateSportsScienceTargets({ mode: 'run', dist, dur, temp });
+    applyTargetsToState(t);
+    syncModeToBackend('run', dist, dur);
   };
 
   const fetchLiveFeed = async () => {
@@ -203,6 +310,8 @@ export default function FuelPage() {
 
         if (json.todayMode && json.todayMode.mode) {
           setDayMode(json.todayMode.mode);
+          if (json.todayMode.distance) setRunDistance(parseFloat(json.todayMode.distance) || 10);
+          if (json.todayMode.duration) setRunDuration(parseFloat(json.todayMode.duration) || 60);
         }
 
         const mappedTimeline = logs.map((log, idx) => ({
@@ -474,25 +583,159 @@ export default function FuelPage() {
       </div>
 
       {/* ── 2. DAY MODE SELECTOR (ATHLETIC TARGETS) ─────────────────── */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-        {dayModes.map((mode) => {
-          const isSelected = dayMode === mode.id;
-          return (
-            <button
-              key={mode.id}
-              onClick={() => handleDayModeChange(mode)}
-              className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 flex-shrink-0 border ${
-                isSelected
-                  ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 border-transparent shadow-md'
-                  : 'bg-white dark:bg-[#1c1c1e] text-neutral-600 dark:text-neutral-400 border-black/[0.06] dark:border-white/[0.08] hover:border-neutral-400'
-              }`}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          {dayModes.map((mode) => {
+            const isSelected = dayMode === mode.id;
+            return (
+              <button
+                key={mode.id}
+                onClick={() => handleDayModeChange(mode)}
+                className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 flex-shrink-0 border ${
+                  isSelected
+                    ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 border-transparent shadow-md'
+                    : 'bg-white dark:bg-[#1c1c1e] text-neutral-600 dark:text-neutral-400 border-black/[0.06] dark:border-white/[0.08] hover:border-neutral-400'
+                }`}
+              >
+                <span>{mode.icon}</span>
+                <span>{mode.id === 'run' ? `Run (${runDistance} km)` : mode.label}</span>
+                <span className="text-[10px] font-mono opacity-60">
+                  ({mode.id === 'run' ? (2000 + Math.round(runDistance * 69 * 1.0)) : mode.calories} kcal)
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── CUSTOM RUNNING TELEMETRY BAR (Dynamic Sports Science Inputs) ── */}
+        <AnimatePresence>
+          {dayMode === 'run' && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
             >
-              <span>{mode.icon}</span>
-              <span>{mode.label}</span>
-              <span className="text-[10px] font-mono opacity-60">({mode.calories} kcal)</span>
-            </button>
-          );
-        })}
+              <div className="p-4 sm:p-5 rounded-3xl bg-neutral-50 dark:bg-[#1c1c1e] border border-black/[0.06] dark:border-white/[0.08] shadow-sm space-y-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-neutral-200 dark:border-neutral-800 pb-3">
+                  <div className="flex items-center gap-2">
+                    <Gauge className="w-4 h-4 text-rose-500" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
+                      Custom Run Physiology (Zero Guesswork • 69 kg Athlete)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-neutral-600 dark:text-neutral-300">
+                    <span className="px-2.5 py-1 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+                      Pace: {runDuration && runDistance > 0 ? `${(runDuration / runDistance).toFixed(1)} min/km` : '0 min/km'}
+                    </span>
+                    <span className="px-2.5 py-1 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+                      Speed: {runDuration && runDistance > 0 ? `${((runDistance / (runDuration / 60))).toFixed(1)} km/h` : '0 km/h'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* Distance Input */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-mono uppercase text-neutral-500 dark:text-neutral-400 flex items-center justify-between">
+                      <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-rose-500" /> Distance (km)</span>
+                      <span className="font-bold text-neutral-900 dark:text-white font-mono">{runDistance} km</span>
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="range"
+                        min="1"
+                        max="42.2"
+                        step="0.5"
+                        value={runDistance}
+                        onChange={(e) => handleRunParamChange(parseFloat(e.target.value), undefined, undefined)}
+                        className="w-full accent-rose-500 cursor-pointer"
+                      />
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        step="0.5"
+                        value={runDistance}
+                        onChange={(e) => handleRunParamChange(parseFloat(e.target.value) || 1, undefined, undefined)}
+                        className="w-16 px-2 py-1 text-xs font-mono font-bold rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white text-right"
+                      />
+                    </div>
+                    <span className="text-[10px] text-neutral-400 font-mono block">
+                      Gross Burn: {Math.round(runDistance * 69 * 1.0)} kcal (Margaria eq)
+                    </span>
+                  </div>
+
+                  {/* Duration Input */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-mono uppercase text-neutral-500 dark:text-neutral-400 flex items-center justify-between">
+                      <span className="flex items-center gap-1"><Timer className="w-3.5 h-3.5 text-amber-500" /> Duration (minutes)</span>
+                      <span className="font-bold text-neutral-900 dark:text-white font-mono">{runDuration} min</span>
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="range"
+                        min="10"
+                        max="240"
+                        step="5"
+                        value={runDuration}
+                        onChange={(e) => handleRunParamChange(undefined, parseFloat(e.target.value), undefined)}
+                        className="w-full accent-amber-500 cursor-pointer"
+                      />
+                      <input
+                        type="number"
+                        min="5"
+                        max="360"
+                        step="5"
+                        value={runDuration}
+                        onChange={(e) => handleRunParamChange(undefined, parseFloat(e.target.value) || 5, undefined)}
+                        className="w-16 px-2 py-1 text-xs font-mono font-bold rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white text-right"
+                      />
+                    </div>
+                    <span className="text-[10px] text-neutral-400 font-mono block">
+                      Sweat Time: {(runDuration / 60).toFixed(2)} hrs (~{((runDuration / 60) * 0.65).toFixed(2)}L fluid)
+                    </span>
+                  </div>
+
+                  {/* Temperature / Heat Factor */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-mono uppercase text-neutral-500 dark:text-neutral-400 flex items-center justify-between">
+                      <span className="flex items-center gap-1"><Sun className="w-3.5 h-3.5 text-orange-500" /> Ambient Heat Factor</span>
+                      <span className="font-bold text-neutral-900 dark:text-white font-mono">{runTemp === 'hot' ? 'Hot (>25°C)' : 'Mild (≤24°C)'}</span>
+                    </label>
+                    <div className="grid grid-cols-2 gap-2 pt-0.5">
+                      <button
+                        onClick={() => handleRunParamChange(undefined, undefined, 'normal')}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 border ${
+                          runTemp === 'normal'
+                            ? 'bg-sky-500 text-white border-transparent shadow-sm'
+                            : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-800'
+                        }`}
+                      >
+                        <CloudSun className="w-3.5 h-3.5" />
+                        <span>Mild (≤24°C)</span>
+                      </button>
+                      <button
+                        onClick={() => handleRunParamChange(undefined, undefined, 'hot')}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 border ${
+                          runTemp === 'hot'
+                            ? 'bg-orange-500 text-white border-transparent shadow-sm'
+                            : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-800'
+                        }`}
+                      >
+                        <Sun className="w-3.5 h-3.5" />
+                        <span>Hot (&gt;25°C)</span>
+                      </button>
+                    </div>
+                    <span className="text-[10px] text-neutral-400 font-mono block">
+                      {runTemp === 'hot' ? '+25% sweat rate & +30% sodium excretion compensation' : 'Baseline sweat & electrolyte dynamics'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* ── 3. FULL 5 CORE MACRONUTRIENT PODS (CLICKABLE FOR PIE CHARTS) ─── */}
