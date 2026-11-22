@@ -36,34 +36,36 @@ function DonutChart({ slices = [], total = 0, unit = 'g', icon = '📊', onHover
     );
   }
 
-  const activeSlices = slices.filter(s => s.amount > 0);
+  const nonZeroSlices = slices.filter(s => s.amount > 0);
 
   let paths = [];
-  if (activeSlices.length === 1) {
-    const s = activeSlices[0];
+  if (nonZeroSlices.length === 1) {
+    const s = nonZeroSlices[0];
+    const origIdx = slices.indexOf(s);
     const p1 = describeArc(cx, cy, rOuter, rInner, 0, 180);
     const p2 = describeArc(cx, cy, rOuter, rInner, 180, 360);
     paths = [
-      { d: p1, color: s.color, idx: 0, s },
-      { d: p2, color: s.color, idx: 0, s }
+      { d: p1, color: s.color || PIE_PALETTE[origIdx % PIE_PALETTE.length], idx: origIdx, s },
+      { d: p2, color: s.color || PIE_PALETTE[origIdx % PIE_PALETTE.length], idx: origIdx, s }
     ];
   } else {
     let currentAngle = 0;
-    paths = activeSlices.map((s, idx) => {
+    slices.forEach((s, idx) => {
+      if (s.amount <= 0) return; // Skip rendering path for 0g slices but preserve original idx!
       const sliceAngle = (s.amount / total) * 360;
       const startAngle = currentAngle;
       const endAngle = currentAngle + sliceAngle;
       currentAngle = endAngle;
-      return {
+      paths.push({
         d: describeArc(cx, cy, rOuter, rInner, startAngle, endAngle),
         color: s.color || PIE_PALETTE[idx % PIE_PALETTE.length],
-        idx,
+        idx, // Preserves original index matching slices & legend
         s
-      };
+      });
     });
   }
 
-  const activeItem = hoveredIdx !== null && activeSlices[hoveredIdx] ? activeSlices[hoveredIdx] : null;
+  const activeItem = hoveredIdx !== null && slices[hoveredIdx] ? slices[hoveredIdx] : null;
 
   return (
     <div className="relative w-[300px] h-[300px] flex items-center justify-center select-none">

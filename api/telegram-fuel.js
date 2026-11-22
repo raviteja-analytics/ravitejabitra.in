@@ -5,9 +5,9 @@
 // 3. Interactive Telegram Inline Action Buttons -> [ ⚡ Log Today ] vs [ 📦 Save to Pantry ]
 // 4. Command shortcuts -> /save (to pantry) and /log (to today's fuel)
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_FUEL_BOT_TOKEN;
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_FUEL_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
 const AUTHORIZED_USER_ID = process.env.TELEGRAM_AUTHORIZED_USER_ID || "1288863066";
-const GOOGLE_SCRIPT_URL = process.env.WATER_APPS_SCRIPT_URL;
+const GOOGLE_SCRIPT_URL = process.env.WATER_APPS_SCRIPT_URL || process.env.GOOGLE_SCRIPT_URL;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 // Daily Macro Targets (Sports Science & Marathon Fueling)
@@ -175,6 +175,10 @@ function resolvePendingFood(paramStr) {
 
 // Telegram Helpers
 async function sendTelegramMessage(chatId, text, replyToMsgId = null, replyMarkup = null) {
+  if (!TELEGRAM_BOT_TOKEN) {
+    console.error("CRITICAL: TELEGRAM_BOT_TOKEN is undefined! Please set TELEGRAM_FUEL_BOT_TOKEN in Vercel.");
+    return null;
+  }
   try {
     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
     const payload = {

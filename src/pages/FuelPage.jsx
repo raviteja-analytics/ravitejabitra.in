@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import VitalityRings from '../components/VitalityRings';
 import MacroPod from '../components/MacroPod';
@@ -320,12 +320,13 @@ export default function FuelPage() {
       sugar: {
         natural: Math.round(naturalS * 10) / 10,
         added: Math.round(addedS * 10) / 10,
-        naturalPct: Math.round((naturalS / totalS) * 100),
-        addedPct: Math.round((addedS / totalS) * 100)
+        naturalPct: (naturalS + addedS) > 0 ? Math.round((naturalS / (naturalS + addedS)) * 100) : 0,
+        addedPct: (naturalS + addedS) > 0 ? Math.round((addedS / (naturalS + addedS)) * 100) : 0
       }
     };
   };
 
+  const syncTimeoutRef = useRef(null);
   const syncModeToBackend = async (modeId, dist, dur) => {
     try {
       await fetch('/api/nutrition-data', {
@@ -341,6 +342,13 @@ export default function FuelPage() {
     } catch (err) {
       console.warn('Day mode backend sync failed:', err);
     }
+  };
+
+  const debouncedSyncModeToBackend = (modeId, dist, dur, delay = 800) => {
+    if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+    syncTimeoutRef.current = setTimeout(() => {
+      syncModeToBackend(modeId, dist, dur);
+    }, delay);
   };
 
   const applyTargetsToState = (t) => {
@@ -403,7 +411,7 @@ export default function FuelPage() {
 
     const t = calculateSportsScienceTargets({ mode: 'run', dist, dur, temp, profile: athleteProfile });
     applyTargetsToState(t);
-    syncModeToBackend('run', dist, dur);
+    debouncedSyncModeToBackend('run', dist, dur, 800);
   };
 
   const fetchLiveFeed = async () => {
@@ -475,7 +483,7 @@ export default function FuelPage() {
             target: dynamicTargets.fats
           },
           water: {
-            current: Math.round(((micros.waterLiters || 1.85)) * 10) / 10,
+            current: Math.round(((micros.waterLiters ?? 0)) * 10) / 10,
             target: dynamicTargets.waterLiters
           },
           sugar: {

@@ -691,8 +691,10 @@ export default async function handler(req, res) {
       potassiumMg += extractNutrientValue(v, /potassium[:\s]+([\d.]+)\s*mg/i);
 
       // Magnesium
-      magnesiumMg += extractNutrientValue(v, /(?:elemental\s+)?magnesium[:\s]+([\d.]+)\s*mg/i);
-      if (/magnesium\s*glycinate/i.test(l.itemName) && magnesiumMg === 0) {
+      const logMag = extractNutrientValue(v, /(?:elemental\s+)?magnesium[:\s]+([\d.]+)\s*mg/i);
+      if (logMag > 0) {
+        magnesiumMg += logMag;
+      } else if (/magnesium\s*glycinate/i.test(l.itemName)) {
         magnesiumMg += (l.quantity || 1) * 210; // ~210-420mg elemental per dose
       }
 
