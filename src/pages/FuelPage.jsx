@@ -4,10 +4,18 @@ import VitalityRings from '../components/VitalityRings';
 import MacroPod from '../components/MacroPod';
 import NutrientBreakdownModal from '../components/NutrientBreakdownModal';
 import StorySnapshotModal from '../components/StorySnapshotModal';
-import { RefreshCw, Zap, Plus, CheckCircle2, Footprints, Flame, Moon, Info, HeartPulse, PieChart, ArrowUpRight, Camera, Gauge, Sun, CloudSun, Timer, MapPin, User, Settings2, Sliders, ChevronDown } from 'lucide-react';
+import FuelHistoryView from '../components/FuelHistoryView';
+import { RefreshCw, Zap, Plus, CheckCircle2, Footprints, Flame, Moon, Info, HeartPulse, PieChart, ArrowUpRight, Camera, Gauge, Sun, CloudSun, Timer, MapPin, User, Settings2, Sliders, ChevronDown, Calendar } from 'lucide-react';
 
 export default function FuelPage() {
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('today'); // 'today' | 'history'
+  const [historyData, setHistoryData] = useState({
+    weeklyTotals: null,
+    weeklyTargets: null,
+    dayWiseHistory: [],
+    monthlyHistory: []
+  });
   const [dayMode, setDayMode] = useState('strength_upper');
   const [runDistance, setRunDistance] = useState(10);
   const [runDuration, setRunDuration] = useState(60);
@@ -427,6 +435,13 @@ export default function FuelPage() {
         const logs = json.todayLogs || [];
         const bio = calculateBioBreakdown(logs);
 
+        setHistoryData({
+          weeklyTotals: json.weeklyTotals || null,
+          weeklyTargets: json.weeklyTargets || null,
+          dayWiseHistory: json.dayWiseHistory || [],
+          monthlyHistory: json.monthlyHistory || []
+        });
+
         const activeMode = json.todayMode?.mode || 'run';
         const activeDist = parseFloat(json.todayMode?.distance) || 10;
         const activeDur = parseFloat(json.todayMode?.duration) || 60;
@@ -599,6 +614,37 @@ export default function FuelPage() {
         </div>
       </div>
 
+      {/* ── SEGMENTED TAB SWITCHER: TODAY'S FUEL vs WEEKLY & HISTORY ── */}
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-neutral-100 dark:bg-[#1c1c1e] border border-black/[0.06] dark:border-white/[0.08] w-fit">
+        <button
+          onClick={() => setActiveTab('today')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${
+            activeTab === 'today'
+              ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm'
+              : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+          }`}
+        >
+          <Zap className="w-3.5 h-3.5 text-rose-500" />
+          <span>Today's Fuel</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('history')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${
+            activeTab === 'history'
+              ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm'
+              : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+          }`}
+        >
+          <Calendar className="w-3.5 h-3.5 text-sky-500" />
+          <span>Weekly Pacing & History</span>
+          {historyData.dayWiseHistory?.length > 0 && (
+            <span className="font-mono text-[10px] px-1.5 py-0.5 rounded-md bg-sky-500/10 text-sky-500 font-bold">
+              {historyData.dayWiseHistory.length}d
+            </span>
+          )}
+        </button>
+      </div>
+
       {/* ── ATHLETE PHYSIOLOGY PROFILE ACCORDION / DRAWER ───────────── */}
       <AnimatePresence>
         {showProfileDrawer && (
@@ -725,7 +771,9 @@ export default function FuelPage() {
         )}
       </AnimatePresence>
 
-      {/* ── 1. VITALITY RINGS & PHYSIOLOGICAL ENERGY BALANCE ─────────── */}
+      {activeTab === 'today' ? (
+        <>
+          {/* ── 1. VITALITY RINGS & PHYSIOLOGICAL ENERGY BALANCE ─────────── */}
       <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#1c1c1e] border border-black/[0.06] dark:border-white/[0.08] shadow-sm space-y-6">
         
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
@@ -1375,6 +1423,15 @@ export default function FuelPage() {
           </div>
         )}
       </div>
+        </>
+      ) : (
+        <FuelHistoryView
+          weeklyTotals={historyData.weeklyTotals}
+          weeklyTargets={historyData.weeklyTargets}
+          dayWiseHistory={historyData.dayWiseHistory}
+          monthlyHistory={historyData.monthlyHistory}
+        />
+      )}
 
       {/* ── 7. INTERACTIVE NUTRIENT BREAKDOWN & PIE CHART MODAL ──────── */}
       <AnimatePresence>
