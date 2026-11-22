@@ -25,10 +25,10 @@ export default function StorySnapshotModal({
   const calorieTarget = data?.calories?.target || 2250;
   const caloriesBurned = data?.activity?.caloriesBurned || 0;
   const burnTarget = data?.activity?.caloriesBurnedTarget || 500;
-  const waterLiters = data?.water?.current || 1.85;
-  const waterTarget = data?.water?.target || 4.0;
-  const sleepHours = data?.activity?.sleepHours || 8.6;
-  const sleepTarget = data?.activity?.sleepTarget || 8.0;
+  const waterLiters = data?.water?.current ?? 0;
+  const waterTarget = data?.water?.target ?? 4.0;
+  const sleepHours = data?.activity?.sleepHours ?? 0;
+  const sleepTarget = data?.activity?.sleepTarget ?? 8.0;
 
   // Format date: e.g. "21 NOV 2026"
   const todayDateStr = new Date().toLocaleDateString('en-US', {
@@ -52,7 +52,7 @@ export default function StorySnapshotModal({
         });
 
         const link = document.createElement('a');
-        link.download = `raviteja-story-${new Date().toISOString().split('T')[0]}.png`;
+        link.download = `raviteja-story-${data?.todayStr || new Date().toISOString().split('T')[0]}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
 
@@ -190,7 +190,7 @@ export default function StorySnapshotModal({
 
               <div className="flex items-center justify-between text-xs">
                 <span className="flex items-center gap-1.5 text-neutral-300">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#007aff]" /> Water (4L)
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#007aff]" /> Water ({waterTarget}L)
                 </span>
                 <span className="font-bold text-white text-[11px]">{waterLiters} L</span>
               </div>
