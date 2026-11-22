@@ -8,7 +8,8 @@ export default function StorySnapshotModal({
   onClose,
   data,
   dayMode = 'strength_upper',
-  dayModes = []
+  dayModes = [],
+  runDistance = 10
 }) {
   const cardRef = useRef(null);
   const [downloading, setDownloading] = useState(false);
@@ -16,7 +17,9 @@ export default function StorySnapshotModal({
 
   if (!isOpen) return null;
 
-  const activeModeObj = dayModes.find(m => m.id === dayMode) || { label: 'Strength Upper', icon: '🏋️' };
+  const rawModeObj = dayModes.find(m => m.id === dayMode) || { label: 'Strength Upper', icon: '🏋️' };
+  const modeLabel = dayMode === 'run' ? `Run (${runDistance} km)` : rawModeObj.label;
+  const activeModeObj = { ...rawModeObj, label: modeLabel };
 
   const foodConsumed = data?.calories?.current || 0;
   const calorieTarget = data?.calories?.target || 2250;

@@ -81,21 +81,14 @@ export default function FuelPage() {
   const neatValue = 350; // Daily ambient movement / non-exercise thermogenesis
   const baselineTDEE = bmrValue + neatValue;
 
-  const dayModes = [
-    { id: 'rest', label: 'Rest / Fast', icon: '🧘', calories: bmrValue, protein: Math.round(athleteProfile.weightKg * 1.8), carbs: 175, fats: 50, bmr: bmrValue, burn: 0 },
-    { id: 'run', label: 'Run (Custom)', icon: '🏃', calories: baselineTDEE + Math.round(runDistance * athleteProfile.weightKg * 1.0), protein: Math.round(athleteProfile.weightKg * 2.17), carbs: 380, fats: 65, bmr: baselineTDEE, burn: Math.round(runDistance * athleteProfile.weightKg * 1.0) },
-    { id: 'strength_upper', label: 'Strength Upper', icon: '🏋️', calories: baselineTDEE + 250, protein: Math.round(athleteProfile.weightKg * 2.17), carbs: 266, fats: 65, bmr: baselineTDEE, burn: 250 },
-    { id: 'strength_legs', label: 'Strength Legs', icon: '🦵', calories: baselineTDEE + 380, protein: Math.round(athleteProfile.weightKg * 2.17), carbs: 310, fats: 65, bmr: baselineTDEE, burn: 380 }
-  ];
-
-  // Base + Delta Sports Science Engine strictly synced to Athlete Profile
+  // Single Source of Truth for Dynamic Daily Nutrition Targets
   const calculateSportsScienceTargets = ({ mode, dist = runDistance, dur = runDuration, temp = runTemp, profile = athleteProfile }) => {
     let burnKcal = 0;
     let sweatHrs = 0;
     const isFast = mode === 'rest';
     const weightKg = parseFloat(profile.weightKg) || 69;
     const bmr = calculateExactBMR(profile);
-    const baseline = isFast ? bmr : (bmr + 350);
+    const baseline = bmr + neatValue; // 24-hr BMR + NEAT for all modes
 
     const protein = isFast 
       ? Math.round(weightKg * 1.8) // 1.8g/kg on rest days
@@ -114,7 +107,7 @@ export default function FuelPage() {
     } else if (mode === 'run') {
       const d = parseFloat(dist) > 0 ? parseFloat(dist) : 10;
       const t = parseFloat(dur) > 0 ? parseFloat(dur) : (d * 6);
-      // Margaria / ACSM Gross Energy Expenditure: d * weight * 1.036
+      // Net Running Expenditure: dist * weight * 1.0 (Margaria Net Cost)
       burnKcal = Math.round(d * weightKg * 1.0);
       sweatHrs = t / 60;
     }
@@ -127,8 +120,10 @@ export default function FuelPage() {
     const fats = isFast ? 50 : (mode === 'run' && dist > 10
       ? Math.min(85, Math.round(65 + (dist - 10) * 1.5))
       : 65);
+    // Exact macro balance: carbs consume the remaining calories so Protein*4 + Carbs*4 + Fats*9 === calories exactly
     const carbs = Math.round((calories - (protein * 4) - (fats * 9)) / 4);
     const waterLiters = Math.min(6.0, Number((3.2 + (sweatHrs * 0.65 * heatSweatMultiplier)).toFixed(1)));
+    const addedSugarLimit = 40; // Clinical threshold for processed/added sugars
     const sugar = mode === 'run'
       ? Math.min(140, Math.round(35 + sweatHrs * 25))
       : (isFast ? 25 : 35);
@@ -141,6 +136,7 @@ export default function FuelPage() {
       fats,
       fiber,
       sugar,
+      addedSugarLimit,
       waterLiters,
       sodiumMg,
       burnKcal,
@@ -148,6 +144,53 @@ export default function FuelPage() {
       bmr
     };
   };
+
+  const dayModes = [
+    { 
+      id: 'rest', 
+      label: 'Rest / Recovery', 
+      icon: '🧘', 
+      calories: calculateSportsScienceTargets({ mode: 'rest' }).calories, 
+      protein: calculateSportsScienceTargets({ mode: 'rest' }).protein, 
+      carbs: calculateSportsScienceTargets({ mode: 'rest' }).carbs, 
+      fats: calculateSportsScienceTargets({ mode: 'rest' }).fats, 
+      bmr: bmrValue, 
+      burn: 0 
+    },
+    { 
+      id: 'run', 
+      label: 'Run (Custom)', 
+      icon: '🏃', 
+      calories: calculateSportsScienceTargets({ mode: 'run' }).calories, 
+      protein: calculateSportsScienceTargets({ mode: 'run' }).protein, 
+      carbs: calculateSportsScienceTargets({ mode: 'run' }).carbs, 
+      fats: calculateSportsScienceTargets({ mode: 'run' }).fats, 
+      bmr: baselineTDEE, 
+      burn: Math.round(runDistance * athleteProfile.weightKg * 1.0) 
+    },
+    { 
+      id: 'strength_upper', 
+      label: 'Strength Upper', 
+      icon: '🏋️', 
+      calories: calculateSportsScienceTargets({ mode: 'strength_upper' }).calories, 
+      protein: calculateSportsScienceTargets({ mode: 'strength_upper' }).protein, 
+      carbs: calculateSportsScienceTargets({ mode: 'strength_upper' }).carbs, 
+      fats: calculateSportsScienceTargets({ mode: 'strength_upper' }).fats, 
+      bmr: baselineTDEE, 
+      burn: 250 
+    },
+    { 
+      id: 'strength_legs', 
+      label: 'Strength Legs', 
+      icon: '🦵', 
+      calories: calculateSportsScienceTargets({ mode: 'strength_legs' }).calories, 
+      protein: calculateSportsScienceTargets({ mode: 'strength_legs' }).protein, 
+      carbs: calculateSportsScienceTargets({ mode: 'strength_legs' }).carbs, 
+      fats: calculateSportsScienceTargets({ mode: 'strength_legs' }).fats, 
+      bmr: baselineTDEE, 
+      burn: 380 
+    }
+  ];
 
   const calculateBioBreakdown = (logs) => {
     if (!logs || !logs.length) {
@@ -177,35 +220,39 @@ export default function FuelPage() {
     });
     const totalP = completeP + incompleteP || 1;
 
-    // 2. Carbs & Sugars
-    let complexC = 0;
-    let simpleC = 0;
+    // 2. Carbs & Sugars Partitioning
+    // Total Carbs = Complex Starches + Dietary Fiber + Total Sugars (Natural + Added)
+    // Net Carbs = Total Carbs - Dietary Fiber
+    // Complex Starches = Net Carbs - Total Sugars
+    let totalCarbs = 0;
+    let totalFib = 0;
     let naturalS = 0;
     let addedS = 0;
+
     logs.forEach(l => {
       const c = parseFloat(l.carbs) || 0;
       const s = parseFloat(l.sugar) || 0;
+      const fib = parseFloat(l.fiber) || 0;
       const text = ((l.itemName || '') + ' ' + (l.brand || '') + ' ' + (l.rawMessage || '')).toLowerCase();
 
-      if (/banana|date|raisin|fruit|apple|mango|orange|grape|milk/i.test(text)) {
-        naturalS += s;
-        const sPart = Math.min(c, Math.max(s, c * 0.75));
-        simpleC += sPart;
-        complexC += Math.max(0, c - sPart);
-      } else if (/sugar|glucose|dextrose|honey|jaggery|gel|juice|soda|sweet|dessert|candy|chocolate/i.test(text)) {
+      totalCarbs += c;
+      totalFib += fib;
+
+      const isAdded = /sugar|glucose|dextrose|honey|jaggery|gel|soda|dessert|candy|confection/i.test(text) && !/fruit|date|milk|oats|banana|apple|watermelon/i.test(text);
+      if (isAdded) {
         addedS += s;
-        simpleC += c;
       } else {
         naturalS += s;
-        const sPart = Math.min(c, s);
-        simpleC += sPart;
-        complexC += Math.max(0, c - sPart);
       }
     });
-    const totalC = complexC + simpleC || 1;
-    const totalS = naturalS + addedS || 1;
 
-    // 3. Fats
+    const totalS = naturalS + addedS || 0;
+    const netCarbs = Math.max(0, totalCarbs - totalFib);
+    const complexC = Math.max(0, netCarbs - totalS);
+    const simpleC = totalS; // Rapid / Simple sugars equals total sugar pool
+    const totalC = complexC + simpleC || 1;
+
+    // 3. Fats Partitioning (Fix peanut butter false-match to butter)
     let satF = 0;
     let unsatF = 0;
     logs.forEach(l => {
@@ -213,31 +260,35 @@ export default function FuelPage() {
       if (f <= 0) return;
       const text = ((l.itemName || '') + ' ' + (l.brand || '') + ' ' + (l.vitals || '') + ' ' + (l.rawMessage || '')).toLowerCase();
       const satMatch = text.match(/saturated(?:\s*fat)?[:\s]+([\d.]+)\s*g/i);
+      
       if (satMatch) {
         const sVal = parseFloat(satMatch[1]) || 0;
         satF += sVal;
         unsatF += Math.max(0, f - sVal);
-      } else if (/ghee|butter|cheese/i.test(text)) {
+      } else if (/peanut|almond|walnut|nut|seed|olive|mustard/i.test(text)) {
+        // High monounsaturated/polyunsaturated profile (Peanut butter: ~15% saturated, 85% unsaturated)
+        satF += f * 0.15;
+        unsatF += f * 0.85;
+      } else if (/ghee|dairy butter|\bbutter\b|cheese/i.test(text) && !/peanut/i.test(text)) {
         satF += f * 0.65;
         unsatF += f * 0.35;
       } else if (/paneer|milk|curd|yogurt/i.test(text)) {
         satF += f * 0.60;
         unsatF += f * 0.40;
-      } else if (/egg|chicken|fish/i.test(text)) {
+      } else if (/egg|chicken|fish|meat|poultry/i.test(text)) {
         satF += f * 0.30;
         unsatF += f * 0.70;
-      } else if (/peanut|almond|walnut|nut|seed|olive|mustard/i.test(text)) {
-        satF += f * 0.15;
-        unsatF += f * 0.85;
+      } else if (/oat|grain|cereal|rice|bread|dal/i.test(text)) {
+        satF += f * 0.20;
+        unsatF += f * 0.80;
       } else {
-        satF += f * 0.33;
-        unsatF += f * 0.67;
+        satF += f * 0.25;
+        unsatF += f * 0.75;
       }
     });
     const totalF = satF + unsatF || 1;
 
     // 4. Fiber
-    let totalFib = logs.reduce((sum, l) => sum + (parseFloat(l.fiber) || 0), 0);
     let solubleFib = Math.round(totalFib * 0.4 * 10) / 10;
     let insolubleFib = Math.round(totalFib * 0.6 * 10) / 10;
 
@@ -368,11 +419,24 @@ export default function FuelPage() {
         const logs = json.todayLogs || [];
         const bio = calculateBioBreakdown(logs);
 
+        const activeMode = json.todayMode?.mode || 'run';
+        const activeDist = parseFloat(json.todayMode?.distance) || 10;
+        const activeDur = parseFloat(json.todayMode?.duration) || 60;
+
         if (json.todayMode && json.todayMode.mode) {
-          setDayMode(json.todayMode.mode);
-          if (json.todayMode.distance) setRunDistance(parseFloat(json.todayMode.distance) || 10);
-          if (json.todayMode.duration) setRunDuration(parseFloat(json.todayMode.duration) || 60);
+          setDayMode(activeMode);
+          if (json.todayMode.distance) setRunDistance(activeDist);
+          if (json.todayMode.duration) setRunDuration(activeDur);
         }
+
+        // Single Source of Truth for targets: compute using exact clinical sports science engine
+        const dynamicTargets = calculateSportsScienceTargets({
+          mode: activeMode,
+          dist: activeDist,
+          dur: activeDur,
+          temp: runTemp,
+          profile: athleteProfile
+        });
 
         const mappedTimeline = logs.map((log, idx) => ({
           id: log.rawTimestamp || idx,
@@ -396,31 +460,33 @@ export default function FuelPage() {
           todayStr: json.todayStr || new Date().toISOString().split('T')[0],
           calories: {
             current: Math.round(totals.calories || 0),
-            target: targets.calories || 2250
+            target: dynamicTargets.calories
           },
           protein: {
             current: Math.round((totals.protein || 0) * 10) / 10,
-            target: targets.protein || 150
+            target: dynamicTargets.protein
           },
           carbs: {
             current: Math.round((totals.carbs || 0) * 10) / 10,
-            target: targets.carbs || 266
+            target: dynamicTargets.carbs
           },
           fats: {
             current: Math.round((totals.fats || 0) * 10) / 10,
-            target: targets.fats || 65
+            target: dynamicTargets.fats
           },
           water: {
             current: Math.round(((micros.waterLiters || 1.85)) * 10) / 10,
-            target: targets.waterLiters || targets.hydroLiters || 4.0
+            target: dynamicTargets.waterLiters
           },
           sugar: {
             current: Math.round((totals.sugar || 0) * 10) / 10,
-            target: targets.sugar || 35
+            target: dynamicTargets.sugar,
+            addedCurrent: bio.sugar.added,
+            addedLimit: dynamicTargets.addedSugarLimit || 40
           },
           fiber: {
             current: Math.round((totals.fiber || 0) * 10) / 10,
-            target: targets.fiber || 35
+            target: dynamicTargets.fiber
           },
           activity: {
             steps: act.steps || 0,
@@ -712,7 +778,7 @@ export default function FuelPage() {
             <div className="flex items-center gap-3 p-2">
               <span className="w-3.5 h-3.5 rounded-full bg-[#007aff] flex-shrink-0" />
               <div>
-                <span className="text-[11px] text-neutral-400 uppercase font-mono block">Water (4L)</span>
+                <span className="text-[11px] text-neutral-400 uppercase font-mono block">Water ({data.water.target}L)</span>
                 <span className="text-xs font-bold font-mono text-neutral-900 dark:text-white">
                   {data.water.current} / {data.water.target} L ({Math.round((data.water.current / (data.water.target || 1)) * 100)}%)
                 </span>
@@ -865,7 +931,7 @@ export default function FuelPage() {
                       />
                     </div>
                     <span className="text-[10px] text-neutral-400 font-mono block">
-                      Gross Burn: {Math.round(runDistance * athleteProfile.weightKg * 1.0)} kcal (Margaria eq)
+                      Net Burn: {Math.round(runDistance * athleteProfile.weightKg * 1.0)} kcal (Margaria Net Cost)
                     </span>
                   </div>
 
@@ -1071,27 +1137,27 @@ export default function FuelPage() {
           {/* 5. SUGAR INTAKE */}
           <MacroPod
             name="Sugar Intake"
-            subtitle="Natural vs Added Threshold"
+            subtitle="Added (<40g) vs Whole-Food Fuel"
             icon="🍯"
-            current={data.sugar.current}
-            target={data.sugar.target}
+            current={data.sugar.addedCurrent !== undefined ? data.sugar.addedCurrent : data.bioSugar.added}
+            target={data.sugar.addedLimit || 40}
             unit="g"
             color="#ec4899"
             onOpenPie={() => setActiveBreakdownKey('sugar')}
             breakdown={[
               {
-                label: 'Natural Whole Food Sugars',
-                value: data.bioSugar.natural,
-                pct: data.bioSugar.naturalPct,
-                color: '#ec4899',
-                description: 'Naturally occurring fructose in whole bananas, dates, and lactose in milk.'
-              },
-              {
-                label: 'Added / Refined Sugars',
+                label: 'Added / Processed Sugars',
                 value: data.bioSugar.added,
                 pct: data.bioSugar.addedPct,
                 color: '#f43f5e',
-                description: 'Processed sweeteners, syrups, or industrial confectioneries. Kept strictly minimal.'
+                description: 'Refined sweets & syrups. Bar enforces strict athlete ceiling (<40g).'
+              },
+              {
+                label: 'Natural Whole Food Sugars',
+                value: data.bioSugar.natural,
+                pct: data.bioSugar.naturalPct,
+                color: '#10b981',
+                description: 'Fruits (dates, watermelon, bananas) & lactose. Healthy cellular fuel, not penalized!'
               }
             ]}
           />
@@ -1337,6 +1403,7 @@ export default function FuelPage() {
             data={data}
             dayMode={dayMode}
             dayModes={dayModes}
+            runDistance={runDistance}
           />
         )}
       </AnimatePresence>
