@@ -4,7 +4,7 @@ import VitalityRings from '../components/VitalityRings';
 import MacroPod from '../components/MacroPod';
 import NutrientBreakdownModal from '../components/NutrientBreakdownModal';
 import StorySnapshotModal from '../components/StorySnapshotModal';
-import { RefreshCw, Zap, Plus, CheckCircle2, Footprints, Flame, Moon, Info, HeartPulse, PieChart, ArrowUpRight, Camera, Gauge, Sun, CloudSun, Timer, MapPin } from 'lucide-react';
+import { RefreshCw, Zap, Plus, CheckCircle2, Footprints, Flame, Moon, Info, HeartPulse, PieChart, ArrowUpRight, Camera, Gauge, Sun, CloudSun, Timer, MapPin, User, Settings2, Sliders, ChevronDown } from 'lucide-react';
 
 export default function FuelPage() {
   const [loading, setLoading] = useState(true);
@@ -12,6 +12,22 @@ export default function FuelPage() {
   const [runDistance, setRunDistance] = useState(10);
   const [runDuration, setRunDuration] = useState(60);
   const [runTemp, setRunTemp] = useState('normal'); // 'normal' (<=24°C) | 'hot' (>25°C)
+  
+  // Athlete Profile State (Persisted in localStorage)
+  const [showProfileDrawer, setShowProfileDrawer] = useState(false);
+  const [athleteProfile, setAthleteProfile] = useState(() => {
+    try {
+      const saved = localStorage.getItem('athlete_profile');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return {
+      gender: 'male',
+      age: 26,
+      weightKg: 69,
+      heightCm: 175
+    };
+  });
+
   const [activeBreakdownKey, setActiveBreakdownKey] = useState(null);
   const [showSnapshot, setShowSnapshot] = useState(false);
   const [data, setData] = useState({
@@ -47,19 +63,43 @@ export default function FuelPage() {
     rawLogs: []
   });
 
+  // Clinical Mifflin-St Jeor BMR Equation + Dynamic NEAT
+  const calculateExactBMR = (profile = athleteProfile) => {
+    const w = parseFloat(profile.weightKg) || 69;
+    const h = parseFloat(profile.heightCm) || 175;
+    const a = parseFloat(profile.age) || 26;
+    const isMale = profile.gender !== 'female';
+
+    // Mifflin-St Jeor:
+    // Men: (10 * weight_kg) + (6.25 * height_cm) - (5 * age) + 5
+    // Women: (10 * weight_kg) + (6.25 * height_cm) - (5 * age) - 161
+    const rawBMR = (10 * w) + (6.25 * h) - (5 * a) + (isMale ? 5 : -161);
+    return Math.round(rawBMR);
+  };
+
+  const bmrValue = calculateExactBMR();
+  const neatValue = 350; // Daily ambient movement / non-exercise thermogenesis
+  const baselineTDEE = bmrValue + neatValue;
+
   const dayModes = [
-    { id: 'rest', label: 'Rest / Fast', icon: '🧘', calories: 1650, protein: 125, carbs: 175, fats: 50, bmr: 1650, burn: 0 },
-    { id: 'run', label: 'Run (Custom)', icon: '🏃', calories: 2690, protein: 150, carbs: 380, fats: 65, bmr: 2000, burn: 690 },
-    { id: 'strength_upper', label: 'Strength Upper', icon: '🏋️', calories: 2250, protein: 150, carbs: 266, fats: 65, bmr: 2000, burn: 250 },
-    { id: 'strength_legs', label: 'Strength Legs', icon: '🦵', calories: 2380, protein: 150, carbs: 310, fats: 65, bmr: 2000, burn: 380 }
+    { id: 'rest', label: 'Rest / Fast', icon: '🧘', calories: bmrValue, protein: Math.round(athleteProfile.weightKg * 1.8), carbs: 175, fats: 50, bmr: bmrValue, burn: 0 },
+    { id: 'run', label: 'Run (Custom)', icon: '🏃', calories: baselineTDEE + Math.round(runDistance * athleteProfile.weightKg * 1.0), protein: Math.round(athleteProfile.weightKg * 2.17), carbs: 380, fats: 65, bmr: baselineTDEE, burn: Math.round(runDistance * athleteProfile.weightKg * 1.0) },
+    { id: 'strength_upper', label: 'Strength Upper', icon: '🏋️', calories: baselineTDEE + 250, protein: Math.round(athleteProfile.weightKg * 2.17), carbs: 266, fats: 65, bmr: baselineTDEE, burn: 250 },
+    { id: 'strength_legs', label: 'Strength Legs', icon: '🦵', calories: baselineTDEE + 380, protein: Math.round(athleteProfile.weightKg * 2.17), carbs: 310, fats: 65, bmr: baselineTDEE, burn: 380 }
   ];
 
-  // Base + Delta Sports Science Engine for 69 kg Athlete
-  const calculateSportsScienceTargets = ({ mode, dist = runDistance, dur = runDuration, temp = runTemp, weightKg = 69 }) => {
+  // Base + Delta Sports Science Engine strictly synced to Athlete Profile
+  const calculateSportsScienceTargets = ({ mode, dist = runDistance, dur = runDuration, temp = runTemp, profile = athleteProfile }) => {
     let burnKcal = 0;
     let sweatHrs = 0;
     const isFast = mode === 'rest';
-    const protein = isFast ? 125 : 150;
+    const weightKg = parseFloat(profile.weightKg) || 69;
+    const bmr = calculateExactBMR(profile);
+    const baseline = isFast ? bmr : (bmr + 350);
+
+    const protein = isFast 
+      ? Math.round(weightKg * 1.8) // 1.8g/kg on rest days
+      : Math.round(weightKg * 2.17); // 2.17g/kg on training days (150g for 69kg)
     const fiber = isFast ? 25 : 35;
 
     if (mode === 'rest') {
@@ -83,7 +123,7 @@ export default function FuelPage() {
     const heatSweatMultiplier = isHot ? 1.25 : 1.0; // +25% sweat rate above 25°C
     const heatSodiumMultiplier = isHot ? 1.30 : 1.0; // +30% sodium excretion in heat
 
-    const calories = (isFast ? 1650 : 2000) + burnKcal;
+    const calories = baseline + burnKcal;
     const fats = isFast ? 50 : (mode === 'run' && dist > 10
       ? Math.min(85, Math.round(65 + (dist - 10) * 1.5))
       : 65);
@@ -104,7 +144,8 @@ export default function FuelPage() {
       waterLiters,
       sodiumMg,
       burnKcal,
-      sweatHrs: Math.round(sweatHrs * 100) / 100
+      sweatHrs: Math.round(sweatHrs * 100) / 100,
+      bmr
     };
   };
 
@@ -268,14 +309,33 @@ export default function FuelPage() {
     }));
   };
 
-  const handleDayModeChange = (mode) => {
-    setDayMode(mode.id);
-    if (mode.id === 'run') {
-      const t = calculateSportsScienceTargets({ mode: 'run', dist: runDistance, dur: runDuration, temp: runTemp });
+  const handleProfileChange = (field, value) => {
+    const updated = { ...athleteProfile, [field]: value };
+    setAthleteProfile(updated);
+    try {
+      localStorage.setItem('athlete_profile', JSON.stringify(updated));
+    } catch (e) {}
+
+    // Instantly recalculate current day mode targets with new physiological profile
+    if (dayMode === 'run') {
+      const t = calculateSportsScienceTargets({ mode: 'run', dist: runDistance, dur: runDuration, temp: runTemp, profile: updated });
       applyTargetsToState(t);
       syncModeToBackend('run', runDistance, runDuration);
     } else {
-      const t = calculateSportsScienceTargets({ mode: mode.id });
+      const t = calculateSportsScienceTargets({ mode: dayMode, profile: updated });
+      applyTargetsToState(t);
+      syncModeToBackend(dayMode, 0, 0);
+    }
+  };
+
+  const handleDayModeChange = (mode) => {
+    setDayMode(mode.id);
+    if (mode.id === 'run') {
+      const t = calculateSportsScienceTargets({ mode: 'run', dist: runDistance, dur: runDuration, temp: runTemp, profile: athleteProfile });
+      applyTargetsToState(t);
+      syncModeToBackend('run', runDistance, runDuration);
+    } else {
+      const t = calculateSportsScienceTargets({ mode: mode.id, profile: athleteProfile });
       applyTargetsToState(t);
       syncModeToBackend(mode.id, 0, 0);
     }
@@ -290,7 +350,7 @@ export default function FuelPage() {
     if (newDur !== undefined) setRunDuration(newDur);
     if (newTemp !== undefined) setRunTemp(newTemp);
 
-    const t = calculateSportsScienceTargets({ mode: 'run', dist, dur, temp });
+    const t = calculateSportsScienceTargets({ mode: 'run', dist, dur, temp, profile: athleteProfile });
     applyTargetsToState(t);
     syncModeToBackend('run', dist, dur);
   };
@@ -426,6 +486,23 @@ export default function FuelPage() {
         </div>
 
         <div className="flex items-center gap-2.5">
+          {/* Athlete Profile Dropdown Toggle */}
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowProfileDrawer(!showProfileDrawer)}
+            className={`px-3.5 py-2.5 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 border transition-all ${
+              showProfileDrawer
+                ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-transparent shadow-sm'
+                : 'bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400'
+            }`}
+            title="Configure Athlete Physiology Profile (Age, Height, Weight, Gender)"
+          >
+            <User className="w-3.5 h-3.5 text-rose-500" />
+            <span className="hidden sm:inline">Physiology</span>
+            <span className="font-mono text-[11px] opacity-70">({athleteProfile.weightKg}kg • {athleteProfile.heightCm}cm)</span>
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showProfileDrawer ? 'rotate-180' : ''}`} />
+          </motion.button>
+
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowSnapshot(true)}
@@ -447,6 +524,132 @@ export default function FuelPage() {
           </motion.button>
         </div>
       </div>
+
+      {/* ── ATHLETE PHYSIOLOGY PROFILE ACCORDION / DRAWER ───────────── */}
+      <AnimatePresence>
+        {showProfileDrawer && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="p-6 rounded-3xl bg-neutral-50 dark:bg-[#1c1c1e] border border-black/[0.08] dark:border-white/[0.08] shadow-sm space-y-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-neutral-200 dark:border-neutral-800 pb-3">
+                <div className="flex items-center gap-2">
+                  <Sliders className="w-4 h-4 text-rose-500" />
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
+                    Athlete Physical Parameters (Mifflin-St Jeor Engine)
+                  </h3>
+                </div>
+                <div className="flex items-center gap-2 text-xs font-mono">
+                  <span className="text-neutral-500 dark:text-neutral-400">Calculated Baseline BMR:</span>
+                  <span className="font-extrabold text-rose-500 bg-rose-500/10 px-2.5 py-1 rounded-xl">
+                    {bmrValue.toLocaleString()} kcal/day
+                  </span>
+                  <span className="text-neutral-400 hidden sm:inline">(+350 NEAT = {baselineTDEE} TDEE)</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {/* 1. Gender */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-mono uppercase text-neutral-500 dark:text-neutral-400 block font-bold">
+                    Biological Sex
+                  </label>
+                  <select
+                    value={athleteProfile.gender}
+                    onChange={(e) => handleProfileChange('gender', e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl text-xs font-bold border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-rose-500 transition-colors"
+                  >
+                    <option value="male">Male (+5 kcal)</option>
+                    <option value="female">Female (-161 kcal)</option>
+                  </select>
+                  <span className="text-[10px] text-neutral-400 font-mono block">
+                    Metabolic constant offset
+                  </span>
+                </div>
+
+                {/* 2. Age */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-mono uppercase text-neutral-500 dark:text-neutral-400 block font-bold">
+                    Age (Years)
+                  </label>
+                  <select
+                    value={athleteProfile.age}
+                    onChange={(e) => handleProfileChange('age', parseInt(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl text-xs font-bold border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-rose-500 transition-colors"
+                  >
+                    {Array.from({ length: 73 }, (_, i) => i + 18).map((ageVal) => (
+                      <option key={ageVal} value={ageVal}>
+                        {ageVal} years (-{ageVal * 5} kcal)
+                      </option>
+                    ))}
+                  </select>
+                  <span className="text-[10px] text-neutral-400 font-mono block">
+                    -5 kcal per year elapsed
+                  </span>
+                </div>
+
+                {/* 3. Height */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-mono uppercase text-neutral-500 dark:text-neutral-400 block font-bold">
+                    Height (cm)
+                  </label>
+                  <select
+                    value={athleteProfile.heightCm}
+                    onChange={(e) => handleProfileChange('heightCm', parseInt(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl text-xs font-bold border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-rose-500 transition-colors"
+                  >
+                    {Array.from({ length: 71 }, (_, i) => i + 140).map((hVal) => {
+                      const feet = Math.floor(hVal / 30.48);
+                      const inches = Math.round((hVal % 30.48) / 2.54);
+                      return (
+                        <option key={hVal} value={hVal}>
+                          {hVal} cm ({feet}'{inches}")
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <span className="text-[10px] text-neutral-400 font-mono block">
+                    +6.25 kcal per cm stature
+                  </span>
+                </div>
+
+                {/* 4. Weight */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-mono uppercase text-neutral-500 dark:text-neutral-400 block font-bold">
+                    Body Weight (kg)
+                  </label>
+                  <select
+                    value={athleteProfile.weightKg}
+                    onChange={(e) => handleProfileChange('weightKg', parseFloat(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl text-xs font-bold border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-rose-500 transition-colors"
+                  >
+                    {Array.from({ length: 161 }, (_, i) => (40 + i * 0.5)).map((wVal) => (
+                      <option key={wVal} value={wVal}>
+                        {wVal.toFixed(1)} kg ({Math.round(wVal * 2.20462)} lbs)
+                      </option>
+                    ))}
+                  </select>
+                  <span className="text-[10px] text-neutral-400 font-mono block">
+                    +10 kcal per kg mass (+run work)
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-[11px] text-neutral-500 dark:text-neutral-400 flex items-center justify-between">
+                <span>
+                  <b>Medical Formula:</b> BMR = (10 × {athleteProfile.weightKg}) + (6.25 × {athleteProfile.heightCm}) - (5 × {athleteProfile.age}) {athleteProfile.gender === 'female' ? '- 161' : '+ 5'} = <b>{bmrValue} kcal/day</b>
+                </span>
+                <span className="text-emerald-500 font-mono font-bold">
+                  ✓ Synced to all targets & run formulas
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── 1. VITALITY RINGS & PHYSIOLOGICAL ENERGY BALANCE ─────────── */}
       <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#1c1c1e] border border-black/[0.06] dark:border-white/[0.08] shadow-sm space-y-6">
@@ -576,7 +779,7 @@ export default function FuelPage() {
           <div className="mt-3.5 p-3 rounded-2xl bg-neutral-100/70 dark:bg-neutral-900/60 border border-neutral-200/50 dark:border-neutral-800/80 flex items-start gap-2.5 text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
             <Info className="w-4 h-4 text-sky-500 flex-shrink-0 mt-0.5" />
             <span>
-              <b>How BMR is calculated:</b> Your body burns ~<b>1,650 kcal/day</b> at rest purely for breathing, heart pumping, brain metabolism, and cellular repair (Basal Metabolic Rate for 69 kg athlete), plus ~<b>350 kcal</b> for daily desk movement (NEAT). Your day mode target ({tdeeTarget} kcal) already bakes in this baseline plus planned workouts so your deficit/surplus is medically accurate.
+              <b>How BMR is calculated:</b> Using the clinical <b>Mifflin-St Jeor equation</b> for your profile ({athleteProfile.gender}, {athleteProfile.age}y, {athleteProfile.heightCm}cm, {athleteProfile.weightKg}kg), your body burns exactly <b>{bmrValue} kcal/day</b> at rest purely for breathing, organ function, and cellular metabolism, plus <b>350 kcal</b> for non-exercise movement (NEAT). Your day mode target ({tdeeTarget} kcal) factors this baseline with zero guesswork.
             </span>
           </div>
         </div>
@@ -600,7 +803,7 @@ export default function FuelPage() {
                 <span>{mode.icon}</span>
                 <span>{mode.id === 'run' ? `Run (${runDistance} km)` : mode.label}</span>
                 <span className="text-[10px] font-mono opacity-60">
-                  ({mode.id === 'run' ? (2000 + Math.round(runDistance * 69 * 1.0)) : mode.calories} kcal)
+                  ({mode.id === 'run' ? (baselineTDEE + Math.round(runDistance * athleteProfile.weightKg * 1.0)) : mode.calories} kcal)
                 </span>
               </button>
             );
@@ -621,7 +824,7 @@ export default function FuelPage() {
                   <div className="flex items-center gap-2">
                     <Gauge className="w-4 h-4 text-rose-500" />
                     <span className="text-xs font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
-                      Custom Run Physiology (Zero Guesswork • 69 kg Athlete)
+                      Custom Run Physiology (Zero Guesswork • {athleteProfile.weightKg} kg Athlete)
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-xs font-mono font-bold text-neutral-600 dark:text-neutral-300">
@@ -662,7 +865,7 @@ export default function FuelPage() {
                       />
                     </div>
                     <span className="text-[10px] text-neutral-400 font-mono block">
-                      Gross Burn: {Math.round(runDistance * 69 * 1.0)} kcal (Margaria eq)
+                      Gross Burn: {Math.round(runDistance * athleteProfile.weightKg * 1.0)} kcal (Margaria eq)
                     </span>
                   </div>
 
