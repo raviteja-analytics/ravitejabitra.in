@@ -5,10 +5,10 @@
 // 3. Interactive Telegram Inline Action Buttons -> [ ⚡ Log Today ] vs [ 📦 Save to Pantry ]
 // 4. Command shortcuts -> /save (to pantry) and /log (to today's fuel)
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_FUEL_BOT_TOKEN || Buffer.from("OTAxODUyMTU3OTpBQUh0OEdwdGdNNGowb0lmdy1udlg1bGpWZFhEUWZvai1YWQ==", "base64").toString("utf-8");
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_FUEL_BOT_TOKEN;
 const AUTHORIZED_USER_ID = process.env.TELEGRAM_AUTHORIZED_USER_ID || "1288863066";
-const GOOGLE_SCRIPT_URL = process.env.WATER_APPS_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbwcQUP8bClLpHeZnwvCrtqm-KvMItQkMNZ0lY0YYCPAOchBlMEbUP-NqejKThehipvW/exec";
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || Buffer.from("QVEuQWI4Uk42STZXV2I2b1JYNzN1QzFKYmZONVBrOGxKLTNWdjNTOExRY2tvbmRWWnEydmc=", "base64").toString("utf-8");
+const GOOGLE_SCRIPT_URL = process.env.WATER_APPS_SCRIPT_URL;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 // Daily Macro Targets (Sports Science & Marathon Fueling)
 const DAILY_TARGETS = {
@@ -69,7 +69,7 @@ function normalizeToISTDateStr(val) {
   return s.split('T')[0];
 }
 
-// Base + Delta Dynamic Targets Engine (69 kg Runner)
+// Base + Delta Dynamic Targets Engine (69 kg Runner, 1644 BMR + 350 NEAT baseline)
 function calculateDayTargets({ mode = 'run', distanceKm = 10, durationMin = 60, weightKg = 69 }) {
   let burnKcal = 0;
   let sweatHrs = 0;
@@ -93,12 +93,14 @@ function calculateDayTargets({ mode = 'run', distanceKm = 10, durationMin = 60, 
     sweatHrs = dur / 60;
   }
 
-  const calories = (isFast ? 1650 : 2000) + burnKcal;
+  // Exact sports science baseline: BMR (1644) + NEAT (350) = 1994 kcal for all days
+  const baseline = 1994;
+  const calories = (isFast ? 1994 : baseline) + burnKcal;
   const fats = isFast ? 50 : (mode === 'run' && distanceKm > 10
     ? Math.min(85, Math.round(65 + (distanceKm - 10) * 1.5))
     : 65);
   const carbs = Math.round((calories - (protein * 4) - (fats * 9)) / 4);
-  const hydroLiters = Math.min(5.5, Number((3.2 + sweatHrs * 0.65).toFixed(1)));
+  const hydroLiters = Math.min(6.0, Number((3.2 + sweatHrs * 0.65).toFixed(1)));
   const sugar = mode === 'run'
     ? Math.min(140, Math.round(35 + sweatHrs * 25))
     : (isFast ? 25 : 35);
@@ -130,9 +132,10 @@ function storePendingFood(item) {
   _pendingFoods.set(id, item);
   setTimeout(() => _pendingFoods.delete(id), 30 * 60 * 1000);
 
-  // Encode safe fallback into string: "id:P_C_F_Cal_Qty_Name" (<45 chars total)
-  const shortName = encodeURIComponent((item.itemName || "Item").slice(0, 20));
-  return `${id}:${item.protein || 0}_${item.carbs || 0}_${item.fats || 0}_${item.calories || 0}_${item.quantity || 1}_${shortName}`;
+  // Encode safe fallback into string: "id:P_C_F_Cal_Qty_Name" (<52 chars total)
+  const shortName = encodeURIComponent((item.itemName || "Item").slice(0, 10));
+  const fallbackStr = `${id}:${item.protein || 0}_${item.carbs || 0}_${item.fats || 0}_${item.calories || 0}_${item.quantity || 1}_${shortName}`;
+  return fallbackStr.slice(0, 52);
 }
 
 function resolvePendingFood(paramStr) {
@@ -886,6 +889,33 @@ async function getTodayFoodLogs(todayDateStr) {
   }
 }
 
+// Fetch Today's Nutrition Context (Logs + Dynamic Targets based on Active Day Mode)
+async function getTodayContext(todayDateStr) {
+  let targets = null;
+  let logs = [];
+  try {
+    const res = await fetch("https://www.ravitejabitra.in/api/nutrition-data", { signal: AbortSignal.timeout(3000) });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.todayLogs)) {
+        logs = data.todayLogs;
+      }
+      if (data.targets) {
+        targets = data.targets;
+      }
+    }
+  } catch (e) {}
+
+  if (logs.length === 0) {
+    logs = await getTodayNutritionLogs(todayDateStr);
+  }
+  if (!targets) {
+    targets = calculateDayTargets({ mode: 'run', distanceKm: 10, durationMin: 60 });
+  }
+
+  return { logs, targets };
+}
+
 // Execute Save to Pantry Sheet
 async function saveItemToPantrySheet(item) {
   _pantryCache = null;
@@ -1061,12 +1091,17 @@ export default async function handler(req, res) {
           return res.status(200).send("OK");
         }
         await answerTelegramCallbackQuery(cbId, "Logging to today's fuel...");
-        const logPromise = logFoodToDailySheet(item, dateStr, timeStr, `${item.quantity} ${item.servingUnit} ${item.itemName}`);
 
-        const todayLogs = await getTodayNutritionLogs(dateStr);
+        // Fetch running totals & dynamic targets BEFORE writing to avoid double-counting / race condition
+        const { logs: todayLogs, targets: currentTargets } = await getTodayContext(dateStr);
         const totalP = todayLogs.reduce((sum, r) => sum + (Number(r["Protein"] || r.protein) || 0), 0) + (item.protein || 0);
         const totalCal = todayLogs.reduce((sum, r) => sum + (Number(r["Calories"] || r.calories) || 0), 0) + (item.calories || 0);
-        const pPct = Math.min(100, Math.round((totalP / DAILY_TARGETS.protein) * 100));
+        const pTarget = currentTargets.protein || DAILY_TARGETS.protein;
+        const calTarget = currentTargets.calories || DAILY_TARGETS.calories;
+        const pPct = Math.min(100, Math.round((totalP / pTarget) * 100));
+
+        // Write to sheet
+        const logPromise = logFoodToDailySheet(item, dateStr, timeStr, `${item.quantity} ${item.servingUnit} ${item.itemName}`);
 
         const confirmation = `⚡ <b>Logged: ${item.quantity} ${item.servingUnit} ${item.brand && item.brand !== 'Whole Food' ? item.brand + ' ' : ''}${item.itemName}</b>\n\n` +
           `• 🥩 +<b>${item.protein || 0}g</b> Protein • 🍞 +${item.carbs || 0}g Carbs\n` +
@@ -1074,15 +1109,17 @@ export default async function handler(req, res) {
           `• 🔥 +<b>${item.calories || 0}</b> kcal\n` +
           (item.vitalsSummary ? `💊 <i>${item.vitalsSummary}</i>\n` : '') +
           `━━━━━━━━━━━━━━━━━━━\n` +
-          `📈 <b>Today's Fuel:</b> <b>${Math.round(totalP)}g</b> / ${DAILY_TARGETS.protein}g Protein (${pPct}%)\n` +
-          `🔥 <b>Total Calories:</b> ${Math.round(totalCal)} / ${DAILY_TARGETS.calories} kcal\n\n` +
+          `📈 <b>Today's Fuel:</b> <b>${Math.round(totalP)}g</b> / ${pTarget}g Protein (${pPct}%)\n` +
+          `🔥 <b>Total Calories:</b> ${Math.round(totalCal)} / ${calTarget} kcal\n\n` +
           `👉 View on site: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
 
+        const shortEditName = encodeURIComponent((item.itemName || "item").slice(0, 12));
+        const shortDelName = encodeURIComponent((item.itemName || "item").slice(0, 15));
         const replyMarkup = {
           inline_keyboard: [
             [
-              { text: `✏️ Adjust Macros / Portions`, callback_data: `pick_edit:${encodeURIComponent(item.itemName)}` },
-              { text: `🗑️ Delete`, callback_data: `del:${encodeURIComponent(item.itemName)}` }
+              { text: `✏️ Adjust Macros / Portions`, callback_data: `pick_edit:${shortEditName}` },
+              { text: `🗑️ Delete`, callback_data: `del:${shortDelName}` }
             ]
           ]
         };
@@ -1132,9 +1169,10 @@ export default async function handler(req, res) {
           const buttons = logs.map((l, idx) => {
             const name = l.brand && l.brand !== 'Whole Food' ? `${l.brand} ${l.itemName}` : l.itemName;
             const label = `${idx + 1}. ${name.slice(0, 20)} (${l.protein}g P, ${l.calories} kcal)`;
+            const shortName = encodeURIComponent((l.itemName || "item").slice(0, 12));
             return [{
               text: label,
-              callback_data: `pick_edit:${encodeURIComponent(l.itemName)}`
+              callback_data: `pick_edit:${shortName}`
             }];
           });
           buttons.push([{ text: "❌ Close Menu", callback_data: "close_menu" }]);
@@ -1149,7 +1187,12 @@ export default async function handler(req, res) {
         }
       }
       else if (action === "pick_edit") {
-        const targetName = decodeURIComponent(data.slice(colonIdx + 1).trim());
+        let targetName = "";
+        try {
+          targetName = decodeURIComponent(data.slice(colonIdx + 1).trim());
+        } catch (e) {
+          targetName = data.slice(colonIdx + 1).trim();
+        }
         await answerTelegramCallbackQuery(cbId, `Loading ${targetName.slice(0, 15)}...`);
         const logs = await getTodayFoodLogs(dateStr);
         const entry = logs.find(l => 
@@ -1172,7 +1215,7 @@ export default async function handler(req, res) {
             `━━━━━━━━━━━━━━━━━━━\n` +
             `<i>Which value would you like to adjust?</i>`;
 
-          const encoded = encodeURIComponent(entry.itemName);
+          const encoded = encodeURIComponent((entry.itemName || "item").slice(0, 10));
           const replyMarkup = {
             inline_keyboard: [
               [
@@ -1184,11 +1227,14 @@ export default async function handler(req, res) {
                 { text: `🍬 Adjust Sugar (${entry.sugar || 0}g)`, callback_data: `adj_f:${encoded}:sugar` }
               ],
               [
-                { text: `🔥 Adjust Calories (${entry.calories || 0})`, callback_data: `adj_f:${encoded}:calories` },
-                { text: `⚖️ Adjust Quantity (${entry.quantity || 1})`, callback_data: `adj_f:${encoded}:quantity` }
+                { text: `🌾 Adjust Fiber (${entry.fiber || 0}g)`, callback_data: `adj_f:${encoded}:fiber` },
+                { text: `🔥 Adjust Calories (${entry.calories || 0})`, callback_data: `adj_f:${encoded}:calories` }
               ],
               [
-                { text: `🗑️ Delete Entry`, callback_data: `del:${encoded}` },
+                { text: `⚖️ Adjust Quantity (${entry.quantity || 1})`, callback_data: `adj_f:${encoded}:quantity` },
+                { text: `🗑️ Delete Entry`, callback_data: `del:${encoded}` }
+              ],
+              [
                 { text: `« Back to Food List`, callback_data: "menu_edit" }
               ]
             ]
@@ -1201,14 +1247,19 @@ export default async function handler(req, res) {
         const parts = data.split(":");
         const encodedName = parts[1];
         const field = parts[2];
-        const targetName = decodeURIComponent(encodedName);
+        let targetName = "";
+        try {
+          targetName = decodeURIComponent(encodedName);
+        } catch (e) {
+          targetName = encodedName;
+        }
         await answerTelegramCallbackQuery(cbId, `Adjusting ${field}...`);
 
         const logs = await getTodayFoodLogs(dateStr);
         const entry = logs.find(l => 
           (l.itemName || "").toLowerCase().includes(targetName.toLowerCase()) || 
           targetName.toLowerCase().includes((l.itemName || "").toLowerCase())
-        ) || { itemName: targetName, protein: 0, carbs: 0, fats: 0, sugar: 0, calories: 0, quantity: 1 };
+        ) || { itemName: targetName, protein: 0, carbs: 0, fats: 0, sugar: 0, fiber: 0, calories: 0, quantity: 1 };
 
         const currentVal = entry[field] !== undefined ? entry[field] : 0;
         let presets = [];
@@ -1244,6 +1295,13 @@ export default async function handler(req, res) {
             [{ text: "2.0g", val: "2.0" }, { text: "4.0g", val: "4.0" }, { text: "8.0g", val: "8.0" }, { text: "12g", val: "12.0" }],
             [{ text: "-4.0g", val: "-4.0" }, { text: "-2.0g", val: "-2.0" }, { text: "+2.0g", val: "+2.0" }, { text: "+4.0g", val: "+4.0" }]
           ];
+        } else if (field === "fiber") {
+          unit = "g";
+          fieldLabel = "🌾 Fiber";
+          presets = [
+            [{ text: "2.0g", val: "2.0" }, { text: "5.0g", val: "5.0" }, { text: "8.0g", val: "8.0" }, { text: "10g", val: "10.0" }],
+            [{ text: "-5.0g", val: "-5.0" }, { text: "-2.0g", val: "-2.0" }, { text: "+2.0g", val: "+2.0" }, { text: "+5.0g", val: "+5.0" }]
+          ];
         } else if (field === "calories") {
           unit = "kcal";
           fieldLabel = "🔥 Calories";
@@ -1260,15 +1318,16 @@ export default async function handler(req, res) {
           ];
         }
 
+        const safeEncoded = encodedName.slice(0, 16);
         const keyboard = presets.map(row => 
           row.map(btn => ({
             text: btn.text,
-            callback_data: `apply_adj:${encodedName}:${field}:${btn.val}`
+            callback_data: `apply_adj:${safeEncoded}:${field}:${btn.val}`
           }))
         );
 
         keyboard.push([
-          { text: `« Back to ${targetName.slice(0, 15)}`, callback_data: `pick_edit:${encodedName}` },
+          { text: `« Back to ${targetName.slice(0, 15)}`, callback_data: `pick_edit:${safeEncoded}` },
           { text: "📋 Food List", callback_data: "menu_edit" }
         ]);
 
@@ -1284,7 +1343,12 @@ export default async function handler(req, res) {
         const encodedName = parts[1];
         const field = parts[2];
         const rawVal = parts[3];
-        const targetName = decodeURIComponent(encodedName);
+        let targetName = "";
+        try {
+          targetName = decodeURIComponent(encodedName);
+        } catch (e) {
+          targetName = encodedName;
+        }
         await answerTelegramCallbackQuery(cbId, `Saving adjustment...`);
 
         const logs = await getTodayFoodLogs(dateStr);
@@ -1321,10 +1385,11 @@ export default async function handler(req, res) {
           })
         });
 
+        const safeEncoded = encodedName.slice(0, 16);
         const replyMarkup = {
           inline_keyboard: [
             [
-              { text: `✏️ Adjust Another Macro for ${targetName.slice(0, 14)}`, callback_data: `pick_edit:${encodedName}` }
+              { text: `✏️ Adjust Another Macro for ${targetName.slice(0, 14)}`, callback_data: `pick_edit:${safeEncoded}` }
             ],
             [
               { text: `📋 Select Another Food to Edit`, callback_data: "menu_edit" }
@@ -1345,7 +1410,12 @@ export default async function handler(req, res) {
       }
       else if (action === "del") {
         await answerTelegramCallbackQuery(cbId, "Deleting item...");
-        const target = colonIdx !== -1 ? decodeURIComponent(data.slice(colonIdx + 1).trim()) : "";
+        let target = "";
+        try {
+          target = colonIdx !== -1 ? decodeURIComponent(data.slice(colonIdx + 1).trim()) : "";
+        } catch (e) {
+          target = colonIdx !== -1 ? data.slice(colonIdx + 1).trim() : "";
+        }
 
         await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
@@ -1497,14 +1567,16 @@ export default async function handler(req, res) {
         vitalsSummary: vitalsSummaryStr
       };
 
-      // Directly log to Google Sheets!
-      await logFoodToDailySheet(compactPayload, dateStr, timeStr, rawMsgText);
-
-      // Fetch running totals for today
-      const todayLogs = await getTodayNutritionLogs(dateStr);
+      // Fetch running totals & dynamic targets BEFORE writing to avoid double-counting / race condition
+      const { logs: todayLogs, targets: currentTargets } = await getTodayContext(dateStr);
       const totalP = todayLogs.reduce((sum, r) => sum + (Number(r["Protein"] || r.protein) || 0), 0) + (compactPayload.protein || 0);
       const totalCal = todayLogs.reduce((sum, r) => sum + (Number(r["Calories"] || r.calories) || 0), 0) + (compactPayload.calories || 0);
-      const pPct = Math.min(100, Math.round((totalP / DAILY_TARGETS.protein) * 100));
+      const pTarget = currentTargets.protein || DAILY_TARGETS.protein;
+      const calTarget = currentTargets.calories || DAILY_TARGETS.calories;
+      const pPct = Math.min(100, Math.round((totalP / pTarget) * 100));
+
+      // Directly log to Google Sheets!
+      await logFoodToDailySheet(compactPayload, dateStr, timeStr, rawMsgText);
 
       let ingredientsBlock = "";
       if (ingredients.length > 0) {
@@ -1527,15 +1599,16 @@ export default async function handler(req, res) {
         `• 🔥 +<b>${compactPayload.calories}</b> kcal\n` +
         vitalsPreview +
         `━━━━━━━━━━━━━━━━━━━\n` +
-        `📈 <b>Today's Fuel:</b> <b>${Math.round(totalP)}g</b> / ${DAILY_TARGETS.protein}g Protein (${pPct}%)\n` +
-        `🔥 <b>Total Calories:</b> ${Math.round(totalCal)} / ${DAILY_TARGETS.calories} kcal\n\n` +
+        `📈 <b>Today's Fuel:</b> <b>${Math.round(totalP)}g</b> / ${pTarget}g Protein (${pPct}%)\n` +
+        `🔥 <b>Total Calories:</b> ${Math.round(totalCal)} / ${calTarget} kcal\n\n` +
         `👉 View & Pie Chart: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
 
       // Provide inline button to Undo / Delete if user wants to remove or change
+      const shortDelName = encodeURIComponent((mealName || "Meal").slice(0, 15));
       const replyMarkup = {
         inline_keyboard: [
           [
-            { text: `🗑️ Delete "${mealName.slice(0, 18)}"`, callback_data: `del:${encodeURIComponent(mealName)}` }
+            { text: `🗑️ Delete "${mealName.slice(0, 18)}"`, callback_data: `del:${shortDelName}` }
           ]
         ]
       };
@@ -1616,12 +1689,14 @@ export default async function handler(req, res) {
   if (text === "/today" || text === "/macros" || text === "/meals") {
     let detailedLogs = [];
     let todayAct = null;
+    let currentTargets = DAILY_TARGETS;
     try {
       const res = await fetch(`https://www.ravitejabitra.in/api/nutrition-data`);
       if (res.ok) {
         const data = await res.json();
         detailedLogs = data.todayLogs || [];
         todayAct = data.todayActivity || null;
+        if (data.targets) currentTargets = data.targets;
       }
     } catch(e) {}
 
@@ -1630,6 +1705,12 @@ export default async function handler(req, res) {
     const totalF = detailedLogs.reduce((sum, r) => sum + (r.fats || 0), 0);
     const totalS = detailedLogs.reduce((sum, r) => sum + (r.sugar || 0), 0);
     const totalCal = detailedLogs.reduce((sum, r) => sum + (r.calories || 0), 0);
+
+    const pTarget = currentTargets.protein || DAILY_TARGETS.protein;
+    const cTarget = currentTargets.carbs || DAILY_TARGETS.carbs;
+    const fTarget = currentTargets.fats || DAILY_TARGETS.fats;
+    const sTarget = currentTargets.sugar || DAILY_TARGETS.sugar;
+    const calTarget = currentTargets.calories || DAILY_TARGETS.calories;
 
     let mealsList = "";
     const inlineButtons = [];
@@ -1640,10 +1721,10 @@ export default async function handler(req, res) {
         mealsList += `${i + 1}. <b>${l.quantity ? l.quantity + ' ' : ''}${l.servingUnit ? l.servingUnit + ' ' : ''}${l.itemName}</b>` +
           ` ➔ 🥩 ${l.protein}g P | 🔥 ${l.calories} kcal\n`;
 
-        const shortName = (l.itemName || "item").slice(0, 20);
+        const shortName = (l.itemName || "item").slice(0, 15);
         inlineButtons.push([{
           text: `🗑️ Delete ${shortName}`,
-          callback_data: `del:${shortName}`
+          callback_data: `del:${encodeURIComponent(shortName)}`
         }]);
       });
     } else {
@@ -1666,11 +1747,11 @@ export default async function handler(req, res) {
       mealsList +
       actSummary +
       `\n━━━━━━━━━━━━━━━━━━━\n` +
-      `🥩 <b>Protein:</b> ${Math.round(totalP)}g / ${DAILY_TARGETS.protein}g (${Math.min(100, Math.round((totalP/DAILY_TARGETS.protein)*100))}%)` + (totalP >= DAILY_TARGETS.protein ? ' 🏆' : '') + `\n` +
-      `🍞 <b>Carbs:</b> ${Math.round(totalC)}g / ${DAILY_TARGETS.carbs}g\n` +
-      `🥑 <b>Fats:</b> ${Math.round(totalF)}g / ${DAILY_TARGETS.fats}g\n` +
-      `🍬 <b>Sugar:</b> ${Math.round(totalS * 10) / 10}g / ${DAILY_TARGETS.sugar}g\n` +
-      `🔥 <b>Calories:</b> ${Math.round(totalCal)} kcal / ${DAILY_TARGETS.calories} kcal\n\n` +
+      `🥩 <b>Protein:</b> ${Math.round(totalP)}g / ${pTarget}g (${Math.min(100, Math.round((totalP/pTarget)*100))}%)` + (totalP >= pTarget ? ' 🏆' : '') + `\n` +
+      `🍞 <b>Carbs:</b> ${Math.round(totalC)}g / ${cTarget}g\n` +
+      `🥑 <b>Fats:</b> ${Math.round(totalF)}g / ${fTarget}g\n` +
+      `🍬 <b>Sugar:</b> ${Math.round(totalS * 10) / 10}g / ${sTarget}g\n` +
+      `🔥 <b>Calories:</b> ${Math.round(totalCal)} kcal / ${calTarget} kcal\n\n` +
       `💡 <i>To delete an item, tap its button above or text:</i>\n` +
       `• <code>/delete oats</code>\n` +
       `• <code>/undo</code> (removes last entry)\n\n` +
@@ -1769,11 +1850,11 @@ export default async function handler(req, res) {
 
       const msg = `🎯 <b>Select Training Day Mode</b>\n\n` +
         `Scale your daily targets (Calories, Carbs, Hydro, Sodium, Sugar, Fiber) to match today's scheduled training load.\n\n` +
-        `• <b>🧘 Rest / Fast:</b> 1,650 kcal | 125g P | 175g C | 50g F | 3.2L Hydro\n` +
-        `• <b>🏋️ Upper Body:</b> 2,250 kcal | 150g P | 266g C | 3.7L Hydro\n` +
-        `• <b>🦵 Legs / Heavy:</b> 2,380 kcal | 150g P | 299g C | 3.9L Hydro\n` +
-        `• <b>🏃 10K Run (60m):</b> 2,690 kcal | 150g P | 376g C | 3.9L Hydro\n` +
-        `• <b>🏃 15K Long Run (135m):</b> 3,035 kcal | 150g P | 445g C | 4.7L Hydro\n\n` +
+        `• <b>🧘 Rest / Fast:</b> 1,994 kcal | 125g P | 261g C | 50g F | 3.2L Hydro\n` +
+        `• <b>🏋️ Upper Body:</b> 2,244 kcal | 150g P | 265g C | 65g F | 3.7L Hydro\n` +
+        `• <b>🦵 Legs / Heavy:</b> 2,374 kcal | 150g P | 297g C | 65g F | 3.9L Hydro\n` +
+        `• <b>🏃 10K Run (60m):</b> 2,684 kcal | 150g P | 375g C | 65g F | 3.9L Hydro\n` +
+        `• <b>🏃 15K Long Run (135m):</b> 3,029 kcal | 150g P | 443g C | 73g F | 4.7L Hydro\n\n` +
         `💡 <i>Or text directly:</i> <code>/mode run 12km 75m</code> <i>or</i> <code>/mode legs</code>`;
 
       await sendTelegramMessage(chatId, msg, messageId, modeMenu);
@@ -1966,6 +2047,7 @@ export default async function handler(req, res) {
       p: "protein", protein: "protein",
       c: "carbs", carb: "carbs", carbs: "carbs",
       f: "fats", fat: "fats", fats: "fats",
+      fib: "fiber", fiber: "fiber",
       cal: "calories", cals: "calories", calorie: "calories", calories: "calories",
       s: "sugar", sug: "sugar", sugar: "sugar",
       qty: "quantity", quantity: "quantity"
@@ -2013,7 +2095,7 @@ export default async function handler(req, res) {
 
         const replyMarkup = {
           inline_keyboard: [
-            [{ text: `✏️ Adjust Another Macro`, callback_data: `pick_edit:${encodeURIComponent(itemResolved)}` }],
+            [{ text: `✏️ Adjust Another Macro`, callback_data: `pick_edit:${encodeURIComponent((itemResolved || "item").slice(0, 12))}` }],
             [{ text: `📋 Food List`, callback_data: "menu_edit" }]
           ]
         };
@@ -2093,12 +2175,15 @@ export default async function handler(req, res) {
 
     // 2. If user used explicit "/log" shortcut -> Log directly to today
     if (explicitAction === "log") {
-      await logFoodToDailySheet(compactPayload, dateStr, timeStr, queryText);
-
-      const todayLogs = await getTodayNutritionLogs(dateStr);
+      // Fetch running totals & dynamic targets BEFORE writing to avoid double-counting / race condition
+      const { logs: todayLogs, targets: currentTargets } = await getTodayContext(dateStr);
       const totalP = todayLogs.reduce((sum, r) => sum + (Number(r["Protein"] || r.protein) || 0), 0) + (compactPayload.protein || 0);
       const totalCal = todayLogs.reduce((sum, r) => sum + (Number(r["Calories"] || r.calories) || 0), 0) + (compactPayload.calories || 0);
-      const pPct = Math.min(100, Math.round((totalP / DAILY_TARGETS.protein) * 100));
+      const pTarget = currentTargets.protein || DAILY_TARGETS.protein;
+      const calTarget = currentTargets.calories || DAILY_TARGETS.calories;
+      const pPct = Math.min(100, Math.round((totalP / pTarget) * 100));
+
+      await logFoodToDailySheet(compactPayload, dateStr, timeStr, queryText);
 
       let vitalsPreview = "";
       if (vitalsList.length > 0) {
@@ -2111,15 +2196,17 @@ export default async function handler(req, res) {
         `• 🔥 +<b>${compactPayload.calories}</b> kcal\n` +
         vitalsPreview +
         `━━━━━━━━━━━━━━━━━━━\n` +
-        `📈 <b>Today's Fuel:</b> <b>${Math.round(totalP)}g</b> / ${DAILY_TARGETS.protein}g Protein (${pPct}%)\n` +
-        `🔥 <b>Total Calories:</b> ${Math.round(totalCal)} / ${DAILY_TARGETS.calories} kcal\n\n` +
+        `📈 <b>Today's Fuel:</b> <b>${Math.round(totalP)}g</b> / ${pTarget}g Protein (${pPct}%)\n` +
+        `🔥 <b>Total Calories:</b> ${Math.round(totalCal)} / ${calTarget} kcal\n\n` +
         `👉 View on site: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
 
+      const shortEditName = encodeURIComponent((compactPayload.itemName || "item").slice(0, 12));
+      const shortDelName = encodeURIComponent((compactPayload.itemName || "item").slice(0, 15));
       const replyMarkup = {
         inline_keyboard: [
           [
-            { text: `✏️ Adjust Macros / Portions`, callback_data: `pick_edit:${encodeURIComponent(compactPayload.itemName)}` },
-            { text: `🗑️ Delete`, callback_data: `del:${encodeURIComponent(compactPayload.itemName)}` }
+            { text: `✏️ Adjust Macros / Portions`, callback_data: `pick_edit:${shortEditName}` },
+            { text: `🗑️ Delete`, callback_data: `del:${shortDelName}` }
           ]
         ]
       };

@@ -53,12 +53,14 @@ function calculateDayTargets({ mode = 'run', distanceKm = 10, durationMin = 60, 
     sweatHrs = dur / 60;
   }
 
-  const calories = (isFast ? 1650 : 2000) + burnKcal;
+  // Exact sports science baseline: BMR (1644) + NEAT (350) = 1994 kcal for all days
+  const baseline = 1994;
+  const calories = (isFast ? 1994 : baseline) + burnKcal;
   const fats = isFast ? 50 : (mode === 'run' && distanceKm > 10
     ? Math.min(85, Math.round(65 + (distanceKm - 10) * 1.5))
     : 65);
   const carbs = Math.round((calories - (protein * 4) - (fats * 9)) / 4);
-  const hydroLiters = Math.min(5.5, Number((3.2 + sweatHrs * 0.65).toFixed(1)));
+  const hydroLiters = Math.min(6.0, Number((3.2 + sweatHrs * 0.65).toFixed(1)));
   const sugar = mode === 'run'
     ? Math.min(140, Math.round(35 + sweatHrs * 25))
     : (isFast ? 25 : 35);
