@@ -63,7 +63,7 @@ function DonutChart({ slices = [], total = 0, unit = 'g', icon = '📊', onHover
     });
   }
 
-  const activeItem = hoveredIdx !== null && slices[hoveredIdx] ? slices[hoveredIdx] : null;
+  const activeItem = hoveredIdx !== null && activeSlices[hoveredIdx] ? activeSlices[hoveredIdx] : null;
 
   return (
     <div className="relative w-[300px] h-[300px] flex items-center justify-center select-none">
@@ -158,129 +158,68 @@ export default function NutrientBreakdownModal({
     color: PIE_PALETTE[idx % PIE_PALETTE.length]
   }));
 
-  // Biological classification
+  // ── Biological Classification — Single Source of Truth from FuelPage ──
+  // Read pre-computed bio data from nutrientData props instead of re-computing
+  // from raw logs. This guarantees cards and modal pie charts can never disagree.
   let bioClassification = null;
-  if (nutrientKey === 'protein') {
-    let comp = 0, incomp = 0;
-    allLogs.forEach(l => {
-      const p = parseFloat(l.protein) || 0;
-      if (p <= 0) return;
-      const text = ((l.itemName || '') + ' ' + (l.brand || '') + ' ' + (l.rawMessage || '')).toLowerCase();
-      const isComplete = /(?:chicken|poultry|turkey|egg|fish|salmon|tuna|prawn|seafood|whey|casein|paneer|curd|yogurt|milk|tofu|soy|edamame|meat|mutton|beef)/i.test(text);
-      const isPairedMeal = /(?:chicken.*(?:rice|roti|bread|grain)|(?:rice|roti|bread|grain).*chicken|paneer.*(?:rice|roti)|tofu.*(?:rice|roti)|dal.*(?:rice|khichdi)|khichdi)/i.test(text);
-      if (isComplete || isPairedMeal) comp += p;
-      else incomp += p;
-    });
-    const tot = comp + incomp || 1;
+  if (nutrientKey === 'protein' && nutrientData?.bioProtein) {
+    const bp = nutrientData.bioProtein;
     bioClassification = {
       title: 'Protein Biological Quality',
       subtitle: 'Complete vs Incomplete Amino Acid Profile',
-      unit: 'g',
-      icon: '🥩',
-      total: Math.round(tot * 10) / 10,
+      unit: 'g', icon: '🥩',
+      total: Math.round((bp.complete + bp.incomplete) * 10) / 10,
       slices: [
-        { label: 'Complete Protein', amount: Math.round(comp * 10) / 10, pct: Math.round((comp / tot) * 100), color: '#10b981', desc: 'All 9 essential amino acids & leucine threshold (Chicken, Eggs, Milk, Whey, Paneer)' },
-        { label: 'Incomplete Protein', amount: Math.round(incomp * 10) / 10, pct: Math.round((incomp / tot) * 100), color: '#f59e0b', desc: 'Plant amino acids complementary to complete anchors (Oats, Dates, Rice, Dal)' }
+        { label: 'Complete Protein', amount: bp.complete, pct: bp.completePct, color: '#10b981', desc: 'All 9 essential amino acids & leucine threshold (Chicken, Eggs, Milk, Whey, Paneer)' },
+        { label: 'Incomplete Protein', amount: bp.incomplete, pct: bp.incompletePct, color: '#f59e0b', desc: 'Plant amino acids complementary to complete anchors (Oats, Dates, Rice, Dal)' }
       ]
     };
-  } else if (nutrientKey === 'carbs') {
-    let complex = 0, simple = 0;
-    allLogs.forEach(l => {
-      const c = parseFloat(l.carbs) || 0;
-      const s = parseFloat(l.sugar) || 0;
-      const text = ((l.itemName || '') + ' ' + (l.brand || '') + ' ' + (l.rawMessage || '')).toLowerCase();
-      if (/banana|date|raisin|fruit|apple|mango|orange|grape|milk/i.test(text)) {
-        const sPart = Math.min(c, Math.max(s, c * 0.75));
-        simple += sPart;
-        complex += Math.max(0, c - sPart);
-      } else if (/sugar|glucose|dextrose|honey|jaggery|gel|juice|soda|sweet|dessert|candy|chocolate/i.test(text)) {
-        simple += c;
-      } else {
-        const sPart = Math.min(c, s);
-        simple += sPart;
-        complex += Math.max(0, c - sPart);
-      }
-    });
-    const tot = complex + simple || 1;
+  } else if (nutrientKey === 'carbs' && nutrientData?.bioCarbs) {
+    const bc = nutrientData.bioCarbs;
     bioClassification = {
       title: 'Carbohydrate Classification',
       subtitle: 'Sustained Starches vs Rapid Glycogen Sugars',
-      unit: 'g',
-      icon: '⚡',
-      total: Math.round(tot * 10) / 10,
+      unit: 'g', icon: '⚡',
+      total: Math.round((bc.complex + bc.simple) * 10) / 10,
       slices: [
-        { label: 'Complex Starches', amount: Math.round(complex * 10) / 10, pct: Math.round((complex / tot) * 100), color: '#fbbf24', desc: 'Slow-burning cellular glycogen (Oats, Rice, Sweet Potatoes)' },
-        { label: 'Simple / Rapid Sugars', amount: Math.round(simple * 10) / 10, pct: Math.round((simple / tot) * 100), color: '#ec4899', desc: 'Natural fructose and fast recovery sugars (Whole fruits, dates, milk lactose)' }
+        { label: 'Complex Starches', amount: bc.complex, pct: bc.complexPct, color: '#fbbf24', desc: 'Slow-burning cellular glycogen (Oats, Rice, Sweet Potatoes)' },
+        { label: 'Simple / Rapid Sugars', amount: bc.simple, pct: bc.simplePct, color: '#ec4899', desc: 'Natural fructose and fast recovery sugars (Whole fruits, dates, milk lactose)' }
       ]
     };
-  } else if (nutrientKey === 'fats') {
-    let sat = 0, unsat = 0;
-    allLogs.forEach(l => {
-      const f = parseFloat(l.fats) || 0;
-      if (f <= 0) return;
-      const text = ((l.itemName || '') + ' ' + (l.brand || '') + ' ' + (l.vitals || '') + ' ' + (l.rawMessage || '')).toLowerCase();
-      const satMatch = text.match(/saturated(?:\s*fat)?[:\s]+([\d.]+)\s*g/i);
-      if (satMatch) {
-        const sVal = parseFloat(satMatch[1]) || 0;
-        sat += sVal;
-        unsat += Math.max(0, f - sVal);
-      } else if (/ghee|butter|cheese/i.test(text)) {
-        sat += f * 0.65; unsat += f * 0.35;
-      } else if (/paneer|milk|curd|yogurt/i.test(text)) {
-        sat += f * 0.60; unsat += f * 0.40;
-      } else if (/egg|chicken|fish/i.test(text)) {
-        sat += f * 0.30; unsat += f * 0.70;
-      } else if (/peanut|almond|walnut|nut|seed|olive|mustard/i.test(text)) {
-        sat += f * 0.15; unsat += f * 0.85;
-      } else {
-        sat += f * 0.33; unsat += f * 0.67;
-      }
-    });
-    const tot = sat + unsat || 1;
+  } else if (nutrientKey === 'fats' && nutrientData?.bioFats) {
+    const bf = nutrientData.bioFats;
     bioClassification = {
       title: 'Dietary Lipid Distribution',
       subtitle: 'Unsaturated Healthy Fats vs Saturated Fatty Acids',
-      unit: 'g',
-      icon: '🥑',
-      total: Math.round(tot * 10) / 10,
+      unit: 'g', icon: '🥑',
+      total: Math.round((bf.unsaturated + bf.saturated) * 10) / 10,
       slices: [
-        { label: 'Unsaturated Healthy Fats', amount: Math.round(unsat * 10) / 10, pct: Math.round((unsat / tot) * 100), color: '#34d399', desc: 'Omega-3, MUFA & PUFA for joint lubrication, brain and cardiovascular health' },
-        { label: 'Saturated Dietary Lipids', amount: Math.round(sat * 10) / 10, pct: Math.round((sat / tot) * 100), color: '#f59e0b', desc: 'Stable dietary lipids from milk, dairy, and whole foods. Trans fats: 0g' }
+        { label: 'Unsaturated Healthy Fats', amount: bf.unsaturated, pct: bf.unsatPct, color: '#34d399', desc: 'Omega-3, MUFA & PUFA for joint lubrication, brain and cardiovascular health' },
+        { label: 'Saturated Dietary Lipids', amount: bf.saturated, pct: bf.satPct, color: '#f59e0b', desc: 'Stable dietary lipids from milk, dairy, and whole foods. Trans fats: 0g' }
       ]
     };
-  } else if (nutrientKey === 'fiber') {
-    const tot = totalFoodAmount || 1;
-    const sol = Math.round(tot * 0.4 * 10) / 10;
-    const insol = Math.round(tot * 0.6 * 10) / 10;
+  } else if (nutrientKey === 'fiber' && nutrientData?.bioFiber) {
+    const bfib = nutrientData.bioFiber;
     bioClassification = {
       title: 'Fiber Classification',
       subtitle: 'Soluble Prebiotic Fiber vs Insoluble Motility Roughage',
-      unit: 'g',
-      icon: '🌾',
-      total: tot,
+      unit: 'g', icon: '🌾',
+      total: Math.round((bfib.soluble + bfib.insoluble) * 10) / 10,
       slices: [
-        { label: 'Soluble Prebiotic Fiber', amount: sol, pct: 40, color: '#10b981', desc: 'Beta-glucan & fruit pectins forming a gel to stabilize blood glucose and feed microbiome' },
-        { label: 'Insoluble Roughage', amount: insol, pct: 60, color: '#059669', desc: 'Cellulose bulk supporting smooth digestive transit' }
+        { label: 'Soluble Prebiotic Fiber', amount: bfib.soluble, pct: bfib.solublePct, color: '#10b981', desc: 'Beta-glucan & fruit pectins forming a gel to stabilize blood glucose and feed microbiome' },
+        { label: 'Insoluble Roughage', amount: bfib.insoluble, pct: bfib.insolublePct, color: '#059669', desc: 'Cellulose bulk supporting smooth digestive transit' }
       ]
     };
-  } else if (nutrientKey === 'sugar') {
-    let nat = 0, add = 0;
-    allLogs.forEach(l => {
-      const s = parseFloat(l.sugar) || 0;
-      const text = ((l.itemName || '') + ' ' + (l.brand || '') + ' ' + (l.rawMessage || '')).toLowerCase();
-      if (/sugar|syrup|gel|candy|chocolate|sweet|dessert|soda/i.test(text)) add += s;
-      else nat += s;
-    });
-    const tot = nat + add || 1;
+  } else if (nutrientKey === 'sugar' && nutrientData?.bioSugar) {
+    const bs = nutrientData.bioSugar;
     bioClassification = {
       title: 'Sugar Quality Classification',
-      subtitle: 'Natural Whole Food Sugars vs Added Refined Sugars',
-      unit: 'g',
-      icon: '🍯',
-      total: Math.round(tot * 10) / 10,
+      subtitle: 'Added Refined Sugars vs Natural Whole Food Sugars',
+      unit: 'g', icon: '🍯',
+      total: Math.round((bs.natural + bs.added) * 10) / 10,
       slices: [
-        { label: 'Natural Sugars', amount: Math.round(nat * 10) / 10, pct: Math.round((nat / tot) * 100), color: '#ec4899', desc: 'Naturally bound fruit fructose and dairy lactose from bananas, dates, and milk' },
-        { label: 'Added / Refined Sugars', amount: Math.round(add * 10) / 10, pct: Math.round((add / tot) * 100), color: '#8b5cf6', desc: 'Processed syrups, confections, or added sugars (kept strictly minimal)' }
+        { label: 'Added / Refined Sugars', amount: bs.added, pct: bs.addedPct, color: '#f43f5e', desc: 'Processed sweeteners, syrups, or industrial confectioneries. Strictly tracked against <40g ceiling.' },
+        { label: 'Natural Whole Food Sugars', amount: bs.natural, pct: bs.naturalPct, color: '#10b981', desc: 'Naturally bound fruit fructose and dairy lactose from bananas, dates, and milk. Healthy fuel!' }
       ]
     };
   }
