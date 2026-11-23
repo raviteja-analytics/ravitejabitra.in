@@ -5,7 +5,8 @@ import MacroPod from '../components/MacroPod';
 import NutrientBreakdownModal from '../components/NutrientBreakdownModal';
 import StorySnapshotModal from '../components/StorySnapshotModal';
 import FuelHistoryView from '../components/FuelHistoryView';
-import { RefreshCw, Zap, Plus, CheckCircle2, Footprints, Flame, Moon, Info, HeartPulse, PieChart, ArrowUpRight, Camera, Gauge, Sun, CloudSun, Timer, MapPin, User, Settings2, Sliders, ChevronDown, Calendar } from 'lucide-react';
+import { IFCT_STAPLES, OIL_PROFILES, OIL_PROFILE_KEYS, cycleNextOilProfile, generateNutritionEventRecords } from '../utils/ifctStaples';
+import { RefreshCw, Zap, Plus, CheckCircle2, Footprints, Flame, Moon, Info, HeartPulse, PieChart, ArrowUpRight, Camera, Gauge, Sun, CloudSun, Timer, MapPin, User, Settings2, Sliders, ChevronDown, Calendar, Download, Droplet } from 'lucide-react';
 
 export default function FuelPage() {
   const [loading, setLoading] = useState(true);
@@ -37,7 +38,8 @@ export default function FuelPage() {
         fri: 'non-veg',
         sat: 'veg',      // Saturday Balaji / fasting veg
         sun: 'non-veg'
-      }
+      },
+      defaultOilProfile: 'home_light'
     };
     try {
       const saved = localStorage.getItem('athlete_profile');
@@ -46,6 +48,7 @@ export default function FuelPage() {
         return {
           ...defaultProfile,
           ...parsed,
+          defaultOilProfile: parsed.defaultOilProfile || 'home_light',
           dietSchedule: {
             ...defaultProfile.dietSchedule,
             ...(parsed.dietSchedule || {})
@@ -510,23 +513,34 @@ export default function FuelPage() {
           profile: athleteProfile
         });
 
-        const mappedTimeline = logs.map((log, idx) => ({
-          id: log.rawTimestamp || idx,
-          rawTimestamp: log.rawTimestamp || idx,
-          time: log.time || '',
-          name: (log.quantity && log.servingUnit ? `${log.quantity} ${log.servingUnit} ` : '') + (log.itemName || log.rawMessage || 'Meal'),
-          itemName: log.itemName || '',
-          rawMessage: log.rawMessage || '',
-          brand: log.brand || '',
-          quantity: log.quantity || 1,
-          calories: Math.round(log.calories || 0),
-          protein: Math.round((log.protein || 0) * 10) / 10,
-          carbs: Math.round((log.carbs || 0) * 10) / 10,
-          fats: Math.round((log.fats || 0) * 10) / 10,
-          fiber: Math.round((log.fiber || 0) * 10) / 10,
-          sugar: Math.round((log.sugar || 0) * 10) / 10,
-          vitals: log.vitals || ''
-        }));
+        const mappedTimeline = logs.map((log, idx) => {
+          const isCooked = log.isCooked ?? (log.inputBasis === 'cooked' || /(?:dal|curry|sabzi|bhurji|roti|cooked|stir-fry|fried|khichdi|rice|biryani)/i.test(log.itemName || ''));
+          const oil = log.oilProfile || (isCooked ? (athleteProfile.defaultOilProfile || 'home_light') : 'zero');
+          return {
+            id: log.rawTimestamp || idx,
+            rawTimestamp: log.rawTimestamp || idx,
+            time: log.time || '',
+            name: (log.quantity && log.servingUnit ? `${log.quantity} ${log.servingUnit} ` : '') + (log.itemName || log.rawMessage || 'Meal'),
+            itemName: log.itemName || '',
+            rawMessage: log.rawMessage || '',
+            brand: log.brand || '',
+            foodCode: log.foodCode || 'CUSTOM',
+            inputBasis: log.inputBasis || (isCooked ? 'cooked' : 'raw'),
+            inputGrams: log.inputGrams || 100,
+            yieldFactor: log.yieldFactor || (IFCT_STAPLES[log.foodCode]?.cookedYieldFactor || 1.0),
+            rawEquivalentGrams: log.rawEquivalentGrams || (log.inputBasis === 'cooked' && log.yieldFactor ? Math.round((log.inputGrams / log.yieldFactor) * 10) / 10 : (log.inputGrams || 100)),
+            isCooked,
+            oilProfile: oil,
+            quantity: log.quantity || 1,
+            calories: Math.round(log.calories || 0),
+            protein: Math.round((log.protein || 0) * 10) / 10,
+            carbs: Math.round((log.carbs || 0) * 10) / 10,
+            fats: Math.round((log.fats || 0) * 10) / 10,
+            fiber: Math.round((log.fiber || 0) * 10) / 10,
+            sugar: Math.round((log.sugar || 0) * 10) / 10,
+            vitals: log.vitals || ''
+          };
+        });
 
         setData({
           todayStr: json.todayStr || new Date().toISOString().split('T')[0],
@@ -592,6 +606,62 @@ export default function FuelPage() {
       console.error("Failed to fetch live nutrition data:", err);
     }
     setLoading(false);
+  };
+
+  // 1-Tap Cooking Oil Profile Cycling Modifier (Zero Friction)
+  const handleMealOilCycle = (mealId) => {
+    setData(prev => {
+      let calDiff = 0;
+      let fatDiff = 0;
+
+      const updatedTimeline = prev.timeline.map(meal => {
+        if (meal.id === mealId) {
+          const currentProfileKey = meal.oilProfile || 'home_light';
+          const nextProfileKey = cycleNextOilProfile(currentProfileKey);
+          const currentOil = OIL_PROFILES[currentProfileKey] || OIL_PROFILES['home_light'];
+          const nextOil = OIL_PROFILES[nextProfileKey] || OIL_PROFILES['home_light'];
+
+          fatDiff = nextOil.addedFatG - currentOil.addedFatG;
+          calDiff = nextOil.addedKcal - currentOil.addedKcal;
+
+          return {
+            ...meal,
+            oilProfile: nextProfileKey,
+            fats: Math.max(0, Math.round((meal.fats + fatDiff) * 10) / 10),
+            calories: Math.max(0, Math.round(meal.calories + calDiff))
+          };
+        }
+        return meal;
+      });
+
+      return {
+        ...prev,
+        timeline: updatedTimeline,
+        calories: {
+          ...prev.calories,
+          current: Math.max(0, prev.calories.current + calDiff)
+        },
+        fats: {
+          ...prev.fats,
+          current: Math.max(0, Math.round((prev.fats.current + fatDiff) * 10) / 10)
+        }
+      };
+    });
+  };
+
+  // Data Engineering Bridge: Flat JSONL Event Stream Exporter
+  const handleExportJSONL = () => {
+    const records = generateNutritionEventRecords(data.timeline, athleteProfile, activeDietMode);
+    const jsonlString = records.map(r => JSON.stringify(r)).join('\n');
+    const blob = new Blob([jsonlString], { type: 'application/x-ndjson;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `nutrition-events-${data.todayStr || new Date().toISOString().split('T')[0]}.jsonl`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   useEffect(() => {
@@ -879,6 +949,45 @@ export default function FuelPage() {
                         <span className="text-base sm:text-lg my-1 block">{isVeg ? '🌱' : '🍗'}</span>
                         <span className="text-[10px] font-bold block">
                           {isVeg ? 'Veg' : 'Non-Veg'}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ── 6. DEFAULT COOKING OIL PROFILE (INDIAN OIL MODIFIER) ── */}
+              <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 space-y-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">🍳</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
+                      Default Cooking Oil Profile (Indian Cooking Absorption)
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-neutral-400 font-mono">
+                    Auto-applied to cooked dals, curries & sabzis
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                  {OIL_PROFILE_KEYS.map(key => {
+                    const prof = OIL_PROFILES[key];
+                    const isSelected = (athleteProfile.defaultOilProfile || 'home_light') === key;
+                    return (
+                      <div
+                        key={key}
+                        onClick={() => handleProfileChange('defaultOilProfile', key)}
+                        className={`p-2.5 rounded-2xl border text-center cursor-pointer transition-all select-none hover:scale-105 active:scale-95 ${
+                          isSelected
+                            ? 'bg-rose-500/10 border-rose-500/40 text-rose-600 dark:text-rose-400 ring-2 ring-rose-500/20'
+                            : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300'
+                        }`}
+                      >
+                        <span className="text-base sm:text-lg block mb-0.5">{prof.icon}</span>
+                        <span className="text-xs font-bold block">{prof.label}</span>
+                        <span className="text-[10px] font-mono text-neutral-400 block mt-0.5">
+                          {prof.addedFatG > 0 ? `+${prof.addedFatG}g fat (+${prof.addedKcal} kcal)` : '0g added fat'}
                         </span>
                       </div>
                     );
@@ -1647,13 +1756,25 @@ export default function FuelPage() {
 
       {/* ── 6. FOOD TIMELINE ───────────────────────────────────────── */}
       <div className="p-6 rounded-3xl bg-white dark:bg-[#1c1c1e] border border-black/[0.06] dark:border-white/[0.08] shadow-sm">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
           <h3 className="text-base font-bold tracking-tight text-neutral-900 dark:text-white">
             Today's Food Timeline (Logged via Telegram)
           </h3>
-          <span className="text-xs font-mono text-neutral-400">
-            {data.timeline.length} {data.timeline.length === 1 ? 'entry' : 'entries'} today
-          </span>
+          <div className="flex items-center gap-2.5">
+            <span className="text-xs font-mono text-neutral-400">
+              {data.timeline.length} {data.timeline.length === 1 ? 'entry' : 'entries'} today
+            </span>
+            {isSandbox && (
+              <button
+                onClick={handleExportJSONL}
+                className="px-3 py-1.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-[11px] font-mono font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5 border border-neutral-200 dark:border-neutral-700 transition-all shadow-sm active:scale-95"
+                title="Export analytics event stream with IFCT codes, raw basis & micronutrients in flat JSONL format"
+              >
+                <Download className="w-3.5 h-3.5 text-sky-500" />
+                <span>Export Sandbox Events (JSONL)</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {data.timeline.length === 0 ? (
@@ -1669,16 +1790,34 @@ export default function FuelPage() {
               >
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                  <div>
+                  <div className="space-y-1">
                     <h5 className="text-sm font-bold text-neutral-900 dark:text-white">{meal.name}</h5>
-                    <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-400 font-mono">
                       {meal.time && <span>{meal.time}</span>}
                       {meal.vitals && <span className="truncate max-w-xs opacity-75">• {meal.vitals}</span>}
+                      {meal.inputBasis === 'cooked' && meal.rawEquivalentGrams && (
+                        <span className="text-[10px] bg-neutral-200/60 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 px-1.5 py-0.5 rounded" title={`IFCT Yield Factor: ${meal.yieldFactor || 2.73}x`}>
+                          {meal.inputGrams}g cooked ≈ {meal.rawEquivalentGrams}g dry
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 text-xs font-mono flex-shrink-0">
+                <div className="flex flex-wrap items-center gap-3 text-xs font-mono flex-shrink-0">
+                  {/* 1-Tap Cooking Oil Profile Modifier */}
+                  {meal.isCooked && (
+                    <button
+                      onClick={() => handleMealOilCycle(meal.id)}
+                      className="px-2.5 py-1 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/25 text-[11px] font-mono font-bold flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-2xs"
+                      title="1-Tap Oil Modifier: Click to cycle oil profile (Zero -> Home Light -> Standard -> PG/Mess -> Restaurant)"
+                    >
+                      <span>{OIL_PROFILES[meal.oilProfile]?.icon || '🍳'}</span>
+                      <span>{OIL_PROFILES[meal.oilProfile]?.shortLabel || 'Home Light (+5g oil)'}</span>
+                      <span className="text-[9px] opacity-60 uppercase underline ml-0.5">(Cycle)</span>
+                    </button>
+                  )}
+
                   <span className="font-bold text-neutral-900 dark:text-white">{meal.calories} kcal</span>
                   <span className="text-neutral-300 dark:text-neutral-700">|</span>
                   <span className="text-rose-500 font-bold">{meal.protein}g P</span>
