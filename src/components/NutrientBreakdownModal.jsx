@@ -139,6 +139,18 @@ export default function NutrientBreakdownModal({
     } else if (nutrientKey === 'creatine') {
       const m = v.match(/creatine(?:\s*monohydrate)?[:\s]+([\d.]+)\s*g/i);
       amount = m ? parseFloat(m[1]) : (/creatine/i.test(l.itemName) ? (l.quantity || 1) * 5.0 : 0);
+    } else if (nutrientKey === 'calcium') {
+      const m = v.match(/calcium[:\s]+([\d.]+)\s*mg/i);
+      amount = m ? parseFloat(m[1]) : 0;
+    } else if (nutrientKey === 'iron') {
+      const m = v.match(/iron[:\s]+([\d.]+)\s*mg/i);
+      amount = m ? parseFloat(m[1]) : 0;
+    } else if (nutrientKey === 'vitaminB12') {
+      const m = v.match(/vitamin\s*b12[:\s]+([\d.]+)\s*mcg/i);
+      amount = m ? parseFloat(m[1]) : 0;
+    } else if (nutrientKey === 'vitaminD3') {
+      const m = v.match(/vitamin\s*d(?:3)?[:\s]+([\d.]+)\s*(?:iu|ui)/i);
+      amount = m ? parseFloat(m[1]) : 0;
     }
 
     return {
@@ -236,6 +248,10 @@ export default function NutrientBreakdownModal({
     sodium: { name: 'Sodium (Na⁺)', icon: '🧂', unit: 'mg', color: '#10b981' },
     potassium: { name: 'Potassium (K⁺)', icon: '🍌', unit: 'mg', color: '#10b981' },
     magnesium: { name: 'Magnesium', icon: '💊', unit: 'mg', color: '#10b981' },
+    calcium: { name: 'Calcium (Ca²⁺)', icon: '🦴', unit: 'mg', color: '#06b6d4' },
+    iron: { name: 'Iron (Fe)', icon: '🩸', unit: 'mg', color: '#ef4444' },
+    vitaminB12: { name: 'Vitamin B12', icon: '⚡', unit: 'mcg', color: '#8b5cf6' },
+    vitaminD3: { name: 'Vitamin D3', icon: '☀️', unit: 'IU', color: '#f59e0b' },
     omega3: { name: 'Omega-3', icon: '🐟', unit: 'mg', color: '#10b981' },
     creatine: { name: 'Creatine', icon: '⚡', unit: 'g', color: '#a855f7' }
   };

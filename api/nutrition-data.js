@@ -19,13 +19,13 @@ const DAILY_TARGETS = {
   magnesiumMg: 420,
   calciumMg: 1000,
   // Trace Minerals & Fats
-  ironMg: 15,
-  zincMg: 15,
+  ironMg: 19,
+  zincMg: 12,
   omega3Mg: 1500,
   // Vitamins & Ergogenics
-  vitaminB12Mcg: 5.0,
-  vitaminCMg: 150,
-  vitaminD3Iu: 3000,
+  vitaminB12Mcg: 2.2,
+  vitaminCMg: 80,
+  vitaminD3Iu: 600,
   creatineG: 5.0
 };
 
@@ -84,12 +84,12 @@ function calculateDayTargets({ mode = 'run', distanceKm = 10, durationMin = 60, 
     potassiumMg: 4700,
     magnesiumMg: 420,
     calciumMg: 1000,
-    ironMg: 15,
-    zincMg: 15,
+    ironMg: 19,
+    zincMg: 12,
     omega3Mg: 1500,
-    vitaminB12Mcg: 5.0,
-    vitaminCMg: 150,
-    vitaminD3Iu: 3000,
+    vitaminB12Mcg: 2.2,
+    vitaminCMg: 80,
+    vitaminD3Iu: 600,
     creatineG: 5.0
   };
 }

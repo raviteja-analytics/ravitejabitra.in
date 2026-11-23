@@ -24,17 +24,47 @@ export default function FuelPage() {
   // Athlete Profile State (Persisted in localStorage)
   const [showProfileDrawer, setShowProfileDrawer] = useState(false);
   const [athleteProfile, setAthleteProfile] = useState(() => {
-    try {
-      const saved = localStorage.getItem('athlete_profile');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return {
+    const defaultProfile = {
       gender: 'male',
       age: 26,
       weightKg: 69,
-      heightCm: 175
+      heightCm: 175,
+      dietSchedule: {
+        mon: 'non-veg',
+        tue: 'veg',      // Tuesday Hanuman / temple veg
+        wed: 'non-veg',
+        thu: 'veg',      // Thursday Sai Baba / pooja veg
+        fri: 'non-veg',
+        sat: 'veg',      // Saturday Balaji / fasting veg
+        sun: 'non-veg'
+      }
     };
+    try {
+      const saved = localStorage.getItem('athlete_profile');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...defaultProfile,
+          ...parsed,
+          dietSchedule: {
+            ...defaultProfile.dietSchedule,
+            ...(parsed.dietSchedule || {})
+          }
+        };
+      }
+    } catch (e) {}
+    return defaultProfile;
   });
+
+  // Veg / Non-Veg Day Cycling Engine
+  const getTodayDayKey = () => {
+    const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+    return days[new Date().getDay()];
+  };
+  const todayDayKey = getTodayDayKey();
+  const [dietOverride, setDietOverride] = useState(null); // null | 'veg' | 'non-veg'
+  const activeDietMode = dietOverride || (athleteProfile.dietSchedule?.[todayDayKey] || 'non-veg');
+  const isVegDay = activeDietMode === 'veg';
 
   const [activeBreakdownKey, setActiveBreakdownKey] = useState(null);
   const [showSnapshot, setShowSnapshot] = useState(false);
@@ -59,6 +89,10 @@ export default function FuelPage() {
       sodium: 0,
       potassium: 0,
       magnesium: 0,
+      calcium: 0,
+      iron: 0,
+      vitaminB12: 0,
+      vitaminD3: 0,
       omega3: 0,
       creatine: 0
     },
@@ -335,7 +369,14 @@ export default function FuelPage() {
   };
 
   const syncTimeoutRef = useRef(null);
+  const isSandbox = typeof window !== 'undefined' && (import.meta.env.DEV || new URLSearchParams(window.location.search).get('sandbox') === 'true');
+
   const syncModeToBackend = async (modeId, dist, dur) => {
+    // 100% Data Isolation: In dev/sandbox mode, never write to production backend
+    if (isSandbox) {
+      console.log(`[Sandbox Mode] Skipping live backend sync for mode: ${modeId}, dist: ${dist}, dur: ${dur}`);
+      return;
+    }
     try {
       await fetch('/api/nutrition-data', {
         method: 'POST',
@@ -395,6 +436,12 @@ export default function FuelPage() {
     }
   };
 
+  const handleDayDietChange = (dayKey, mode) => {
+    const currentSchedule = athleteProfile.dietSchedule || {};
+    const updatedSchedule = { ...currentSchedule, [dayKey]: mode };
+    handleProfileChange('dietSchedule', updatedSchedule);
+  };
+
   const handleDayModeChange = (mode) => {
     setDayMode(mode.id);
     if (mode.id === 'run') {
@@ -425,7 +472,9 @@ export default function FuelPage() {
   const fetchLiveFeed = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/nutrition-data');
+      // 100% Data Isolation: In local dev or when ?sandbox=true, read from public/test-nutrition-data.json
+      const endpoint = isSandbox ? '/test-nutrition-data.json' : '/api/nutrition-data';
+      const res = await fetch(endpoint);
       if (res.ok) {
         const json = await res.json();
         const totals = json.todayTotals || {};
@@ -523,6 +572,10 @@ export default function FuelPage() {
             sodium: Math.round(micros.sodiumMg || 0),
             potassium: Math.round(micros.potassiumMg || 0),
             magnesium: Math.round(micros.magnesiumMg || 0),
+            calcium: Math.round(micros.calciumMg || 0),
+            iron: Math.round((micros.ironMg || 0) * 10) / 10,
+            vitaminB12: Math.round((micros.vitaminB12Mcg || 0) * 10) / 10,
+            vitaminD3: Math.round(micros.vitaminD3Iu || 0),
             omega3: Math.round(micros.omega3Mg || 0),
             creatine: Number((micros.creatineG || 0).toFixed(1))
           },
@@ -614,35 +667,59 @@ export default function FuelPage() {
         </div>
       </div>
 
-      {/* ── SEGMENTED TAB SWITCHER: TODAY'S FUEL vs WEEKLY & HISTORY ── */}
-      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-neutral-100 dark:bg-[#1c1c1e] border border-black/[0.06] dark:border-white/[0.08] w-fit">
-        <button
-          onClick={() => setActiveTab('today')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${
-            activeTab === 'today'
-              ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm'
-              : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-          }`}
-        >
-          <Zap className="w-3.5 h-3.5 text-rose-500" />
-          <span>Today's Fuel</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('history')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${
-            activeTab === 'history'
-              ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm'
-              : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-          }`}
-        >
-          <Calendar className="w-3.5 h-3.5 text-sky-500" />
-          <span>Weekly Pacing & History</span>
-          {historyData.dayWiseHistory?.length > 0 && (
-            <span className="font-mono text-[10px] px-1.5 py-0.5 rounded-md bg-sky-500/10 text-sky-500 font-bold">
-              {historyData.dayWiseHistory.length}d
+      {/* ── SEGMENTED TAB SWITCHER & DIET MODE BADGE ── */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-neutral-100 dark:bg-[#1c1c1e] border border-black/[0.06] dark:border-white/[0.08] w-fit">
+          <button
+            onClick={() => setActiveTab('today')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${
+              activeTab === 'today'
+                ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm'
+                : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5 text-rose-500" />
+            <span>Today's Fuel</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('history')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${
+              activeTab === 'history'
+                ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm'
+                : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+            }`}
+          >
+            <Calendar className="w-3.5 h-3.5 text-sky-500" />
+            <span>Weekly Pacing & History</span>
+            {historyData.dayWiseHistory?.length > 0 && (
+              <span className="font-mono text-[10px] px-1.5 py-0.5 rounded-md bg-sky-500/10 text-sky-500 font-bold">
+                {historyData.dayWiseHistory.length}d
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* 1-Click Veg / Non-Veg Day Cycling Badge & Switcher */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setDietOverride(isVegDay ? 'non-veg' : 'veg')}
+            className={`px-3.5 py-2 rounded-2xl text-xs font-bold font-mono tracking-wider flex items-center gap-2 border transition-all ${
+              isVegDay
+                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
+                : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/20'
+            }`}
+            title={`Today is scheduled as ${isVegDay ? 'Strict Veg' : 'Non-Veg'}. Click to toggle today's mode.`}
+          >
+            <span>{isVegDay ? '🌱 Strict Veg Day' : '🍗 Non-Veg Day'}</span>
+            <span className="text-[10px] opacity-60 font-sans uppercase underline">(Toggle)</span>
+          </button>
+
+          {isVegDay && (
+            <span className="hidden sm:inline-block text-[11px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 px-2.5 py-1.5 rounded-xl border border-emerald-500/15">
+              ±15% Carb/Fat Flex Active
             </span>
           )}
-        </button>
+        </div>
       </div>
 
       {/* ── ATHLETE PHYSIOLOGY PROFILE ACCORDION / DRAWER ───────────── */}
@@ -755,6 +832,57 @@ export default function FuelPage() {
                   <span className="text-[10px] text-neutral-400 font-mono block">
                     +10 kcal per kg mass (+run work)
                   </span>
+                </div>
+              </div>
+
+              {/* ── 5. WEEKLY VEG / NON-VEG DIETARY SCHEDULE ── */}
+              <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 space-y-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">🥗</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
+                      7-Day Weekly Dietary Cycle (Indian Diet Schedules)
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-neutral-400 font-mono">
+                    Auto-adapts protein sources & gives ±15% carb/fat flex
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-7 gap-2">
+                  {[
+                    { key: 'mon', label: 'Mon' },
+                    { key: 'tue', label: 'Tue' },
+                    { key: 'wed', label: 'Wed' },
+                    { key: 'thu', label: 'Thu' },
+                    { key: 'fri', label: 'Fri' },
+                    { key: 'sat', label: 'Sat' },
+                    { key: 'sun', label: 'Sun' }
+                  ].map(day => {
+                    const isToday = todayDayKey === day.key;
+                    const isVeg = (athleteProfile.dietSchedule?.[day.key] || 'non-veg') === 'veg';
+                    return (
+                      <div
+                        key={day.key}
+                        onClick={() => handleDayDietChange(day.key, isVeg ? 'non-veg' : 'veg')}
+                        className={`p-2 sm:p-2.5 rounded-2xl border text-center cursor-pointer transition-all select-none hover:scale-105 active:scale-95 ${
+                          isVeg
+                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+                            : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300'
+                        } ${isToday ? 'ring-2 ring-rose-500 shadow-sm' : ''}`}
+                        title={`Click to set ${day.label} to ${isVeg ? 'Non-Veg' : 'Strict Veg'}`}
+                      >
+                        <span className="text-[11px] font-mono font-bold block uppercase">
+                          {day.label}
+                          {isToday && <span className="text-[9px] text-rose-500 block leading-tight font-extrabold">Today</span>}
+                        </span>
+                        <span className="text-base sm:text-lg my-1 block">{isVeg ? '🌱' : '🍗'}</span>
+                        <span className="text-[10px] font-bold block">
+                          {isVeg ? 'Veg' : 'Non-Veg'}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -1109,7 +1237,7 @@ export default function FuelPage() {
           {/* 2. CARBOHYDRATES */}
           <MacroPod
             name="Carbohydrates"
-            subtitle="Daily Stamina & Glycogen"
+            subtitle={isVegDay ? "Daily Stamina (±15% Veg Flex Active)" : "Daily Stamina & Glycogen"}
             icon="⚡"
             current={data.carbs.current}
             target={data.carbs.target}
@@ -1118,11 +1246,11 @@ export default function FuelPage() {
             onOpenPie={() => setActiveBreakdownKey('carbs')}
             breakdown={[
               {
-                label: 'Complex Starches',
+                label: isVegDay ? 'Complex Starches (Veg Staples)' : 'Complex Starches',
                 value: data.bioCarbs.complex,
                 pct: data.bioCarbs.complexPct,
                 color: '#f59e0b',
-                description: 'Oats, Rice, Sweet Potatoes (sustained slow-release cellular glycogen).'
+                description: isVegDay ? 'Slow-release energy from brown rice, dal, oats, and whole grains with ±15% flexible ceiling.' : 'Oats, Rice, Sweet Potatoes (sustained slow-release cellular glycogen).'
               },
               {
                 label: 'Natural / Rapid Sugars',
@@ -1137,7 +1265,7 @@ export default function FuelPage() {
           {/* 3. DIETARY FATS */}
           <MacroPod
             name="Dietary Fats"
-            subtitle="Hormones & Joint Lubrication"
+            subtitle={isVegDay ? "Hormones & Lipids (±15% Veg Flex Active)" : "Hormones & Joint Lubrication"}
             icon="🥑"
             current={data.fats.current}
             target={data.fats.target}
@@ -1146,18 +1274,18 @@ export default function FuelPage() {
             onOpenPie={() => setActiveBreakdownKey('fats')}
             breakdown={[
               {
-                label: 'Unsaturated Healthy Fats',
+                label: isVegDay ? 'Unsaturated & Veg Lipids' : 'Unsaturated Healthy Fats',
                 value: data.bioFats.unsaturated,
                 pct: data.bioFats.unsatPct,
                 color: '#007aff',
-                description: 'Fish oil, Omega-3, Nuts, Mustard & Olive oil for joint lubrication and cardiovascular vitality.'
+                description: isVegDay ? 'Nuts, seeds, mustard/olive oils, and plant fats supporting cellular vitality.' : 'Fish oil, Omega-3, Nuts, Mustard & Olive oil for joint lubrication and cardiovascular vitality.'
               },
               {
-                label: 'Saturated Dietary Lipids',
+                label: isVegDay ? 'Dairy Fats (Paneer / Milk / Ghee)' : 'Saturated Dietary Lipids',
                 value: data.bioFats.saturated,
                 pct: data.bioFats.satPct,
                 color: '#a855f7',
-                description: 'Milk, dairy fats, and whole food lipids. Trans fats: 0g.'
+                description: isVegDay ? 'Natural dairy fats from paneer, curd, and milk. Accommodated with +15% tolerance.' : 'Milk, dairy fats, and whole food lipids. Trans fats: 0g.'
               }
             ]}
           />
@@ -1320,60 +1448,199 @@ export default function FuelPage() {
         </div>
       </div>
 
-      {/* ── 5. CELLULAR MINERALS, VITALS & CREATINE (CLICKABLE) ─────── */}
-      <div className="p-6 rounded-3xl bg-white dark:bg-[#1c1c1e] border border-black/[0.06] dark:border-white/[0.08] shadow-sm">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
+      {/* ── 5. CELLULAR MINERALS, VITALS & MICRONUTRIENTS (CRONOMETER FOR INDIA) ─────── */}
+      <div className="p-6 rounded-3xl bg-white dark:bg-[#1c1c1e] border border-black/[0.06] dark:border-white/[0.08] shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-2 border-b border-neutral-100 dark:border-neutral-800">
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-500 block">Cellular Vitals</span>
-            <h4 className="text-base font-bold text-neutral-900 dark:text-white">Key Electrolytes, Minerals & Creatine</h4>
+            <div className="inline-flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-emerald-500 bg-emerald-500/10 px-2.5 py-0.5 rounded-full mb-1">
+              <span>●</span> ICMR-NIN RDA Benchmarks
+            </div>
+            <h4 className="text-base font-bold text-neutral-900 dark:text-white">
+              Cellular Minerals, Micronutrients & Vitals
+            </h4>
           </div>
-          <span className="text-xs text-neutral-400">Click any tile to inspect nutrient sources</span>
+          <span className="text-xs text-neutral-400 font-mono">Click any tile for source breakdown ↗</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+          {/* 1. Sodium */}
           <div
             onClick={() => setActiveBreakdownKey('sodium')}
-            className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center cursor-pointer hover:border-emerald-500/40 transition-all group"
+            className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center cursor-pointer hover:border-emerald-500/40 transition-all group flex flex-col justify-between"
           >
-            <span className="text-[11px] text-neutral-400 uppercase font-mono block group-hover:text-emerald-500 transition-colors">Sodium (Na⁺) ↗</span>
-            <span className="text-base font-extrabold font-mono text-emerald-500">{data.micros.sodium} mg</span>
-            <span className="text-[10px] text-neutral-400 block mt-0.5">Target: 3,500</span>
+            <div>
+              <span className="text-[11px] text-neutral-400 uppercase font-mono block group-hover:text-emerald-500 transition-colors">Sodium (Na⁺) ↗</span>
+              <span className="text-base font-extrabold font-mono text-emerald-500 mt-0.5 block">{data.micros.sodium} mg</span>
+            </div>
+            <div className="mt-2 space-y-1">
+              <div className="flex justify-between text-[10px] text-neutral-400 font-mono">
+                <span>RDA: 3,500</span>
+                <span>{Math.round((data.micros.sodium / 3500) * 100)}%</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
+                <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, Math.round((data.micros.sodium / 3500) * 100))}%` }} />
+              </div>
+            </div>
           </div>
 
+          {/* 2. Potassium */}
           <div
             onClick={() => setActiveBreakdownKey('potassium')}
-            className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center cursor-pointer hover:border-emerald-500/40 transition-all group"
+            className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center cursor-pointer hover:border-emerald-500/40 transition-all group flex flex-col justify-between"
           >
-            <span className="text-[11px] text-neutral-400 uppercase font-mono block group-hover:text-emerald-500 transition-colors">Potassium (K⁺) ↗</span>
-            <span className="text-base font-extrabold font-mono text-emerald-500">{data.micros.potassium} mg</span>
-            <span className="text-[10px] text-neutral-400 block mt-0.5">Target: 4,700</span>
+            <div>
+              <span className="text-[11px] text-neutral-400 uppercase font-mono block group-hover:text-emerald-500 transition-colors">Potassium (K⁺) ↗</span>
+              <span className="text-base font-extrabold font-mono text-emerald-500 mt-0.5 block">{data.micros.potassium} mg</span>
+            </div>
+            <div className="mt-2 space-y-1">
+              <div className="flex justify-between text-[10px] text-neutral-400 font-mono">
+                <span>RDA: 4,700</span>
+                <span>{Math.round((data.micros.potassium / 4700) * 100)}%</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
+                <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, Math.round((data.micros.potassium / 4700) * 100))}%` }} />
+              </div>
+            </div>
           </div>
 
+          {/* 3. Magnesium */}
           <div
             onClick={() => setActiveBreakdownKey('magnesium')}
-            className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center cursor-pointer hover:border-emerald-500/40 transition-all group"
+            className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center cursor-pointer hover:border-emerald-500/40 transition-all group flex flex-col justify-between"
           >
-            <span className="text-[11px] text-neutral-400 uppercase font-mono block group-hover:text-emerald-500 transition-colors">Magnesium ↗</span>
-            <span className="text-base font-extrabold font-mono text-emerald-500">{data.micros.magnesium} mg</span>
-            <span className="text-[10px] text-neutral-400 block mt-0.5">Target: 420</span>
+            <div>
+              <span className="text-[11px] text-neutral-400 uppercase font-mono block group-hover:text-emerald-500 transition-colors">Magnesium ↗</span>
+              <span className="text-base font-extrabold font-mono text-emerald-500 mt-0.5 block">{data.micros.magnesium} mg</span>
+            </div>
+            <div className="mt-2 space-y-1">
+              <div className="flex justify-between text-[10px] text-neutral-400 font-mono">
+                <span>RDA: 420</span>
+                <span>{Math.round((data.micros.magnesium / 420) * 100)}%</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
+                <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, Math.round((data.micros.magnesium / 420) * 100))}%` }} />
+              </div>
+            </div>
           </div>
 
+          {/* 4. Calcium */}
+          <div
+            onClick={() => setActiveBreakdownKey('calcium')}
+            className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center cursor-pointer hover:border-cyan-500/40 transition-all group flex flex-col justify-between"
+          >
+            <div>
+              <span className="text-[11px] text-neutral-400 uppercase font-mono block group-hover:text-cyan-500 transition-colors">Calcium (Ca²⁺) ↗</span>
+              <span className="text-base font-extrabold font-mono text-cyan-500 mt-0.5 block">{data.micros.calcium} mg</span>
+            </div>
+            <div className="mt-2 space-y-1">
+              <div className="flex justify-between text-[10px] text-neutral-400 font-mono">
+                <span>RDA: 1,000</span>
+                <span>{Math.round((data.micros.calcium / 1000) * 100)}%</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
+                <div className="h-full bg-cyan-500 rounded-full" style={{ width: `${Math.min(100, Math.round((data.micros.calcium / 1000) * 100))}%` }} />
+              </div>
+            </div>
+          </div>
+
+          {/* 5. Iron */}
+          <div
+            onClick={() => setActiveBreakdownKey('iron')}
+            className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center cursor-pointer hover:border-rose-500/40 transition-all group flex flex-col justify-between"
+          >
+            <div>
+              <span className="text-[11px] text-neutral-400 uppercase font-mono block group-hover:text-rose-500 transition-colors">Iron (Fe) ↗</span>
+              <span className="text-base font-extrabold font-mono text-rose-500 mt-0.5 block">{data.micros.iron} mg</span>
+            </div>
+            <div className="mt-2 space-y-1">
+              <div className="flex justify-between text-[10px] text-neutral-400 font-mono">
+                <span>RDA: {athleteProfile.gender === 'female' ? 29 : 19}</span>
+                <span>{Math.round((data.micros.iron / (athleteProfile.gender === 'female' ? 29 : 19)) * 100)}%</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
+                <div className="h-full bg-rose-500 rounded-full" style={{ width: `${Math.min(100, Math.round((data.micros.iron / (athleteProfile.gender === 'female' ? 29 : 19)) * 100))}%` }} />
+              </div>
+            </div>
+          </div>
+
+          {/* 6. Vitamin B12 */}
+          <div
+            onClick={() => setActiveBreakdownKey('vitaminB12')}
+            className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center cursor-pointer hover:border-purple-500/40 transition-all group flex flex-col justify-between"
+          >
+            <div>
+              <span className="text-[11px] text-neutral-400 uppercase font-mono block group-hover:text-purple-500 transition-colors">Vitamin B12 ↗</span>
+              <span className="text-base font-extrabold font-mono text-purple-500 mt-0.5 block">{data.micros.vitaminB12} mcg</span>
+            </div>
+            <div className="mt-2 space-y-1">
+              <div className="flex justify-between text-[10px] text-neutral-400 font-mono">
+                <span>RDA: 2.2</span>
+                <span>{Math.round((data.micros.vitaminB12 / 2.2) * 100)}%</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
+                <div className="h-full bg-purple-500 rounded-full" style={{ width: `${Math.min(100, Math.round((data.micros.vitaminB12 / 2.2) * 100))}%` }} />
+              </div>
+            </div>
+          </div>
+
+          {/* 7. Vitamin D3 */}
+          <div
+            onClick={() => setActiveBreakdownKey('vitaminD3')}
+            className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center cursor-pointer hover:border-amber-500/40 transition-all group flex flex-col justify-between"
+          >
+            <div>
+              <span className="text-[11px] text-neutral-400 uppercase font-mono block group-hover:text-amber-500 transition-colors">Vitamin D3 ↗</span>
+              <span className="text-base font-extrabold font-mono text-amber-500 mt-0.5 block">{data.micros.vitaminD3} IU</span>
+            </div>
+            <div className="mt-2 space-y-1">
+              <div className="flex justify-between text-[10px] text-neutral-400 font-mono">
+                <span>RDA: 600</span>
+                <span>{Math.round((data.micros.vitaminD3 / 600) * 100)}%</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
+                <div className="h-full bg-amber-500 rounded-full" style={{ width: `${Math.min(100, Math.round((data.micros.vitaminD3 / 600) * 100))}%` }} />
+              </div>
+            </div>
+          </div>
+
+          {/* 8. Omega-3 */}
           <div
             onClick={() => setActiveBreakdownKey('omega3')}
-            className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center cursor-pointer hover:border-emerald-500/40 transition-all group"
+            className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center cursor-pointer hover:border-emerald-500/40 transition-all group flex flex-col justify-between"
           >
-            <span className="text-[11px] text-neutral-400 uppercase font-mono block group-hover:text-emerald-500 transition-colors">Omega-3 ↗</span>
-            <span className="text-base font-extrabold font-mono text-emerald-500">{data.micros.omega3} mg</span>
-            <span className="text-[10px] text-neutral-400 block mt-0.5">Target: 1,500</span>
+            <div>
+              <span className="text-[11px] text-neutral-400 uppercase font-mono block group-hover:text-emerald-500 transition-colors">Omega-3 (EPA/DHA) ↗</span>
+              <span className="text-base font-extrabold font-mono text-emerald-500 mt-0.5 block">{data.micros.omega3} mg</span>
+            </div>
+            <div className="mt-2 space-y-1">
+              <div className="flex justify-between text-[10px] text-neutral-400 font-mono">
+                <span>Target: 1,500</span>
+                <span>{Math.round((data.micros.omega3 / 1500) * 100)}%</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
+                <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, Math.round((data.micros.omega3 / 1500) * 100))}%` }} />
+              </div>
+            </div>
           </div>
 
+          {/* 9. Creatine */}
           <div
             onClick={() => setActiveBreakdownKey('creatine')}
-            className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center col-span-2 sm:col-span-1 cursor-pointer hover:border-purple-500/40 transition-all group"
+            className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 text-center col-span-2 sm:col-span-1 cursor-pointer hover:border-purple-500/40 transition-all group flex flex-col justify-between"
           >
-            <span className="text-[11px] text-neutral-400 uppercase font-mono block group-hover:text-purple-500 transition-colors">Creatine ↗</span>
-            <span className="text-base font-extrabold font-mono text-purple-500">{data.micros.creatine} g</span>
-            <span className="text-[10px] text-neutral-400 block mt-0.5">Target: 5.0 g</span>
+            <div>
+              <span className="text-[11px] text-neutral-400 uppercase font-mono block group-hover:text-purple-500 transition-colors">Creatine ↗</span>
+              <span className="text-base font-extrabold font-mono text-purple-500 mt-0.5 block">{data.micros.creatine} g</span>
+            </div>
+            <div className="mt-2 space-y-1">
+              <div className="flex justify-between text-[10px] text-neutral-400 font-mono">
+                <span>Target: 5.0 g</span>
+                <span>{Math.round((data.micros.creatine / 5.0) * 100)}%</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
+                <div className="h-full bg-purple-500 rounded-full" style={{ width: `${Math.min(100, Math.round((data.micros.creatine / 5.0) * 100))}%` }} />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1452,6 +1719,10 @@ export default function FuelPage() {
               sodium: 3500,
               potassium: 4700,
               magnesium: 420,
+              calcium: 1000,
+              iron: athleteProfile.gender === 'female' ? 29 : 19,
+              vitaminB12: 2.2,
+              vitaminD3: 600,
               omega3: 1500,
               creatine: 5.0
             }}
