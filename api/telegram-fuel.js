@@ -318,45 +318,57 @@ function formatUserFriendlyError(err) {
   return msg;
 }
 
-// Call Gemini (with multi-model cascade and 12s timeout for vision/JSON)
+// Call Gemini (with verified models, 503 backoff retry, and 25s timeout for vision/JSON)
 async function callGemini(contents, generationConfig = null) {
+  // Verified live on API key:
+  // 1. gemini-2.5-flash: primary vision & JSON model (fast, highly accurate)
+  // 2. gemini-3.5-flash-lite: high-speed fallback
   const models = [
     'gemini-2.5-flash',
-    'gemini-2.0-flash',
-    'gemini-1.5-flash',
-    'gemini-1.5-pro'
+    'gemini-3.5-flash-lite'
   ];
   let lastError = null;
 
   for (const model of models) {
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
-      const body = { contents };
-      if (generationConfig) {
-        body.generationConfig = {
-          ...generationConfig,
-          responseMimeType: generationConfig.responseMimeType || generationConfig.response_mime_type || "application/json"
-        };
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+        const body = { contents };
+        if (generationConfig) {
+          body.generationConfig = {
+            ...generationConfig,
+            responseMimeType: generationConfig.responseMimeType || generationConfig.response_mime_type || "application/json"
+          };
+        }
+
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+          signal: AbortSignal.timeout(25000)
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          if (res.status === 503 && attempt === 0) {
+            console.warn(`Gemini model ${model} returned 503, retrying in 800ms...`);
+            await new Promise(r => setTimeout(r, 800));
+            continue;
+          }
+          throw new Error(`Model ${model} returned ${res.status}: ${errText}`);
+        }
+
+        const result = await res.json();
+        const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) return text;
+      } catch (e) {
+        lastError = e;
+        console.warn(`Gemini model ${model} (attempt ${attempt + 1}) failed:`, e.message);
+        if (attempt === 0 && (e.name === 'AbortError' || e.message.includes('timeout'))) {
+          // If 25s timed out, don't waste another 25s retrying the same model
+          break;
+        }
       }
-
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-        signal: AbortSignal.timeout(12000)
-      });
-
-      if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(`Model ${model} returned ${res.status}: ${errText}`);
-      }
-
-      const result = await res.json();
-      const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (text) return text;
-    } catch (e) {
-      lastError = e;
-      console.warn(`Gemini model ${model} failed, trying fallback:`, e.message);
     }
   }
 
