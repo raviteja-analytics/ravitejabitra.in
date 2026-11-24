@@ -11,6 +11,9 @@ export default function MacroPod({
   unit = 'g',
   color = '#fa114f',
   breakdown = [],
+  segments = null,
+  badge = null,
+  badgeClassName = null,
   onOpenPie
 }) {
   const pct = Math.min(100, Math.round((current / (target || 1)) * 100));
@@ -55,18 +58,47 @@ export default function MacroPod({
           <span className="font-extrabold text-base text-neutral-900 dark:text-white">
             {current} <span className="text-xs font-normal text-neutral-400">/ {target} {unit}</span>
           </span>
-          <span className="text-xs font-bold" style={{ color }}>
-            {pct}%
-          </span>
+          <div className="flex items-center gap-1.5">
+            {badge && (
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md font-mono ${badgeClassName || 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300'}`}>
+                {badge}
+              </span>
+            )}
+            <span className="text-xs font-bold" style={{ color }}>
+              {pct}%
+            </span>
+          </div>
         </div>
-        <div className="h-2.5 w-full rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
-          <motion.div
-            className="h-full rounded-full"
-            style={{ backgroundColor: color }}
-            initial={{ width: 0 }}
-            animate={{ width: `${pct}%` }}
-            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-          />
+        <div className="h-2.5 w-full rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden flex">
+          {segments && segments.length > 0 ? (
+            (() => {
+              const totalVal = segments.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
+              const totalBarPct = Math.min(100, Math.round((totalVal / (target || 1)) * 100));
+              return segments.map((seg, idx) => {
+                const sVal = Number(seg.value) || 0;
+                if (sVal <= 0 || totalVal <= 0) return null;
+                const widthPct = (sVal / totalVal) * totalBarPct;
+                return (
+                  <motion.div
+                    key={idx}
+                    className="h-full first:rounded-l-full last:rounded-r-full"
+                    style={{ backgroundColor: seg.color, width: `${widthPct}%` }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${widthPct}%` }}
+                    transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                  />
+                );
+              });
+            })()
+          ) : (
+            <motion.div
+              className="h-full rounded-full"
+              style={{ backgroundColor: color }}
+              initial={{ width: 0 }}
+              animate={{ width: `${pct}%` }}
+              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+            />
+          )}
         </div>
       </div>
 

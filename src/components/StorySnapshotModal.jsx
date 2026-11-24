@@ -277,9 +277,25 @@ export default function StorySnapshotModal({
                 <span className={`font-bold ${isLight ? 'text-emerald-600' : 'text-emerald-400'}`}>{data?.fiber?.current || 0}g</span>
               </div>
 
-              <div className="flex justify-between items-center text-xs">
-                <span className={isLight ? 'text-neutral-700' : 'text-neutral-300'}>🍯 Sugar</span>
-                <span className={`font-bold ${isLight ? 'text-pink-600' : 'text-pink-400'}`}>{data?.sugar?.current || 0}g</span>
+              <div className="space-y-1">
+                <div className="flex justify-between items-center text-xs">
+                  <span className={isLight ? 'text-neutral-700' : 'text-neutral-300'}>🍯 Sugar</span>
+                  <span className={`font-bold ${isLight ? 'text-pink-600' : 'text-pink-400'}`}>{data?.sugar?.current || 0}g</span>
+                </div>
+                <div className={`flex justify-between items-center text-[10px] font-mono px-2 py-1 rounded-lg border ${
+                  isLight 
+                    ? 'bg-neutral-100/80 border-neutral-200/60 text-neutral-600' 
+                    : 'bg-white/[0.04] border-white/[0.05] text-neutral-400'
+                }`}>
+                  <span className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    Nat <b className={isLight ? 'text-emerald-700 font-bold' : 'text-emerald-400 font-bold'}>{data?.bioSugar?.natural || 0}g</b>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className={`w-1.5 h-1.5 rounded-full ${(data?.bioSugar?.added || 0) > 40 ? 'bg-rose-500' : 'bg-pink-400'}`} />
+                    Add <b className={(data?.bioSugar?.added || 0) > 40 ? 'text-rose-500 font-bold' : isLight ? 'text-neutral-800 font-bold' : 'text-neutral-200 font-bold'}>{data?.bioSugar?.added || 0}g</b>
+                  </span>
+                </div>
               </div>
             </div>
 
