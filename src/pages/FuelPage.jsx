@@ -1430,27 +1430,51 @@ export default function FuelPage() {
           {/* 5. SUGAR INTAKE */}
           <MacroPod
             name="Sugar Intake"
-            subtitle="Added (<40g) vs Whole-Food Fuel"
+            subtitle="Natural Fuel vs Added (<40g)"
             icon="🍯"
-            current={data.sugar.addedCurrent !== undefined ? data.sugar.addedCurrent : data.bioSugar.added}
-            target={data.sugar.addedLimit || 40}
+            current={data.sugar.current}
+            target={data.sugar.target}
             unit="g"
             color="#ec4899"
+            badge={
+              (data.bioSugar.added || 0) === 0
+                ? "0g Added · Clean Fuel"
+                : (data.bioSugar.added || 0) > 40
+                  ? `${data.bioSugar.added}g Added · Over Limit!`
+                  : `${data.bioSugar.added}g Added (<40g)`
+            }
+            badgeClassName={
+              (data.bioSugar.added || 0) === 0
+                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                : (data.bioSugar.added || 0) > 40
+                  ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
+                  : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+            }
+            segments={[
+              {
+                value: data.bioSugar.natural,
+                color: '#10b981'
+              },
+              {
+                value: data.bioSugar.added,
+                color: '#f43f5e'
+              }
+            ]}
             onOpenPie={() => setActiveBreakdownKey('sugar')}
             breakdown={[
-              {
-                label: 'Added / Processed Sugars',
-                value: data.bioSugar.added,
-                pct: data.bioSugar.addedPct,
-                color: '#f43f5e',
-                description: 'Refined sweets & syrups. Bar enforces strict athlete ceiling (<40g).'
-              },
               {
                 label: 'Natural Whole Food Sugars',
                 value: data.bioSugar.natural,
                 pct: data.bioSugar.naturalPct,
                 color: '#10b981',
                 description: 'Fruits (dates, watermelon, bananas) & lactose. Healthy cellular fuel, not penalized!'
+              },
+              {
+                label: 'Added / Processed Sugars',
+                value: data.bioSugar.added,
+                pct: data.bioSugar.addedPct,
+                color: '#f43f5e',
+                description: 'Refined sweets & syrups. Strictly tracked against <40g ceiling.'
               }
             ]}
           />
