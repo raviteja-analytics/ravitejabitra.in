@@ -413,6 +413,7 @@ CRITICAL CULINARY ACCURACY FOR STREET FOOD, CHAAT, INDIAN SNACKS & GENERIC FOOD:
 - REALISTIC SUGAR & PROTEIN:
   * Do NOT inflate sugars for savory street foods. Chutney and curd contribute only 2-4g sugar per plate unless drenched in sugar syrup.
   * Do NOT hallucinate high protein in street food snacks, chaats, or savory pastries.
+  * BONE-IN CHICKEN / MEAT: Gross weight with bones has 25-30% inedible bone. E.g., 400g bone-in chicken contains ~280g edible meat = ~55-60g protein (NOT 85-90g). Skinless chicken is lean (~3g fat/100g edible raw meat).
 
 STEP 3: IF "pantry_label" (PACKAGED NUTRITION / SUPPLEMENT FACTS LABEL):
 - Identify official single serving (servingUnit, e.g. "50g", "1 scoop (33g)", "1 capsule", "100g").
@@ -721,8 +722,13 @@ CRITICAL QUANTITY & USDA LOOKUP RULES:
 1. Parse user's portion input (e.g. "100g", "200g", "2 boiled eggs", "150g chicken breast", "1 apple").
 2. Standard whole food values:
    - Boiled Egg: 1 egg (50g) = 70 kcal, 6.3g Protein, 0.4g Carbs, 4.8g Fat. (2 eggs = 140 kcal, 12.6g Protein).
-   - Chicken Breast (cooked): 100g = 165 kcal, 31g Protein, 0g Carbs, 3.6g Fat. (1 breast ~172g = 284 kcal, 53.4g Protein).
-   - Chicken Thigh / Skinless curry cut (cooked): 100g = 190 kcal, 24g Protein, 0g Carbs, 9.5g Fat.
+   - Chicken Breast (boneless, cooked): 100g = 165 kcal, 31g Protein, 0g Carbs, 3.6g Fat. (1 breast ~172g = 284 kcal, 53.4g Protein).
+   - Chicken Thigh / Skinless curry cut (boneless, cooked): 100g = 190 kcal, 24g Protein, 0g Carbs, 9.5g Fat.
+   - Bone-in Chicken / With Bones (skinless curry cut, drumsticks, bone-in pieces):
+     * In gross weight with bones, ~25% to 30% is inedible bone, so edible meat is only ~70% to 75% of gross weight.
+     * Raw skinless chicken edible meat yields ~20g Protein, ~2.5-3.5g Fat, and ~110-120 kcal per 100g edible meat.
+     * Example: 400g - 450g chicken with bones contains ~280g - 300g edible meat = ~55g - 60g Protein, ~10-14g Fat, and ~340-390 kcal.
+     * NEVER calculate gross bone-in weight as 100% boneless meat (which wrongly doubles/inflates protein to 85-90g)!
    - Boiled Sweet Potato: 100g = 86 kcal, 1.6g Protein, 20g Carbs, 0.1g Fat, 3g Fiber.
    - Apple: 100g = 52 kcal, 0.3g Protein, 13.8g Carbs, 2.4g Fiber.
    - Banana: 100g = 89 kcal, 1.1g Protein, 22.8g Carbs, 2.6g Fiber, 12.2g Sugar.
@@ -927,7 +933,7 @@ async function getPantryCatalog() {
 // Fetch Today's Nutrition Logs (Fast Path: checks local API first, falls back to raw sheet)
 async function getTodayNutritionLogs(todayDateStr) {
   try {
-    const res = await fetch("https://www.ravitejabitra.in/api/nutrition-data", { signal: AbortSignal.timeout(2500) });
+    const res = await fetch("https://www.ravitejabitra.in/api/nutrition-data", { signal: AbortSignal.timeout(6000) });
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data.todayLogs) && data.todayLogs.length > 0) {
@@ -942,11 +948,12 @@ async function getTodayNutritionLogs(todayDateStr) {
   }
 
   try {
-    const res = await fetch(`${GOOGLE_SCRIPT_URL}?sheet=nutrition`, { signal: AbortSignal.timeout(3500) });
+    const res = await fetch(`${GOOGLE_SCRIPT_URL}?sheet=nutrition`, { signal: AbortSignal.timeout(8000) });
     if (!res.ok) return [];
     const items = await res.json();
-    if (!Array.isArray(items)) return [];
-    return items.map(r => {
+    const rawList = Array.isArray(items) ? items : (items.data || []);
+    if (!Array.isArray(rawList)) return [];
+    return rawList.map(r => {
       const vals = Object.values(r);
       let rawTimestamp = r["Timestamp"] || r.timestamp || r["Date"] || r.date || r[" "] || vals[0] || "";
       let rawMsg = r["Raw Message"] || r.rawMessage || r[""] || vals[1] || vals[0] || "";
@@ -972,7 +979,7 @@ async function getTodayNutritionLogs(todayDateStr) {
 // Fetch Rich Food Logs for Today (with macro details for interactive editing)
 async function getTodayFoodLogs(todayDateStr) {
   try {
-    const res = await fetch("https://www.ravitejabitra.in/api/nutrition-data", { signal: AbortSignal.timeout(2500) });
+    const res = await fetch("https://www.ravitejabitra.in/api/nutrition-data", { signal: AbortSignal.timeout(6000) });
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data.todayLogs) && data.todayLogs.length > 0) {
@@ -984,13 +991,14 @@ async function getTodayFoodLogs(todayDateStr) {
   }
 
   try {
-    const res = await fetch(`${GOOGLE_SCRIPT_URL}?sheet=nutrition`, { signal: AbortSignal.timeout(3500) });
+    const res = await fetch(`${GOOGLE_SCRIPT_URL}?sheet=nutrition`, { signal: AbortSignal.timeout(8000) });
     if (!res.ok) return [];
     const items = await res.json();
-    if (!Array.isArray(items)) return [];
+    const rawList = Array.isArray(items) ? items : (items.data || []);
+    if (!Array.isArray(rawList)) return [];
 
     const logs = [];
-    for (const r of items) {
+    for (const r of rawList) {
       const vals = Object.values(r);
       let rawTimestamp = r["Timestamp"] || r.timestamp || r["Date"] || r.date || r[" "] || vals[0] || "";
       let rawMsg = String(r["Raw Message"] || r.rawMessage || r[""] || vals[1] || vals[0] || "");
@@ -1519,11 +1527,11 @@ export default async function handler(req, res) {
           ];
         }
 
-        const safeEncoded = encodedName.slice(0, 16);
+        const safeEncoded = encodedName.slice(0, 18);
         const keyboard = presets.map(row => 
           row.map(btn => ({
             text: btn.text,
-            callback_data: `apply_adj:${safeEncoded}:${field}:${btn.val}`
+            callback_data: `apply_adj:${safeEncoded}:${field}:${btn.val}:${currentVal}`
           }))
         );
 
@@ -1544,6 +1552,7 @@ export default async function handler(req, res) {
         const encodedName = parts[1];
         const field = parts[2];
         const rawVal = parts[3];
+        const fallbackBaseVal = parts[4] !== undefined && !isNaN(parseFloat(parts[4])) ? parseFloat(parts[4]) : null;
         let targetName = "";
         try {
           targetName = decodeURIComponent(encodedName);
@@ -1556,13 +1565,26 @@ export default async function handler(req, res) {
         const entry = logs.find(l => 
           (l.itemName || "").toLowerCase().includes(targetName.toLowerCase()) || 
           targetName.toLowerCase().includes((l.itemName || "").toLowerCase())
-        ) || { itemName: targetName };
+        );
 
-        const currentVal = entry[field] !== undefined ? Number(entry[field]) : 0;
+        let currentVal = 0;
+        if (entry && entry[field] !== undefined) {
+          currentVal = Number(entry[field]);
+        } else if (fallbackBaseVal !== null) {
+          currentVal = fallbackBaseVal;
+        }
+
         let finalVal = parseFloat(rawVal);
         if (rawVal.startsWith("-") || rawVal.startsWith("+")) {
+          if (!entry && fallbackBaseVal === null) {
+            console.warn(`Could not resolve entry for ${targetName}`);
+            await editTelegramMessageText(chatId, messageId, `⚠️ Could not find entry for "${targetName}" to adjust.`);
+            return res.status(200).send("OK");
+          }
           finalVal = Math.max(0, Math.round((currentVal + parseFloat(rawVal)) * 10) / 10);
         }
+
+        const resolvedItemName = (entry && entry.itemName) || targetName;
 
         await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
@@ -1572,8 +1594,8 @@ export default async function handler(req, res) {
             timestamp: new Date().toISOString(),
             date: dateStr,
             time: timeStr,
-            itemName: targetName,
-            brand: "",
+            itemName: resolvedItemName,
+            brand: (entry && entry.brand) || "",
             quantity: field === 'quantity' ? finalVal : 0,
             servingUnit: "",
             calories: field === 'calories' ? finalVal : 0,
@@ -1582,11 +1604,11 @@ export default async function handler(req, res) {
             fats: field === 'fats' ? finalVal : 0,
             fiber: field === 'fiber' ? finalVal : 0,
             sugar: field === 'sugar' ? finalVal : 0,
-            rawMessage: `[UPDATE_ITEM: ${targetName} | {"${field}": ${finalVal}}]`
+            rawMessage: `[UPDATE_ITEM: ${resolvedItemName} | {"${field}": ${finalVal}}]`
           })
         });
 
-        const safeEncoded = encodedName.slice(0, 16);
+        const safeEncoded = encodedName.slice(0, 18);
         const replyMarkup = {
           inline_keyboard: [
             [
@@ -1598,7 +1620,7 @@ export default async function handler(req, res) {
           ]
         };
 
-        const successText = `✅ <b>Adjusted: ${entry.brand && entry.brand !== 'Whole Food' ? entry.brand + ' ' : ''}${targetName}</b>\n\n` +
+        const successText = `✅ <b>Adjusted: ${(entry && entry.brand && entry.brand !== 'Whole Food') ? entry.brand + ' ' : ''}${resolvedItemName}</b>\n\n` +
           `• <b>${field.toUpperCase()}:</b> <b>${finalVal}</b> (was ${currentVal})\n\n` +
           `📈 <i>Your live fuel dashboard and breakdown pie charts have recalibrated!</i>\n` +
           `👉 View Live: <a href="https://www.ravitejabitra.in/nutrition">ravitejabitra.in/nutrition</a>`;
