@@ -161,7 +161,7 @@ export default function NutrientBreakdownModal({
       amount: Math.round(amount * 10) / 10,
       calories: l.calories || 0
     };
-  }).filter(f => f.amount > 0);
+  }).filter(f => f.amount > 0).sort((a, b) => b.amount - a.amount);
 
   const totalFoodAmount = Math.round(contributingFoods.reduce((s, f) => s + f.amount, 0) * 10) / 10;
 
@@ -234,6 +234,70 @@ export default function NutrientBreakdownModal({
       slices: [
         { label: 'Added / Refined Sugars', amount: bs.added, pct: bs.addedPct, color: '#f43f5e', desc: 'Processed sweeteners, syrups, or industrial confectioneries. Strictly tracked against <40g ceiling.' },
         { label: 'Natural Whole Food Sugars', amount: bs.natural, pct: bs.naturalPct, color: '#10b981', desc: 'Naturally bound fruit fructose and dairy lactose from bananas, dates, and milk. Healthy fuel!' }
+      ]
+    };
+  } else if (nutrientKey === 'calories' && nutrientData) {
+    const pG = parseFloat(nutrientData.protein?.current) || 0;
+    const cG = parseFloat(nutrientData.carbs?.current) || 0;
+    const fG = parseFloat(nutrientData.fats?.current) || 0;
+    const fibG = parseFloat(nutrientData.fiber?.current) || 0;
+    const sG = parseFloat(nutrientData.sugar?.current) || 0;
+
+    const pKcal = Math.round(pG * 4);
+    const fKcal = Math.round(fG * 9);
+    const sugarKcal = Math.round(sG * 4);
+    const starchKcal = Math.round(Math.max(0, cG - sG) * 4);
+    const fiberKcal = Math.round(fibG * 2);
+
+    const macroTotalKcal = pKcal + fKcal + starchKcal + sugarKcal + fiberKcal || 1;
+
+    bioClassification = {
+      title: 'Macro Calorie Partitioning',
+      subtitle: 'Carbs & Starches (4kcal), Dietary Lipids (9kcal), Protein (4kcal), Sugars (4kcal)',
+      unit: 'kcal',
+      icon: '🔥',
+      total: pKcal + fKcal + starchKcal + sugarKcal + fiberKcal,
+      slices: [
+        {
+          label: 'Complex Starches & Grains',
+          amount: starchKcal,
+          pct: Math.round((starchKcal / macroTotalKcal) * 100),
+          color: '#f59e0b',
+          icon: '⚡',
+          desc: `4 kcal/g. Sustained cellular glycogen from oats, rice, and whole grains (${Math.round(Math.max(0, cG - sG) * 10) / 10}g).`
+        },
+        {
+          label: 'Dietary Fats & Lipids',
+          amount: fKcal,
+          pct: Math.round((fKcal / macroTotalKcal) * 100),
+          color: '#007aff',
+          icon: '🥑',
+          desc: `9 kcal/g. High-density fuel, hormone synthesis, and joint lubrication (${fG}g fats).`
+        },
+        {
+          label: 'Protein Energy',
+          amount: pKcal,
+          pct: Math.round((pKcal / macroTotalKcal) * 100),
+          color: '#fa114f',
+          icon: '🥩',
+          desc: `4 kcal/g. Muscle repair, structural tissue recovery, and lean mass preservation (${pG}g protein).`
+        },
+        {
+          label: 'Natural & Whole Sugars',
+          amount: sugarKcal,
+          pct: Math.round((sugarKcal / macroTotalKcal) * 100),
+          color: '#ec4899',
+          icon: '🍯',
+          desc: `4 kcal/g. Rapid glycogen replenishment (${nutrientData.bioSugar?.natural || sG}g natural fruit & dairy sugars, ${nutrientData.bioSugar?.added || 0}g added).`
+        },
+        {
+          label: 'Fermentable Fiber (SCFAs)',
+          amount: fiberKcal,
+          pct: Math.round((fiberKcal / macroTotalKcal) * 100),
+          color: '#10b981',
+          icon: '🌾',
+          desc: `~2 kcal/g. Prebiotic colonic fermentation yielding short-chain fatty acids (${fibG}g total fiber).`
+        }
       ]
     };
   }
@@ -477,7 +541,9 @@ export default function NutrientBreakdownModal({
                     <span className="font-bold text-neutral-900 dark:text-white">
                       +{f.amount} {currentMeta.unit}
                     </span>
-                    <span className="text-[10px] text-neutral-400 block">{f.calories} kcal</span>
+                    <span className="text-[10px] text-neutral-400 block">
+                      {currentMeta.unit === 'kcal' ? `${Math.round((f.amount / (totalFoodAmount || 1)) * 100)}% of daily intake` : `${f.calories} kcal`}
+                    </span>
                   </div>
                 </div>
               ))}

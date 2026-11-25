@@ -104,8 +104,8 @@ export default function MacroPod({
 
       {/* Mini Quality Pills */}
       {breakdown && breakdown.length > 0 && (
-        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800/80">
-          {breakdown.slice(0, 2).map((item, idx) => (
+        <div className={`grid ${breakdown.length >= 3 ? 'grid-cols-3 gap-1.5' : 'grid-cols-2 gap-2'} pt-2 border-t border-neutral-100 dark:border-neutral-800/80`}>
+          {breakdown.slice(0, 3).map((item, idx) => (
             <div key={idx} className="p-2 rounded-xl bg-neutral-50 dark:bg-neutral-900/90 text-left">
               <span className="text-[10px] text-neutral-400 uppercase font-mono block truncate">
                 {item.label}
