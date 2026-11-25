@@ -1063,7 +1063,7 @@ export default function FuelPage() {
         </AnimatePresence>
       </div>
 
-      {/* ── 3. FULL 5 CORE MACRONUTRIENT PODS (CLICKABLE FOR PIE CHARTS) ─── */}
+      {/* ── 3. FULL CORE MACRONUTRIENT & ENERGY PODS (CLICKABLE FOR PIE CHARTS) ─── */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-base font-bold tracking-tight text-neutral-900 dark:text-white flex items-center gap-2">
@@ -1078,7 +1078,51 @@ export default function FuelPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* 1. PROTEIN */}
+          {/* 1. CALORIE INTAKE */}
+          <MacroPod
+            name="Calorie Intake"
+            subtitle="Metabolic Fuel & Macro Split"
+            icon="🔥"
+            current={data.calories.current}
+            target={data.calories.target}
+            unit="kcal"
+            color="#fa114f"
+            badge={`${Math.round(((data.protein.current * 4) / (data.calories.current || 1)) * 100)}% Protein`}
+            badgeClassName="bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
+            segments={[
+              { value: Math.round(data.protein.current * 4), color: '#fa114f' },
+              { value: Math.round(Math.max(0, data.carbs.current - (data.sugar?.current || 0)) * 4), color: '#f59e0b' },
+              { value: Math.round((data.sugar?.current || 0) * 4), color: '#ec4899' },
+              { value: Math.round(data.fats.current * 9), color: '#007aff' },
+              { value: Math.round((data.fiber?.current || 0) * 2), color: '#10b981' }
+            ]}
+            onOpenPie={() => setActiveBreakdownKey('calories')}
+            breakdown={[
+              {
+                label: 'Carbs & Sugars',
+                value: Math.round(data.carbs.current * 4),
+                pct: Math.round(((data.carbs.current * 4) / (data.calories.current || 1)) * 100),
+                color: '#f59e0b',
+                description: 'Starches and natural fruit/dairy sugars (4 kcal/g).'
+              },
+              {
+                label: 'Dietary Fats',
+                value: Math.round(data.fats.current * 9),
+                pct: Math.round(((data.fats.current * 9) / (data.calories.current || 1)) * 100),
+                color: '#007aff',
+                description: 'Lipid density for hormones and joints (9 kcal/g).'
+              },
+              {
+                label: 'Protein Energy',
+                value: Math.round(data.protein.current * 4),
+                pct: Math.round(((data.protein.current * 4) / (data.calories.current || 1)) * 100),
+                color: '#fa114f',
+                description: 'Amino pool for muscle repair and recovery (4 kcal/g).'
+              }
+            ]}
+          />
+
+          {/* 2. PROTEIN */}
           <MacroPod
             name="Protein"
             subtitle="Muscle Recovery & Synthesis"
