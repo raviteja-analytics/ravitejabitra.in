@@ -486,67 +486,248 @@ Output ONLY a raw, valid JSON object (without markdown fences, no backticks, no 
   return JSON.parse(cleaned);
 }
 
-// Analyze user food text (Pantry match OR Generic Whole Food USDA lookup)
-async function analyzeFoodInput(userText, pantryItems) {
-  // Pre-filter/prioritize pantry items if a specific brand is mentioned in userText
-  const userTextLower = (userText || '').toLowerCase();
-  let prioritizedPantry = Array.isArray(pantryItems) ? [...pantryItems] : [];
-  if (prioritizedPantry.length > 0) {
-    const exactMatches = prioritizedPantry.filter(item => {
-      const b = (item.brand || '').toLowerCase();
-      const n = (item.itemName || '').toLowerCase();
-      return (b && userTextLower.includes(b)) || (n && userTextLower.includes(n));
-    });
-    if (exactMatches.length > 0) {
-      const others = prioritizedPantry.filter(item => !exactMatches.includes(item));
-      prioritizedPantry = [...exactMatches, ...others];
+// ════════════════════════════════════════════════════════════════════
+// ── DETERMINISTIC PANTRY MATCHER WITH CONFLICT GUARDRAILS ─────────
+// ════════════════════════════════════════════════════════════════════
+
+const CONFLICT_GROUPS = [
+  // 1. Meat / Poultry Cuts
+  {
+    name: 'cuts',
+    tokens: ['breast', 'thigh', 'wing', 'wings', 'drumstick', 'drumsticks', 'leg', 'legs', 'liver', 'whole']
+  },
+  // 2. Bone & Skin Specifiers
+  {
+    name: 'bone_skin',
+    tokens: ['boneless', 'bone-in', 'bonein', 'skinless', 'skin-on', 'with-bone', 'with-skin']
+  },
+  // 3. Whey / Protein Variants
+  {
+    name: 'protein_variants',
+    tokens: ['perform', 'impact', 'isolate', 'concentrate', 'hydrolyzed', 'blend', 'raw', 'casein']
+  },
+  // 4. Preparation / State
+  {
+    name: 'state',
+    tokens: ['raw', 'cooked', 'boiled', 'fried', 'grilled', 'roasted', 'steamed']
+  }
+];
+
+const DISTINCTIVE_TOKENS = new Set([
+  'perform', 'impact', 'isolate', 'concentrate', 'hydrolyzed', 'casein',
+  'thigh', 'breast', 'wing', 'drumstick', 'liver',
+  'boneless', 'skinless', 'bone-in',
+  'high', 'rolled', 'instant', 'steel-cut', 'chunky', 'creamy'
+]);
+
+const GENERIC_BASE_TOKENS = new Set([
+  'protein', 'whey', 'chicken', 'oats', 'egg', 'eggs', 'rice', 'dal',
+  'butter', 'peanut', 'milk', 'bread', 'oil', 'powder', 'powdered'
+]);
+
+const PORTION_STOPWORDS = new Set([
+  'g', 'gm', 'gms', 'gram', 'grams', 'kg', 'kgs', 'ml', 'scoop', 'scoops',
+  'tbsp', 'tsp', 'piece', 'pieces', 'pc', 'pcs', 'serving', 'servings',
+  'cup', 'cups', 'plate', 'plates', 'bowl', 'bowls', 'of', 'in', 'with', 'and', 'the', 'a', 'for'
+]);
+
+function normalizeTokens(str) {
+  if (!str) return [];
+  return String(str)
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, ' ')
+    .split(/[\s,]+/)
+    .map(t => t.trim())
+    .filter(t => t && !PORTION_STOPWORDS.has(t) && !/^\d+$/.test(t));
+}
+
+function hasConflict(userTokens, candidateTokens) {
+  const uSet = new Set(userTokens);
+  const cSet = new Set(candidateTokens);
+
+  for (const group of CONFLICT_GROUPS) {
+    const userInGroup = group.tokens.filter(t => uSet.has(t));
+    const candInGroup = group.tokens.filter(t => cSet.has(t));
+
+    // If both specify an attribute in the same conflict group, but have zero overlap -> HARD CONFLICT!
+    if (userInGroup.length > 0 && candInGroup.length > 0) {
+      const overlap = userInGroup.some(t => candInGroup.includes(t));
+      if (!overlap) {
+        return {
+          conflict: true,
+          reason: `Conflict in ${group.name}: user specified [${userInGroup.join(', ')}] but candidate has [${candInGroup.join(', ')}]`
+        };
+      }
+    }
+
+    // Critical asymmetric conflict:
+    // If user says "skinless" (without boneless), and candidate has "boneless" without skinless
+    if (group.name === 'bone_skin') {
+      if (uSet.has('skinless') && cSet.has('boneless') && !uSet.has('boneless')) {
+        return { conflict: true, reason: 'skinless query cannot match boneless candidate' };
+      }
     }
   }
 
-  const prompt = `You are an expert sports nutrition & USDA whole food analyst.
-The user has registered the following brand products & supplements in their personal Pantry Catalog (ordered with highest-priority matches first):
-${JSON.stringify(prioritizedPantry, null, 2)}
+  return { conflict: false };
+}
 
-The user sent this food / supplement text: "${userText}"
+function scorePantryItem(userQuery, candidate) {
+  const userTokens = normalizeTokens(userQuery);
+  if (userTokens.length === 0) return { score: 0, disqualified: true };
 
-CRITICAL BRAND INTEGRITY & MATCHING RULES:
-1. If the user explicitly mentions a brand name (such as "Country Delight", "Nakpro", "Harpro", "MyFitness", "Amul", "Lion", "Heritage", "Britannia", "Milky Mist", "Fast&Up"):
-   - You MUST match the product under that EXACT brand!
-   - NEVER substitute a product from another brand! (e.g. If the user says "Country Delight protein", you MUST match "Country Delight x HRX Whey Protein Concentrate", and NEVER "Nakpro Impact Whey" or "Harpro").
-2. Only match a generic or different brand if the user did NOT specify a brand name.
+  const candItemTokens = normalizeTokens(candidate.itemName);
+  const candBrandTokens = normalizeTokens(candidate.brand);
+  const candAliasTokens = normalizeTokens(candidate.aliases);
+  const allCandTokens = Array.from(new Set([...candItemTokens, ...candBrandTokens, ...candAliasTokens]));
+  const candSet = new Set(allCandTokens);
 
-CRITICAL QUANTITY & PORTION SCALING ACCURACY:
-1. Parse the user's portion input (e.g. "100g", "50g", "200g", "1 scoop", "2 scoops", "2 boiled eggs", "150g chicken breast", "1 apple").
-2. Matching against Pantry:
-   - Look at the pantry item's servingUnit and servingWeight.
-   - Example 1: Pantry item is "High Protein Oats Chocolate", servingUnit "50g" with 13g protein, 196 kcal, 88mg Magnesium:
-     - User texts "100g" (or "100g of pintola protein oats"):
-       * Portion = 100g.
-       * Multiplier = 100g / 50g = 2.0.
-       * Calories = 196 * 2 = 392 kcal.
-       * Protein = 13 * 2 = 26g.
-       * Carbs = 27.3 * 2 = 54.6g.
-       * Fats = 3.9 * 2 = 7.8g.
-       * Fiber = 4.8 * 2 = 9.6g.
-       * Sugar = 7 * 2 = 14g.
-       * Magnesium = 88 * 2 = 176 mg.
-       * Sodium = 65 * 2 = 130 mg.
-     - User texts "50g" or "1 scoop" or "1 serving":
-       * Multiplier = 1.0.
-       * Protein = 13g, Calories = 196 kcal, Magnesium = 88mg.
-   - Example 2: If an item in pantry is ALREADY registered with servingUnit "100g" (e.g. 100g sweet potato or 100g chicken):
-     - If user texts "100g": Multiplier = 1.0! DO NOT DOUBLE IT!
-   - ALWAYS SCALE vitalNutrients proportionally with the multiplier!
-3. For Generic Whole Foods (sweet potato, boiled eggs, chicken breast, chicken thigh, apple, banana):
-   - Standard USDA values:
-     * Boiled Egg: 1 egg (50g) = 70 kcal, 6.3g Protein, 0.4g Carbs, 4.8g Fat. (2 eggs = 140 kcal, 12.6g Protein).
-     * Chicken Breast (cooked): 100g = 165 kcal, 31g Protein, 0g Carbs, 3.6g Fat. (1 breast ~172g = 284 kcal, 53.4g Protein).
-     * Chicken Thigh (cooked): 100g = 179 kcal, 24.8g Protein, 0g Carbs, 8.2g Fat.
-     * Boiled Sweet Potato: 100g = 86 kcal, 1.6g Protein, 20g Carbs, 0.1g Fat, 3g Fiber.
-     * Apple: 100g = 52 kcal, 0.3g Protein, 13.8g Carbs, 2.4g Fiber. (1 medium apple ~180g = 95 kcal).
-     * Banana: 100g = 89 kcal, 1.1g Protein, 22.8g Carbs, 2.6g Fiber, 12.2g Sugar. (1 medium banana ~118g = 105 kcal).
-     * White Rice (cooked): 100g = 130 kcal, 2.7g Protein, 28g Carbs, 0.3g Fat.
-4. For Street Foods, Chaat, Indian Snacks & Cooked Dishes:
+  // 1. Strict Conflict Guardrails
+  const conflictCheck = hasConflict(userTokens, allCandTokens);
+  if (conflictCheck.conflict) {
+    return { score: 0, disqualified: true, reason: conflictCheck.reason };
+  }
+
+  // 2. Must match at least the core food/brand identity
+  let matchCount = 0;
+  let score = 0;
+
+  for (const ut of userTokens) {
+    if (candSet.has(ut)) {
+      matchCount++;
+      if (DISTINCTIVE_TOKENS.has(ut)) {
+        score += 15; // High weight for distinctive tokens (perform, impact, thigh, breast)
+      } else if (candBrandTokens.includes(ut)) {
+        score += 10; // High weight for brand match (pintola, nakpro)
+      } else if (GENERIC_BASE_TOKENS.has(ut)) {
+        score += 4;  // Moderate weight for base tokens (chicken, oats, whey)
+      } else {
+        score += 6;
+      }
+    }
+  }
+
+  if (matchCount === 0) {
+    return { score: 0, disqualified: true, reason: 'No matching tokens' };
+  }
+
+  // 3. Token-Set Subset Matching
+  const isSubset = userTokens.every(ut => candSet.has(ut));
+  if (isSubset) {
+    score += 35; // Huge subset bonus! E.g. "pintola protein oats" in "pintola high protein oats"
+  }
+
+  // Exact full name match bonus
+  const normUserStr = userTokens.join(' ');
+  const normItemStr = candItemTokens.join(' ');
+  if (normItemStr.includes(normUserStr) || (candidate.aliases && candidate.aliases.toLowerCase().includes(normUserStr))) {
+    score += 25;
+  }
+
+  // Penalty if candidate has a distinctive token from a conflict group that user didn't mention
+  for (const ct of allCandTokens) {
+    if (DISTINCTIVE_TOKENS.has(ct) && !userTokens.includes(ct)) {
+      score -= 3;
+    }
+  }
+
+  return {
+    score,
+    disqualified: false,
+    isSubset,
+    matchedTokens: matchCount,
+    totalUserTokens: userTokens.length
+  };
+}
+
+function matchPantryItem(userQuery, pantryCatalog) {
+  if (!pantryCatalog || pantryCatalog.length === 0) return null;
+
+  let bestMatch = null;
+  let highestScore = 0;
+
+  for (const item of pantryCatalog) {
+    const res = scorePantryItem(userQuery, item);
+    if (!res.disqualified && res.score > highestScore) {
+      highestScore = res.score;
+      bestMatch = { item, ...res };
+    }
+  }
+
+  if (highestScore >= 15 && bestMatch) {
+    return {
+      matched: true,
+      item: bestMatch.item,
+      score: bestMatch.score
+    };
+  }
+
+  return {
+    matched: false,
+    item: null,
+    score: highestScore
+  };
+}
+
+// Analyze user food text (Pantry match OR Generic Whole Food USDA lookup)
+async function analyzeFoodInput(userText, pantryItems) {
+  const pantryMatchResult = matchPantryItem(userText, pantryItems);
+  const matchedCandidate = pantryMatchResult?.matched ? pantryMatchResult.item : null;
+
+  let prompt = '';
+  if (matchedCandidate) {
+    prompt = `You are an expert sports nutrition analyst.
+CRITICAL: The user's input has matched an authoritative item from their personal Pantry Catalog:
+${JSON.stringify(matchedCandidate, null, 2)}
+
+User text: "${userText}"
+
+YOUR TASKS:
+1. Parse the user's portion/quantity (e.g. "1 scoop", "2 scoops", "100g", "50g", "1 serving", "33g").
+2. Compute the exact scale multiplier based on the pantry item's servingUnit/servingWeight.
+   - For example: if pantry servingUnit is "50g" and user says "100g", multiplier is 2.0.
+   - If pantry servingUnit is "1 scoop (33g)" and user says "1 scoop", multiplier is 1.0.
+   - If pantry servingUnit is "100g" and user says "100g", multiplier is 1.0.
+3. Multiply the pantry item's calories, protein, carbs, fats, fiber, sugar, and vital nutrients by the multiplier.
+4. Output matchedPantry: true, itemName: "${matchedCandidate.itemName}", brand: "${matchedCandidate.brand}".
+
+Return ONLY a raw, valid JSON object (no markdown, no backticks) with this schema:
+{
+  "matchedPantry": true,
+  "itemName": "${matchedCandidate.itemName}",
+  "brand": "${matchedCandidate.brand}",
+  "category": "${matchedCandidate.category || 'Pantry'}",
+  "quantity": number,
+  "servingUnit": string,
+  "pantryServingUnit": "${matchedCandidate.servingUnit}",
+  "calories": number,
+  "protein": number,
+  "carbs": number,
+  "fats": number,
+  "fiber": number,
+  "sugar": number,
+  "vitalNutrients": object,
+  "aliases": string
+}`;
+  } else {
+    prompt = `You are an expert sports nutrition & USDA whole food analyst.
+NOTICE: The user's input did NOT match any pantry item (or has conflicting cut/preparation with existing catalog items).
+You MUST treat this as a fresh whole food, dish, or generic brand lookup using standard USDA / sports nutrition ground truth.
+DO NOT substitute a different cut or product (e.g. "chicken skinless" must NOT be treated as "chicken thigh boneless").
+
+User text: "${userText}"
+
+CRITICAL QUANTITY & USDA LOOKUP RULES:
+1. Parse user's portion input (e.g. "100g", "200g", "2 boiled eggs", "150g chicken breast", "1 apple").
+2. Standard whole food values:
+   - Boiled Egg: 1 egg (50g) = 70 kcal, 6.3g Protein, 0.4g Carbs, 4.8g Fat. (2 eggs = 140 kcal, 12.6g Protein).
+   - Chicken Breast (cooked): 100g = 165 kcal, 31g Protein, 0g Carbs, 3.6g Fat. (1 breast ~172g = 284 kcal, 53.4g Protein).
+   - Chicken Thigh / Skinless curry cut (cooked): 100g = 190 kcal, 24g Protein, 0g Carbs, 9.5g Fat.
+   - Boiled Sweet Potato: 100g = 86 kcal, 1.6g Protein, 20g Carbs, 0.1g Fat, 3g Fiber.
+   - Apple: 100g = 52 kcal, 0.3g Protein, 13.8g Carbs, 2.4g Fiber.
+   - Banana: 100g = 89 kcal, 1.1g Protein, 22.8g Carbs, 2.6g Fiber, 12.2g Sugar.
+   - White Rice (cooked): 100g = 130 kcal, 2.7g Protein, 28g Carbs, 0.3g Fat.
+3. For Street Foods, Chaat, Indian Snacks & Cooked Dishes:
    - Dahi Puri: 3 pieces contains ONLY ~2.0 to 2.5g protein total (spiced curd, puris, potato filling), ~20-22g carbs, ~3.5-4.5g fat, ~3-4g sugar, ~120-140 kcal. NEVER estimate 7.5g protein for 3 pieces! 6 pieces (1 plate) is ~4.5-5.0g protein, ~240-270 kcal.
    - Pani Puri / Golgappa: 6 pieces = ~2.5-3.0g protein, ~30g carbs, ~4g fat, ~2g sugar, ~170-190 kcal.
    - Sev Puri: 6 pieces = ~4g protein, ~32g carbs, ~10g fat, ~3g sugar, ~230 kcal.
@@ -555,27 +736,25 @@ CRITICAL QUANTITY & PORTION SCALING ACCURACY:
      * Do NOT inflate sugars for savory street foods. Chutney and curd contribute only 2-4g sugar per plate unless drenched in sugar syrup.
      * Do NOT hallucinate high protein in street food snacks, chaats, or savory pastries.
 
-Return ONLY a raw, valid JSON object (no markdown, no backticks) with this schema:
+Return ONLY a raw, valid JSON object with matchedPantry: false with this schema:
 {
-  "matchedPantry": boolean,
-  "itemName": "Specific Food or Product Name",
-  "brand": "Brand Name or 'Whole Food'",
+  "matchedPantry": false,
+  "itemName": string,
+  "brand": "Whole Food" or brand name,
   "category": "Whole Food | Protein | Supplement | Fruit | Vegetable | Dairy | Poultry",
-  "quantity": number (portion amount consumed, e.g. 1, 2, 100, 150),
-  "servingUnit": "Unit consumed (e.g. g, piece, boiled egg, scoop, tbsp, capsule, cup)",
-  "pantryServingUnit": "Standard single serving unit for saving to catalog (e.g. 50g, 100g, 1 piece, 1 egg)",
-  "calories": number (rounded integer for this portion),
-  "protein": number (grams rounded to 1 decimal for this portion),
-  "carbs": number (grams rounded to 1 decimal for this portion),
-  "fats": number (grams rounded to 1 decimal for this portion),
-  "fiber": number (grams rounded to 1 decimal for this portion),
-  "sugar": number (grams rounded to 1 decimal for this portion),
-  "vitalNutrients": {
-    "Sodium": "130 mg",
-    "Magnesium": "176 mg"
-  },
-  "aliases": "Comma-separated lowercase keywords"
+  "quantity": number,
+  "servingUnit": string,
+  "pantryServingUnit": string,
+  "calories": number,
+  "protein": number,
+  "carbs": number,
+  "fats": number,
+  "fiber": number,
+  "sugar": number,
+  "vitalNutrients": object,
+  "aliases": string
 }`;
+  }
 
   const contents = [{ parts: [{ text: prompt }] }];
   const rawText = await callGemini(contents, {
@@ -584,7 +763,13 @@ Return ONLY a raw, valid JSON object (no markdown, no backticks) with this schem
   });
 
   const cleaned = rawText.trim().replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
-  return JSON.parse(cleaned);
+  const parsed = JSON.parse(cleaned);
+  if (matchedCandidate) {
+    parsed.matchedPantry = true;
+    parsed.itemName = matchedCandidate.itemName;
+    parsed.brand = matchedCandidate.brand;
+  }
+  return parsed;
 }
 
 // Parse EOD Daily Activity, Calories Burned & Sleep Metrics
@@ -1114,7 +1299,12 @@ export default async function handler(req, res) {
         // Write to sheet
         const logPromise = logFoodToDailySheet(item, dateStr, timeStr, `${item.quantity} ${item.servingUnit} ${item.itemName}`);
 
-        const confirmation = `⚡ <b>Logged: ${item.quantity} ${item.servingUnit} ${item.brand && item.brand !== 'Whole Food' ? item.brand + ' ' : ''}${item.itemName}</b>\n\n` +
+        const matchTag = item.matchedPantry
+          ? `📦 <b>Pantry Match:</b> ${item.brand && item.brand !== 'Whole Food' ? item.brand + ' ' : ''}${item.itemName}\n`
+          : `🤖 <b>AI Estimate</b> (Not in pantry)\n`;
+
+        const confirmation = `⚡ <b>Logged: ${item.quantity} ${item.servingUnit} ${item.brand && item.brand !== 'Whole Food' ? item.brand + ' ' : ''}${item.itemName}</b>\n` +
+          matchTag + `\n` +
           `• 🥩 +<b>${item.protein || 0}g</b> Protein • 🍞 +${item.carbs || 0}g Carbs\n` +
           `• 🥑 +${item.fats || 0}g Fat • 🍬 +${item.sugar || 0}g Sugar\n` +
           `• 🔥 +<b>${item.calories || 0}</b> kcal\n` +
@@ -2158,6 +2348,7 @@ export default async function handler(req, res) {
       fats: analyzed.fats || 0,
       sugar: analyzed.sugar || 0,
       fiber: analyzed.fiber || 0,
+      matchedPantry: Boolean(analyzed.matchedPantry),
       vitalsSummary: vitalsSummary
     };
 
@@ -2201,7 +2392,12 @@ export default async function handler(req, res) {
         vitalsPreview = `💊 <b>Vitals:</b> <i>${vitalsSummary}</i>\n`;
       }
 
-      const receipt = `⚡ <b>Logged: ${compactPayload.quantity} ${compactPayload.servingUnit} ${compactPayload.brand && compactPayload.brand !== 'Whole Food' ? compactPayload.brand + ' ' : ''}${compactPayload.itemName}</b>\n\n` +
+      const matchTag = compactPayload.matchedPantry
+        ? `📦 <b>Pantry Match:</b> ${compactPayload.brand && compactPayload.brand !== 'Whole Food' ? compactPayload.brand + ' ' : ''}${compactPayload.itemName}\n`
+        : `🤖 <b>AI Estimate</b> (Not in pantry)\n`;
+
+      const receipt = `⚡ <b>Logged: ${compactPayload.quantity} ${compactPayload.servingUnit} ${compactPayload.brand && compactPayload.brand !== 'Whole Food' ? compactPayload.brand + ' ' : ''}${compactPayload.itemName}</b>\n` +
+        matchTag + `\n` +
         `• 🥩 +<b>${compactPayload.protein}g</b> Protein • 🍞 +${compactPayload.carbs}g Carbs\n` +
         `• 🥑 +${compactPayload.fats}g Fat • 🍬 +${compactPayload.sugar}g Sugar • 🌾 +${compactPayload.fiber}g Fiber\n` +
         `• 🔥 +<b>${compactPayload.calories}</b> kcal\n` +
@@ -2234,8 +2430,13 @@ export default async function handler(req, res) {
       vitalsPreview = `💊 <b>Vitals:</b> <i>${vitalsSummary}</i>\n`;
     }
 
+    const matchTag = compactPayload.matchedPantry
+      ? `📦 <b>Pantry Match:</b> ${compactPayload.brand && compactPayload.brand !== 'Whole Food' ? compactPayload.brand + ' ' : ''}${compactPayload.itemName}\n`
+      : `🤖 <b>AI Estimate</b> (Not in pantry)\n`;
+
     const previewMsg = `🍽️ <b>Nutrition Analysis:</b>\n` +
-      `<b>${compactPayload.quantity} ${compactPayload.servingUnit} ${compactPayload.brand && compactPayload.brand !== 'Whole Food' ? compactPayload.brand + ' ' : ''}${compactPayload.itemName}</b>\n\n` +
+      `<b>${compactPayload.quantity} ${compactPayload.servingUnit} ${compactPayload.brand && compactPayload.brand !== 'Whole Food' ? compactPayload.brand + ' ' : ''}${compactPayload.itemName}</b>\n` +
+      matchTag + `\n` +
       `• 🥩 <b>Protein:</b> <b>${compactPayload.protein}g</b> • 🍞 <b>Carbs:</b> ${compactPayload.carbs}g\n` +
       `• 🥑 <b>Fats:</b> ${compactPayload.fats}g • 🍬 <b>Sugar:</b> ${compactPayload.sugar}g • 🌾 <b>Fiber:</b> ${compactPayload.fiber}g\n` +
       `• 🔥 <b>Calories:</b> <b>${compactPayload.calories} kcal</b>\n` +
